@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestion de Stock - Accueil</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A2B56">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; padding-top: 10px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; width: 100%; position: absolute; top: 0; left: 0; }
+        .btn-circle { width: 45px; height: 45px; background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; text-decoration: none; color: #FFFFFF; transition: transform 0.2s, background-color 0.2s; z-index: 10; }
+        .btn-circle:active { background-color: rgba(255, 255, 255, 0.2); transform: scale(0.85); }
+        .header-section { display: flex; flex-direction: column; align-items: center; margin-top: 45px; margin-bottom: 10px; }
+        .app-logo { width: 90px; height: auto; border-radius: 20px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); margin-bottom: 15px; }
+        h1 { font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; }
+        .network-status { font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; transition: all 0.3s ease; }
+        .status-online { color: #34D399; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-offline { color: #FCA5A5; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; }
+        .btn-grid { background-color: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px; text-decoration: none; color: #FFFFFF; font-weight: 600; font-size: 0.95rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px 10px; text-align: center; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-grid:active { background-color: rgba(255, 255, 255, 0.15); transform: scale(0.95); }
+        .btn-icon { font-size: 1.8rem; margin-bottom: 2px; }
+        .btn-wide { grid-column: span 2; flex-direction: row; padding: 18px; font-size: 1.05rem; }
+        .btn-wide .btn-icon { margin-bottom: 0; margin-right: 10px; font-size: 1.6rem; }
+        .btn-highlight { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4)); border-color: rgba(96, 165, 250, 0.5); }
+        .btn-audit { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.3)); border-color: rgba(52, 211, 153, 0.4); }
+        .admin-divider { grid-column: span 2; text-align: center; font-size: 0.75rem; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+        .admin-divider::before, .admin-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+        .btn-logout { background-color: transparent; border: 1px solid rgba(248, 113, 113, 0.5); color: #FCA5A5; margin-top: 15px; cursor: pointer; grid-column: span 2; padding: 15px; font-weight: bold; border-radius: 14px; font-size: 1rem; transition: all 0.2s; }
+        .btn-logout:active { background-color: rgba(248, 113, 113, 0.15); transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <a href="profil.html" class="btn-circle" title="Mon Profil">👤</a>
+            <a href="aide.html" class="btn-circle" title="Centre d'aide">❓</a>
+        </div>
+        <div class="header-section">
+            <img src="icon-192.png" alt="Logo" class="app-logo">
+            <h1>Mon Stock</h1>
+            <div id="status-badge" class="network-status status-online">🟢 En ligne</div>
+        </div>
+        <nav class="menu-grid">
+            <a href="scanner.html" class="btn-grid btn-wide btn-highlight"><span class="btn-icon">🔍</span> Rechercher & Scanner</a>
+            <a href="ajouter.html" class="btn-grid"><span class="btn-icon">➕</span> Ajouter</a>
+            <a href="inventaire.html" class="btn-grid"><span class="btn-icon">📋</span> Inventaire</a>
+            <a href="deplacer.html" class="btn-grid"><span class="btn-icon">🔄</span> Déplacer</a>
+            <a href="sortir.html" class="btn-grid"><span class="btn-icon">📤</span> Sortir</a>
+            <a href="audit.html" class="btn-grid btn-wide btn-audit"><span class="btn-icon">📦</span> Audit de Zone</a>
+
+            <div id="admin-divider" class="admin-divider" style="display: none;">Espace Administrateur</div>
+            <a href="admin.html" class="btn-grid" id="menu-admin" style="display: none; background-color: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);"><span class="btn-icon">⚙️</span> Administration</a>
+            <a href="https://docs.google.com/spreadsheets/d/1zlp2nEpMj8eTEF5UvFO-KYt1JVCMSfuXddNRbH0yqYM/edit" target="_blank" class="btn-grid" id="menu-bdd" style="display: none; background-color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);"><span class="btn-icon">🗄️</span> Base Google</a>
+            <button id="btn-logout" class="btn-logout">🔓 Déconnexion</button>
+        </nav>
+    </div>
+
+    <script>
+        if (localStorage.getItem('app_role') === 'admin') {
+            document.getElementById('admin-divider').style.display = 'flex';
+            document.getElementById('menu-admin').style.display = 'flex';
+            document.getElementById('menu-bdd').style.display = 'flex';
+        }
+        document.getElementById('btn-logout').addEventListener('click', function() {
+            let promessesNettoyage = [];
+            if ('caches' in window) promessesNettoyage.push(caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))));
+            if ('serviceWorker' in navigator) promessesNettoyage.push(navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(registrations.map(r => r.unregister()))));
+            Promise.all(promessesNettoyage).finally(() => { localStorage.clear(); window.location.href = "login.html"; });
+        });
+        function updateNetworkStatus() {
+            const badge = document.getElementById('status-badge');
+            if (navigator.onLine) {
+                badge.textContent = "🟢 En ligne"; badge.className = "network-status status-online";
+                const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+                .then(r => r.json()).then(d => { if(d.result === "success") localStorage.setItem('miroir_stock', JSON.stringify(d.data)); });
+            } else {
+                badge.textContent = "🔴 Hors-ligne"; badge.className = "network-status status-offline";
+            }
+        }
+        window.addEventListener('online', updateNetworkStatus); window.addEventListener('offline', updateNetworkStatus); updateNetworkStatus(); 
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+        }
+    </script>
+    
+    <script>
+        let timeoutId;
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
+            else { clearTimeout(timeoutId); }
+        });
+    </script>
+</body>
+</html>

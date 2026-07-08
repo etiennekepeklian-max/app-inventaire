@@ -1,0 +1,20 @@
+{
+  "name": "Gestion Inventaire",
+  "short_name": "Inventaire",
+  "start_url": "login.html",
+  "display": "standalone",
+  "background_color": "#050A1F",
+  "theme_color": "#1A2B56",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

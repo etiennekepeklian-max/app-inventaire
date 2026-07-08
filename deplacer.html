@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Déplacer un article</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A2B56">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .header { display: flex; align-items: center; margin-bottom: 20px; position: relative; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        label { margin-bottom: 8px; font-size: 0.9rem; color: #D1D5DB; }
+        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
+        input:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
+        .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s; width: 100%; }
+        .btn-action:active { background-color: #2563EB; transform: scale(0.95); }
+        .btn-submit { background-color: #F59E0B; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s; width: 100%; }
+        .btn-submit:active { background-color: #D97706; transform: scale(0.95); }
+        .input-with-btn { display: flex; gap: 10px; }
+        .btn-scan { background-color: #10B981; border: none; border-radius: 8px; padding: 0 15px; font-size: 1.5rem; cursor: pointer; }
+        .btn-scan:active { background-color: #059669; transform: scale(0.9); }
+        #reader-container { display: none; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; overflow: hidden; }
+        #reader { width: 100%; }
+        #etape-deplacement { display: none; flex-direction: column; }
+        .info-box { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .info-box p { margin-bottom: 8px; font-size: 0.95rem; }
+        .info-box span { color: #60A5FA; font-weight: bold; font-size: 1.05rem; }
+        #result-box { display: none; flex-direction: column; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .icon-success { font-size: 3rem; margin-bottom: 10px; }
+        .btn-nouveau { background-color: transparent; border: 1px solid #D1D5DB; padding: 12px; border-radius: 8px; color: #D1D5DB; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 20px; transition: transform 0.2s; }
+        .btn-nouveau:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Déplacer un article</h1></div>
+        <div id="reader-container"><div id="reader"></div><button type="button" class="btn-nouveau" onclick="arreterScanner()" style="color: #333; border-color: #333;">Annuler le scan</button></div>
+        <div id="etape-recherche">
+            <div class="form-group"><label for="reference">Référence de l'article</label><div class="input-with-btn"><input type="text" id="reference" placeholder="Ex: PER-4521" required><button type="button" class="btn-scan" id="btn-ouvrir-scanner">📷</button></div></div>
+            <button type="button" id="btn-chercher" class="btn-action">🔍 Chercher l'objet</button>
+        </div>
+        <form id="etape-deplacement">
+            <div class="info-box"><p>Objet : <span id="info-nom"></span></p><p>Emplacement actuel : <span id="info-emp-actuel"></span></p></div>
+            <div class="form-group"><label for="nouvel-emplacement">Saisir le nouvel emplacement</label><input type="text" id="nouvel-emplacement" placeholder="Ex: Camionnette B" required></div>
+            <button type="submit" class="btn-submit">Valider le déplacement</button>
+        </form>
+        <div id="result-box">
+            <div class="icon-success">✅</div><h3>Article déplacé !</h3><p style="font-size: 0.95rem; color: #D1D5DB; margin-top: 10px;" id="texte-resultat"></p>
+            <button id="btn-nouveau" class="btn-nouveau">🔄 Déplacer un autre article</button>
+        </div>
+    </div>
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+        const etapeRecherche = document.getElementById('etape-recherche'); const etapeDeplacement = document.getElementById('etape-deplacement'); const resultBox = document.getElementById('result-box'); const inputReference = document.getElementById('reference');
+        let html5QrcodeScanner;
+        document.getElementById('btn-ouvrir-scanner').addEventListener('click', function() { document.getElementById('reader-container').style.display = 'block'; etapeRecherche.style.display = 'none'; html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false); html5QrcodeScanner.render(onScanSuccess, onScanFailure); });
+        function onScanSuccess(decodedText, decodedResult) { arreterScanner(); inputReference.value = decodedText; lancerRecherche(); } function onScanFailure(error) {} function arreterScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); document.getElementById('reader-container').style.display = 'none'; etapeRecherche.style.display = 'block'; }
+        document.getElementById('btn-chercher').addEventListener('click', lancerRecherche);
+        function lancerRecherche() {
+            const reference = inputReference.value.trim().toUpperCase(); if(!reference) { alert("Veuillez saisir ou scanner une référence."); return; }
+            const btnChercher = document.getElementById('btn-chercher'); btnChercher.textContent = "Recherche en cours..."; btnChercher.disabled = true;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), reference: reference }) })
+            .then(res => res.json()).then(data => {
+                if (data.result === "EXPIRED") { window.location.href = "login.html"; return; }
+                if(data.result === "success") { document.getElementById('info-nom').textContent = data.nom; document.getElementById('info-emp-actuel').textContent = data.emplacement; etapeRecherche.style.display = 'none'; etapeDeplacement.style.display = 'flex'; } else { alert("Erreur : " + data.message); }
+                btnChercher.textContent = "🔍 Chercher l'objet"; btnChercher.disabled = false;
+            });
+        }
+        etapeDeplacement.addEventListener('submit', function(event) {
+            event.preventDefault(); const btnSubmit = document.querySelector('.btn-submit'); btnSubmit.textContent = "Mise à jour..."; btnSubmit.disabled = true;
+            const reference = inputReference.value.trim().toUpperCase(); const nouvelEmplacement = document.getElementById('nouvel-emplacement').value;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deplacer", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), reference: reference, nouvelEmplacement: nouvelEmplacement }) })
+            .then(res => res.json()).then(data => {
+                if(data.result === "success") { document.getElementById('texte-resultat').innerHTML = `L'article <b>${document.getElementById('info-nom').textContent}</b> est maintenant dans :<br><b>${nouvelEmplacement}</b>.`; etapeDeplacement.style.display = 'none'; resultBox.style.display = 'flex'; } else alert("Erreur.");
+                btnSubmit.textContent = "Valider le déplacement"; btnSubmit.disabled = false;
+            });
+        });
+        document.getElementById('btn-nouveau').addEventListener('click', function() { resultBox.style.display = 'none'; etapeRecherche.style.display = 'block'; inputReference.value = ""; document.getElementById('nouvel-emplacement').value = ""; });
+    </script>
+    
+    <script>
+        let timeoutId;
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
+            else { clearTimeout(timeoutId); }
+        });
+    </script>
+</body>
+</html>

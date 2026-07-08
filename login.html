@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Connexion - Gestion de Stock</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A2B56">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-card { width: 90%; max-width: 350px; background: rgba(0, 0, 0, 0.25); padding: 30px 20px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h1 { text-align: center; font-size: 1.6rem; margin-bottom: 10px; letter-spacing: 1px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        label { margin-bottom: 8px; font-size: 0.9rem; color: #D1D5DB; }
+        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
+        input:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
+        .btn-submit { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s; width: 100%; }
+        .btn-submit:active { background-color: #2563EB; transform: scale(0.95); }
+        .btn-submit:disabled { background-color: #9CA3AF; cursor: not-allowed; transform: none; }
+        #message-erreur { color: #F87171; text-align: center; margin-top: 10px; font-size: 0.9rem; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>🔐 Authentification</h1>
+        <form id="form-login">
+            <div class="form-group"><label for="login">Identifiant</label><input type="text" id="login" placeholder="Identifiant" required></div>
+            <div class="form-group"><label for="password">Mot de passe</label><input type="password" id="password" placeholder="••••••••" required></div>
+            <button type="submit" class="btn-submit" id="btn-login">Se connecter</button>
+            <div id="message-erreur"></div>
+        </form>
+    </div>
+    <script>
+        const formLogin = document.getElementById('form-login'); const btnLogin = document.getElementById('btn-login'); const erreurDiv = document.getElementById('message-erreur');
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+
+        formLogin.addEventListener('submit', function(e) {
+            e.preventDefault(); btnLogin.textContent = "Vérification..."; btnLogin.disabled = true; erreurDiv.style.display = 'none';
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "login", login: document.getElementById('login').value.trim(), password: document.getElementById('password').value }) })
+            .then(res => res.json()).then(data => {
+                if (data.result === "success") {
+                    localStorage.setItem('app_token', data.token); localStorage.setItem('app_login', data.login); localStorage.setItem('app_role', data.role);
+                    window.location.href = "index.html"; 
+                } else {
+                    erreurDiv.textContent = data.message; erreurDiv.style.display = 'block'; btnLogin.textContent = "Se connecter"; btnLogin.disabled = false;
+                }
+            }).catch(error => { erreurDiv.textContent = "Erreur réseau."; erreurDiv.style.display = 'block'; btnLogin.textContent = "Se connecter"; btnLogin.disabled = false; });
+        });
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+    </script>
+</body>
+</html>

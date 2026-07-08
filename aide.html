@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Centre d'aide</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A2B56">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        
+        .intro-text { font-size: 0.95rem; color: #D1D5DB; text-align: center; margin-bottom: 15px; line-height: 1.5; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; }
+        
+        details { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin-bottom: 5px; }
+        summary { font-size: 1.1rem; font-weight: bold; color: #FFFFFF; cursor: pointer; list-style: none; display: flex; align-items: center; outline: none; }
+        summary::-webkit-details-marker { display: none; }
+        details[open] summary { margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; color: #60A5FA; }
+        details p { font-size: 0.95rem; color: #D1D5DB; line-height: 1.5; margin-bottom: 10px; }
+        details ul { padding-left: 20px; color: #D1D5DB; font-size: 0.95rem; line-height: 1.5; }
+        details li { margin-bottom: 6px; }
+        .tag { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #93C5FD; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Centre d'aide</h1></div>
+        
+        <p class="intro-text">
+            💡 <b>Astuce :</b> Cliquez sur le logo "Carrés entrelacés" à côté d'une référence pour la copier instantanément !
+        </p>
+
+        <details open>
+            <summary>➕ Ajouter / Corriger un objet</summary>
+            <p>Ce module permet d'enregistrer de nouveaux objets dans l'inventaire.</p>
+            <ul>
+                <li><b>Référence auto :</b> Tapez le nom de l'objet, la référence (ex: TAB-1234) se crée toute seule.</li>
+                <li><b>Catégories :</b> Sélectionnez la catégorie dans le menu déroulant dynamique.</li>
+                <li><b>Notes :</b> Vous pouvez ajouter un commentaire (état de l'objet, consigne spéciale).</li>
+                <li>🖨️ Une fois validé, vous pouvez imprimer <b>l'étiquette QR Code</b> directement depuis votre mobile.</li>
+                <li>✏️ <b>Corriger :</b> Si vous avez fait une erreur de frappe, cliquez sur "Corriger une erreur" après validation, modifiez le texte et ré-enregistrez pour écraser la faute.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>🔍 Rechercher et Scanner</summary>
+            <p>Ouvrez la fiche complète d'un objet en flashant son QR Code ou en tapant une partie de son nom/référence.</p>
+            <ul>
+                <li><b>Détails :</b> Affiche l'emplacement, la catégorie, le créateur et le statut.</li>
+                <li><b>Ajouter une note :</b> Insérez une remarque datée et signée à votre nom directement depuis la fiche.</li>
+                <li><b>Actions :</b> Depuis cette fiche, vous pouvez <span class="tag">Déplacer</span> ou <span class="tag">Sortir</span> l'objet.</li>
+                <li>↩️ <b>Réintégrer :</b> Si vous scannez un objet qui était "Sorti", un bouton vous permettra de le remettre instantanément en stock actif.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>🚀 Le Mode Rafale (Scan multiple)</summary>
+            <p>Disponible dans la zone "Rechercher et Scanner", ce mode permet de gagner énormément de temps.</p>
+            <ul>
+                <li>Scannez vos objets à la chaîne. La caméra ne se coupe pas et la liste s'affiche en direct.</li>
+                <li>Une fois terminé, validez pour déplacer ou archiver tout ce lot d'objets en <b>un seul clic</b>.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>📋 Inventaire et Historique</summary>
+            <p>Consultez la base de données complète et synchronisée.</p>
+            <ul>
+                <li><b>Tri & Recherche :</b> Utilisez les boutons bleus pour trier par Nom, Emplacement, ou Date. La barre de recherche filtre instantanément les résultats.</li>
+                <li><b>Fiche au clic :</b> Touchez n'importe quelle carte de l'inventaire pour ouvrir la fiche détaillée de l'objet.</li>
+                <li>🕒 <b>L'Historique (Admin) :</b> En haut à droite, un bouton permet de voir le journal de bord de toutes les actions de l'équipe (Ajouts, Sorties, Déplacements).</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>📦 L'Audit de Zone</summary>
+            <p>Outil de pointage très puissant pour vérifier qu'aucun objet ne manque dans une réserve. Il fonctionne même <b>sans réseau</b> !</p>
+            <ul>
+                <li>1. Saisissez le nom de l'emplacement (ex: Réserve B).</li>
+                <li>2. Flashez absolument tous les objets présents devant vous.</li>
+                <li>3. <b>Le Rapport :</b> L'application calcule ce qui est validé (🟢), ce qu'il manque (🔴), et les objets qui sont physiquement là mais qui devraient être ailleurs (🟡).</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>⚙️ L'Administration (Réservé Admin)</summary>
+            <p>Accessible uniquement aux responsables de l'application :</p>
+            <ul>
+                <li>📊 <b>Tableau de bord :</b> Graphique de répartition du stock.</li>
+                <li>🏷️ <b>Gérer les catégories :</b> Ajoutez de nouvelles catégories ou supprimez-en (elles apparaîtront dans les menus déroulants de tout le monde).</li>
+                <li>📥 <b>Import / Export :</b> Téléchargez l'inventaire en CSV, ou importez jusqu'à 500 objets d'un coup.</li>
+                <li>👥 <b>L'équipe :</b> Créez de nouveaux accès, modifiez les mots de passe de votre équipe, ou supprimez des comptes.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>🔒 Sécurité, Cache et Mode Hors-ligne</summary>
+            <p>L'application est conçue pour fonctionner dans toutes les conditions :</p>
+            <ul>
+                <li><b>Hors-Ligne :</b> Si vous n'avez pas de réseau, vous pouvez tout de même consulter l'inventaire, rechercher des objets, et effectuer un Audit de Zone.</li>
+                <li><b>Vider le cache :</b> Dans "Mon Profil", ce bouton rouge force l'application à se nettoyer si vous constatez un bug d'affichage.</li>
+                <li>⏱️ <b>Sécurité 30s :</b> Si vous changez d'application ou verrouillez votre téléphone plus de 30 secondes, l'application vous déconnecte automatiquement pour protéger vos données.</li>
+            </ul>
+        </details>
+    </div>
+
+    <script>
+        let timeoutId;
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) {
+                timeoutId = setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = "login.html";
+                }, 30000); 
+            } else {
+                clearTimeout(timeoutId);
+            }
+        });
+    </script>
+</body>
+</html>

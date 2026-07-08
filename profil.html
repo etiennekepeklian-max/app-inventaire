@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mon Profil</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A2B56">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; transition: transform 0.2s; }
+        .btn-retour:active { transform: scale(0.85); }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+
+        .card-form { background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 0.9rem; color: #D1D5DB; font-weight: bold; }
+        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
+        input:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
+        
+        .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; width: 100%; }
+        .btn-primary:active { transform: scale(0.95); background-color: #2563EB; }
+        
+        .btn-danger { background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s, background-color 0.2s; }
+        .btn-danger:active { background-color: rgba(239, 68, 68, 0.15); transform: scale(0.95); }
+
+        .user-info { text-align: center; font-size: 1.2rem; margin-bottom: 5px; color: #60A5FA; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Mon Profil</h1></div>
+
+        <div class="user-info" id="display-user"></div>
+
+        <form id="form-mdp" class="card-form">
+            <h3 style="font-size: 1.1rem; margin-bottom: 5px; text-align: center;">Changer mon mot de passe</h3>
+            <div class="form-group">
+                <label for="ancien-mdp">Ancien mot de passe</label>
+                <input type="password" id="ancien-mdp" required>
+            </div>
+            <div class="form-group">
+                <label for="nouveau-mdp">Nouveau mot de passe</label>
+                <input type="password" id="nouveau-mdp" required>
+            </div>
+            <button type="submit" class="btn-primary" id="btn-valider">💾 Mettre à jour</button>
+        </form>
+
+        <div class="card-form" style="border-color: rgba(239, 68, 68, 0.3);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 5px; text-align: center; color: #FCA5A5;">Maintenance</h3>
+            <p style="font-size: 0.85rem; color: #D1D5DB; text-align: center; margin-bottom: 10px;">Si l'application n'affiche pas les dernières mises à jour ou rencontre un bug, videz le cache ci-dessous.</p>
+            <button id="btn-vider-cache" class="btn-danger">🗑️ Vider le cache de l'application</button>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+        document.getElementById('display-user').textContent = "👤 " + localStorage.getItem('app_login');
+
+        // GESTION DU MOT DE PASSE
+        document.getElementById('form-mdp').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-valider');
+            btn.textContent = "Mise à jour... ⏳"; btn.disabled = true;
+
+            fetch(GOOGLE_SCRIPT_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ 
+                    action: "changer_mdp",
+                    ancienPassword: document.getElementById('ancien-mdp').value,
+                    nouveauPassword: document.getElementById('nouveau-mdp').value,
+                    login: localStorage.getItem('app_login'),
+                    token: localStorage.getItem('app_token')
+                }) 
+            })
+            .then(res => res.json()).then(data => {
+                if(data.result === "success") {
+                    alert("Mot de passe modifié avec succès !");
+                    document.getElementById('form-mdp').reset();
+                } else {
+                    alert("Erreur : " + data.message);
+                }
+                btn.textContent = "💾 Mettre à jour"; btn.disabled = false;
+            }).catch(err => {
+                alert("Erreur réseau.");
+                btn.textContent = "💾 Mettre à jour"; btn.disabled = false;
+            });
+        });
+
+        // ACTION : VIDER LE CACHE MANUELLEMENT
+        document.getElementById('btn-vider-cache').addEventListener('click', function() {
+            const btn = this;
+            btn.textContent = "Nettoyage en cours... ⏳";
+            
+            let promessesNettoyage = [];
+            
+            // 1. Supprimer le stockage du Service Worker (Fichiers HTML/CSS/JS)
+            if ('caches' in window) {
+                promessesNettoyage.push(
+                    caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))))
+                );
+            }
+
+            // 2. Désinscrire le Service Worker
+            if ('serviceWorker' in navigator) {
+                promessesNettoyage.push(
+                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                        return Promise.all(registrations.map(r => r.unregister()));
+                    })
+                );
+            }
+
+            // 3. Exécuter le nettoyage et recharger
+            Promise.all(promessesNettoyage).finally(() => {
+                alert("Le cache a été vidé avec succès. L'application va se relancer.");
+                window.location.reload(true);
+            });
+        });
+    </script>
+</body>
+</html>

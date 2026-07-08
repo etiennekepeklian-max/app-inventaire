@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inventaire complet</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A2B56">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; width: 100%; }
+        .btn-header { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-header:active { transform: scale(0.85); }
+        h1 { font-size: 1.5rem; letter-spacing: 1px; flex-grow: 1; text-align: center; margin: 0 10px; }
+        .search-container { position: sticky; top: 10px; z-index: 10; background-color: rgba(5, 10, 31, 0.9); padding: 10px 0; border-radius: 12px; margin-bottom: 10px; }
+        .search-bar { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 14px 14px 14px 40px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23D1D5DB" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>'); background-repeat: no-repeat; background-position: 12px center; }
+        .search-bar:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
+        .compteur { font-size: 0.9rem; color: #D1D5DB; text-align: right; margin-bottom: 10px; font-weight: 600; }
+        .status-message { text-align: center; margin-top: 40px; color: #60A5FA; font-weight: bold; font-size: 1.1rem; }
+        #vue-inventaire { display: flex; flex-direction: column; width: 100%; }
+        #vue-historique { display: none; flex-direction: column; width: 100%; }
+        #vue-details { display: none; flex-direction: column; width: 100%; gap: 15px; }
+        .filtres-pilules { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 15px; -ms-overflow-style: none; scrollbar-width: none; }
+        .filtres-pilules::-webkit-scrollbar { display: none; }
+        .btn-pilule { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #D1D5DB; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; }
+        .btn-pilule.active { background-color: #3B82F6; color: #FFFFFF; border-color: #60A5FA; font-weight: bold; transform: scale(0.95); }
+        .btn-copy { background: transparent; border: none; color: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; padding: 2px; border-radius: 4px; transition: background 0.2s; }
+        .btn-copy:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
+        .liste-cards { display: flex; flex-direction: column; gap: 12px; }
+        .item-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: background 0.2s; }
+        .item-card:active { background: rgba(255, 255, 255, 0.05); }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .item-nom { font-size: 1.1rem; font-weight: bold; color: #FFFFFF; line-height: 1.2; word-break: break-word; }
+        .badges-container { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+        .item-ref { background-color: rgba(59, 130, 246, 0.2); color: #93C5FD; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; }
+        .item-cat { background-color: rgba(139, 92, 246, 0.2); color: #C4B5FD; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(139, 92, 246, 0.3); display: flex; align-items: center; }
+        .item-emplacement { font-size: 0.95rem; color: #D1D5DB; }
+        .item-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: #9CA3AF; margin-top: 5px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; }
+        .hist-card { background: rgba(0, 0, 0, 0.2); border-left: 4px solid #60A5FA; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 5px; }
+        .hist-ajout { border-left-color: #10B981; } .hist-deplacement { border-left-color: #F59E0B; } .hist-sortie { border-left-color: #EF4444; } .hist-modification { border-left-color: #8B5CF6; }
+        .hist-date { font-size: 0.75rem; color: #9CA3AF; }
+        .hist-title { font-size: 1rem; font-weight: bold; color: #FFFFFF; display: flex; justify-content: space-between; align-items: center; }
+        .hist-detail { font-size: 0.9rem; color: #D1D5DB; }
+        .hist-user { font-size: 0.8rem; font-style: italic; color: #9CA3AF; text-align: right; }
+        .empty-state { text-align: center; margin-top: 40px; color: #9CA3AF; display: none; }
+        .info-card { background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; }
+        .info-card h2 { font-size: 1.3rem; margin-bottom: 12px; color: #60A5FA; word-break: break-word; }
+        .info-card p { font-size: 0.95rem; margin-bottom: 8px; color: #D1D5DB; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .info-card span.valeur { color: #FFFFFF; font-weight: bold; display: flex; align-items: center; text-align: right; }
+        .notes-area { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #D1D5DB; max-height: 100px; overflow-y: auto; margin-top: 5px; margin-bottom: 15px; white-space: pre-wrap; }
+        .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
+        .btn-primary:active { transform: scale(0.98); background-color: #2563EB; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><a href="index.html" class="btn-header">⬅</a><h1 id="titre-page">Inventaire</h1><button id="btn-toggle-vue" class="btn-header">🕒</button></div>
+        <div id="vue-inventaire">
+            <div class="filtres-pilules" id="tri-inventaire">
+                <button class="btn-pilule active" data-sort="nom">🔤 Nom</button>
+                <button class="btn-pilule" data-sort="categorie">🏷️ Catégorie</button>
+                <button class="btn-pilule" data-sort="emplacement">📍 Emplacement</button>
+                <button class="btn-pilule" data-sort="date">📅 Date d'ajout</button>
+            </div>
+            <div class="search-container"><input type="text" id="search-bar" class="search-bar" placeholder="Rechercher..."></div>
+            <div class="compteur" id="compteur-texte">Chargement...</div>
+            <div id="loader-inv" class="status-message">Récupération... ⏳</div>
+            <div id="liste-inventaire" class="liste-cards"></div>
+            <div class="empty-state" id="empty-inv"><p>Aucun article trouvé.</p></div>
+        </div>
+        <div id="vue-details">
+            <button class="btn-primary" id="btn-retour-liste" style="background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); margin-bottom: 10px;">⬅ Retour à la liste</button>
+            <div class="info-card"><h2 id="detail-nom">Fiche Objet</h2><div id="detail-contenu"></div></div>
+        </div>
+        <div id="vue-historique">
+            <div class="filtres-pilules" id="filtre-historique">
+                <button class="btn-pilule active" data-filter="Tous">Tous</button>
+                <button class="btn-pilule" data-filter="Ajout">Ajouts</button>
+                <button class="btn-pilule" data-filter="Déplacement">Déplacements</button>
+                <button class="btn-pilule" data-filter="Sortie">Sorties</button>
+            </div>
+            <div id="loader-hist" class="status-message">Chargement... ⏳</div>
+            <div id="liste-historique" class="liste-cards"></div>
+            <div class="empty-state" id="empty-hist"><p>Aucune action trouvée.</p></div>
+        </div>
+    </div>
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+        if (localStorage.getItem('app_role') !== 'admin') document.getElementById('btn-toggle-vue').style.display = 'none';
+        const SVG_COPY = `<svg viewBox="0 0 16 16" width=\"14\" height=\"14\" fill=\"currentColor\"><path d=\"M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z\"/><path d=\"M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z\"/></svg>`;
+        window.copierTexte = function(texte, event) { if(event) event.stopPropagation(); navigator.clipboard.writeText(texte).then(() => { if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); } }); };
+        const vueInventaire = document.getElementById('vue-inventaire'); const vueHistorique = document.getElementById('vue-historique'); const btnToggleVue = document.getElementById('btn-toggle-vue'); const titrePage = document.getElementById('titre-page'); const loaderInv = document.getElementById('loader-inv'); const listeInventaire = document.getElementById('liste-inventaire'); const compteurTexte = document.getElementById('compteur-texte'); const searchBar = document.getElementById('search-bar'); const emptyInv = document.getElementById('empty-inv'); const loaderHist = document.getElementById('loader-hist'); const listeHistorique = document.getElementById('liste-historique'); const emptyHist = document.getElementById('empty-hist'); const vueDetails = document.getElementById('vue-details');
+        let vueActuelle = "inventaire"; let historiquesData = []; let articlesData = []; let currentFilterHist = "Tous"; let currentSortInv = "nom"; let sortAsc = true;
+        window.addEventListener('DOMContentLoaded', function() { const urlParams = new URLSearchParams(window.location.search); const refCible = urlParams.get('ref'); if (refCible) { vueInventaire.style.display = 'none'; vueHistorique.style.display = 'flex'; titrePage.textContent = "Suivi " + refCible; btnToggleVue.textContent = "📦"; vueActuelle = "historique"; chargerHistoriqueFiltre(refCible); } else { chargerInventaire(); } });
+        btnToggleVue.addEventListener('click', function() { if (vueActuelle === "inventaire") { vueInventaire.style.display = 'none'; vueDetails.style.display = 'none'; vueHistorique.style.display = 'flex'; titrePage.textContent = "Historique"; btnToggleVue.textContent = "📦"; vueActuelle = "historique"; chargerHistoriqueFiltre(null); } else { window.location.search = ""; } });
+        function chargerInventaire() { loaderInv.style.display = 'block'; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) }).then(res => res.json()).then(data => { if (data.result === "success") { loaderInv.style.display = 'none'; articlesData = data.data; trierEtAfficherInventaire(); } }); }
+        document.querySelectorAll('#tri-inventaire .btn-pilule').forEach(btn => { btn.addEventListener('click', function() { const critere = this.getAttribute('data-sort'); if (currentSortInv === critere) sortAsc = !sortAsc; else { currentSortInv = critere; sortAsc = true; } document.querySelectorAll('#tri-inventaire .btn-pilule').forEach(b => b.classList.remove('active')); this.classList.add('active'); trierEtAfficherInventaire(); }); });
+        searchBar.addEventListener('input', trierEtAfficherInventaire);
+        function trierEtAfficherInventaire() { const terme = searchBar.value.toLowerCase().trim(); let listFiltree = articlesData.filter(a => { const nomSafe = String(a.nom || "").toLowerCase(); const refSafe = String(a.reference || "").toLowerCase(); const empSafe = String(a.emplacement || "").toLowerCase(); const catSafe = String(a.categorie || "").toLowerCase(); return nomSafe.includes(terme) || refSafe.includes(terme) || empSafe.includes(terme) || catSafe.includes(terme); }); listFiltree.sort((a, b) => { let valA = a[currentSortInv] || ""; let valB = b[currentSortInv] || ""; if (currentSortInv === 'date') { valA = new Date(a.date).getTime() || 0; valB = new Date(b.date).getTime() || 0; } else { valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase(); } if (valA < valB) return sortAsc ? -1 : 1; if (valA > valB) return sortAsc ? 1 : -1; return 0; }); afficherArticles(listFiltree); }
+        function afficherArticles(articles) { listeInventaire.innerHTML = ""; if (articles.length === 0) { compteurTexte.textContent = "0 trouvé"; emptyInv.style.display = 'block'; return; } compteurTexte.textContent = `${articles.length} article(s)`; emptyInv.style.display = 'none'; articles.forEach(article => { const card = document.createElement('div'); card.className = 'item-card'; let dStr = article.date ? "le " + new Date(article.date).toLocaleDateString('fr-FR') : ""; card.innerHTML = `<div class=\"item-header\"><span class=\"item-nom\">${article.nom}</span><div class=\"badges-container\"><span class=\"item-cat\">🎨 ${article.categorie || "Non classé"}</span><span class=\"item-ref\">${article.reference} <button class=\"btn-copy\" onclick=\"copierTexte('${article.reference}', event)\">${SVG_COPY}</button></span></div></div><div class=\"item-emplacement\">📍 ${article.emplacement}</div><div class=\"item-footer\"><span>Par : ${article.utilisateur}</span><span>${dStr}</span></div>`; card.addEventListener('click', (e) => { if (e.target.closest('.btn-copy')) return; ouvrirFicheObjet(article.reference, article); }); listeInventaire.appendChild(card); }); }
+        document.getElementById('btn-retour-liste').addEventListener('click', function() { vueDetails.style.display = 'none'; vueInventaire.style.display = 'flex'; });
+        function ouvrirFicheObjet(ref, articleLocal) { vueInventaire.style.display = 'none'; vueDetails.style.display = 'flex'; document.getElementById('detail-nom').textContent = articleLocal.nom; document.getElementById('detail-contenu').innerHTML = "<p style='text-align:center; color:#60A5FA; margin-top:20px;'>Récupération des détails... ⏳</p>"; window.scrollTo(0,0); if (navigator.onLine) { fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "rechercher", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), reference: ref }) }).then(res => res.json()).then(item => { if (item.result === "success") renderFicheHtml(ref, item); else renderFicheHtml(ref, articleLocal); }).catch(() => renderFicheHtml(ref, articleLocal)); } else { renderFicheHtml(ref, articleLocal); } }
+        function renderFicheHtml(ref, item) { const detailContenu = document.getElementById('detail-contenu'); const refRow = `<p>Référence : <span class=\"valeur\">${ref} <button class=\"btn-copy\" onclick=\"copierTexte('${ref}', event)\">${SVG_COPY}</button></span></p>`; if (localStorage.getItem('app_role') === 'admin') { let dateFormatee = item.dateAjout || item.date ? new Date(item.dateAjout || item.date).toLocaleDateString('fr-FR') : "Inconnue"; let dateSortieFormatee = item.estSorti ? "le " + (item.dateSortie ? new Date(item.dateSortie).toLocaleDateString('fr-FR') : "Inconnue") : "En stock actif"; let statutColor = item.estSorti ? "#EF4444" : "#FFFFFF"; let notesHtml = `<h4 style=\"font-size:0.9rem; margin-top:15px; color:#9CA3AF;\">📝 Notes & Incidents</h4><div class=\"notes-area\">${item.notes || "Aucune note consignée."}</div>`; detailContenu.innerHTML = refRow + `<p>Catégorie : <span class=\"valeur\">${item.categorie || "Non classé"}</span></p><p>Emplacement : <span class=\"valeur\">${item.emplacement}</span></p><p>Date d'ajout : <span class=\"valeur\">${dateFormatee}</span></p><p>Créé par : <span class=\"valeur\">${item.utilisateur || "Inconnu"}</span></p><p>Statut sortie : <span class=\"valeur\" style=\"color:${statutColor};\">${dateSortieFormatee}</span></p><p>Motif de sortie : <span class=\"valeur\">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class=\"valeur\">${item.utilisateurSortie || "Personne"}</span></p>${notesHtml}<button class=\"btn-primary\" style=\"margin-top:10px;padding:12px;font-size:1rem;background:#8B5CF6;\" onclick=\"window.location.search='?ref=${ref}'\">🕒 Suivre l'historique complet</button>`; } else { detailContenu.innerHTML = refRow + `<p>Nom de l'objet : <span class=\"valeur\">${item.nom}</span></p><p>Emplacement actuel : <span class=\"valeur\">${item.emplacement}</span></p>`; } }
+        function chargerHistoriqueFiltre(filtreRef) { loaderHist.style.display = 'block'; listeHistorique.innerHTML = ""; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "get_historique", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) }).then(res => res.json()).then(data => { if (data.result === "success") { loaderHist.style.display = 'none'; historiquesData = data.data; if(filtreRef) { document.getElementById('filtre-historique').style.display = 'none'; historiquesData = historiquesData.filter(log => log.reference === filtreRef); } afficherLogs(); } }); }
+        document.querySelectorAll('#filtre-historique .btn-pilule').forEach(btn => { btn.addEventListener('click', function() { document.querySelectorAll('#filtre-historique .btn-pilule').forEach(b => b.classList.remove('active')); this.classList.add('active'); currentFilterHist = this.getAttribute('data-filter'); afficherLogs(); }); });
+        function afficherLogs() { listeHistorique.innerHTML = ""; let logsFiltres = historiquesData; if (currentFilterHist !== "Tous") logsFiltres = historiquesData.filter(log => log.action === currentFilterHist); if (logsFiltres.length === 0) { emptyHist.style.display = 'block'; return; } emptyHist.style.display = 'none'; logsFiltres.forEach(log => { const card = document.createElement('div'); card.className = 'hist-card'; if (log.action === "Ajout") card.classList.add("hist-ajout"); else if (log.action === "Déplacement") card.classList.add("hist-deplacement"); else if (log.action === "Sortie") card.classList.add("hist-sortie"); else card.classList.add("hist-modification"); const dObj = new Date(log.date); const dStr = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}); card.innerHTML = `<div class=\"hist-date\">${dStr}</div><div class=\"hist-title\"><span>${log.action} : ${log.nom}</span><span style=\"font-size:0.85rem;color:#93C5FD; display:flex; align-items:center;\">${log.reference} <button class=\"btn-copy\" onclick=\"copierTexte('${log.reference}', event)\">${SVG_COPY}</button></span></div><div class=\"hist-detail\">${log.detail}</div><div class=\"hist-user\">par ${log.utilisateur}</div>`; listeHistorique.appendChild(card); }); }
+    </script>
+    
+    <script>
+        let timeoutId;
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
+            else { clearTimeout(timeoutId); }
+        });
+    </script>
+</body>
+</html>
