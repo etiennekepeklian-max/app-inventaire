@@ -37,6 +37,17 @@
         </p>
 
         <details open>
+            <summary>🔍 Rechercher et Scanner</summary>
+            <p>Ouvrez la fiche complète d'un objet en flashant son QR Code ou en tapant une partie de son nom/référence.</p>
+            <ul>
+                <li><b>Détails :</b> Affiche l'emplacement, la catégorie, le créateur et le statut.</li>
+                <li><b>Ajouter une note :</b> Insérez une remarque datée et signée à votre nom directement depuis la fiche.</li>
+                <li><b>Actions :</b> Depuis cette fiche, vous pouvez <span class="tag">Déplacer</span> ou <span class="tag">Sortir</span> l'objet.</li>
+                <li>↩️ <b>Réintégrer :</b> Si vous scannez un objet qui était "Sorti", un bouton vous permettra de le remettre instantanément en stock actif.</li>
+            </ul>
+        </details>
+
+        <details>
             <summary>➕ Ajouter / Corriger un objet</summary>
             <p>Ce module permet d'enregistrer de nouveaux objets dans l'inventaire.</p>
             <ul>
@@ -49,13 +60,29 @@
         </details>
 
         <details>
-            <summary>🔍 Rechercher et Scanner</summary>
-            <p>Ouvrez la fiche complète d'un objet en flashant son QR Code ou en tapant une partie de son nom/référence.</p>
+            <summary>🔄 Déplacer un article</summary>
+            <p>Pour modifier l'emplacement d'un objet existant.</p>
             <ul>
-                <li><b>Détails :</b> Affiche l'emplacement, la catégorie, le créateur et le statut.</li>
-                <li><b>Ajouter une note :</b> Insérez une remarque datée et signée à votre nom directement depuis la fiche.</li>
-                <li><b>Actions :</b> Depuis cette fiche, vous pouvez <span class="tag">Déplacer</span> ou <span class="tag">Sortir</span> l'objet.</li>
-                <li>↩️ <b>Réintégrer :</b> Si vous scannez un objet qui était "Sorti", un bouton vous permettra de le remettre instantanément en stock actif.</li>
+                <li>Scannez son code ou tapez manuellement sa référence.</li>
+                <li>Saisissez sa nouvelle destination (ex: Camionnette B).</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>📤 Sortir un article</summary>
+            <p>Pour archiver un objet quittant le stock définitivement (Vente, Restauration, Exposition...).</p>
+            <ul>
+                <li>Indiquez obligatoirement la raison (le motif) pour valider l'archivage. Il sera conservé dans l'historique.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>📋 Inventaire et Historique</summary>
+            <p>Consultez la base de données complète et synchronisée.</p>
+            <ul>
+                <li><b>Tri & Recherche :</b> Utilisez les boutons bleus pour trier. La barre de recherche filtre instantanément les résultats.</li>
+                <li><b>Fiche au clic :</b> Touchez n'importe quelle carte de l'inventaire pour ouvrir la fiche détaillée de l'objet.</li>
+                <li>🕒 <b>L'Historique (Admin) :</b> En haut à droite, un bouton permet de voir le journal de bord de toutes les actions de l'équipe.</li>
             </ul>
         </details>
 
@@ -65,16 +92,6 @@
             <ul>
                 <li>Scannez vos objets à la chaîne. La caméra ne se coupe pas et la liste s'affiche en direct.</li>
                 <li>Une fois terminé, validez pour déplacer ou archiver tout ce lot d'objets en <b>un seul clic</b>.</li>
-            </ul>
-        </details>
-
-        <details>
-            <summary>📋 Inventaire et Historique</summary>
-            <p>Consultez la base de données complète et synchronisée.</p>
-            <ul>
-                <li><b>Tri & Recherche :</b> Utilisez les boutons bleus pour trier par Nom, Emplacement, ou Date. La barre de recherche filtre instantanément les résultats.</li>
-                <li><b>Fiche au clic :</b> Touchez n'importe quelle carte de l'inventaire pour ouvrir la fiche détaillée de l'objet.</li>
-                <li>🕒 <b>L'Historique (Admin) :</b> En haut à droite, un bouton permet de voir le journal de bord de toutes les actions de l'équipe (Ajouts, Sorties, Déplacements).</li>
             </ul>
         </details>
 
@@ -93,34 +110,28 @@
             <p>Accessible uniquement aux responsables de l'application :</p>
             <ul>
                 <li>📊 <b>Tableau de bord :</b> Graphique de répartition du stock.</li>
-                <li>🏷️ <b>Gérer les catégories :</b> Ajoutez de nouvelles catégories ou supprimez-en (elles apparaîtront dans les menus déroulants de tout le monde).</li>
+                <li>🏷️ <b>Gérer les catégories :</b> Ajoutez de nouvelles catégories ou supprimez-en (elles apparaîtront pour toute l'équipe).</li>
                 <li>📥 <b>Import / Export :</b> Téléchargez l'inventaire en CSV, ou importez jusqu'à 500 objets d'un coup.</li>
-                <li>👥 <b>L'équipe :</b> Créez de nouveaux accès, modifiez les mots de passe de votre équipe, ou supprimez des comptes.</li>
+                <li>👥 <b>L'équipe :</b> Créez de nouveaux accès, modifiez les mots de passe, ou supprimez des comptes.</li>
             </ul>
         </details>
 
         <details>
-            <summary>🔒 Sécurité, Cache et Mode Hors-ligne</summary>
-            <p>L'application est conçue pour fonctionner dans toutes les conditions :</p>
+            <summary>👤 Mon Profil & Sécurité</summary>
+            <p>Bouton situé en haut à gauche de l'accueil :</p>
             <ul>
-                <li><b>Hors-Ligne :</b> Si vous n'avez pas de réseau, vous pouvez tout de même consulter l'inventaire, rechercher des objets, et effectuer un Audit de Zone.</li>
-                <li><b>Vider le cache :</b> Dans "Mon Profil", ce bouton rouge force l'application à se nettoyer si vous constatez un bug d'affichage.</li>
-                <li>⏱️ <b>Sécurité 30s :</b> Si vous changez d'application ou verrouillez votre téléphone plus de 30 secondes, l'application vous déconnecte automatiquement pour protéger vos données.</li>
+                <li>Changer de mot de passe.</li>
+                <li><b>Vider le cache :</b> Un bouton de maintenance pour forcer la mise à jour visuelle de l'application.</li>
+                <li>⏱️ <b>Sécurité 30s :</b> Si vous changez d'application ou verrouillez votre téléphone plus de 30 secondes, l'application vous déconnecte automatiquement.</li>
             </ul>
         </details>
     </div>
-
+    
     <script>
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                timeoutId = setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = "login.html";
-                }, 30000); 
-            } else {
-                clearTimeout(timeoutId);
-            }
+            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
+            else { clearTimeout(timeoutId); }
         });
     </script>
 </body>

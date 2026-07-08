@@ -21,15 +21,20 @@
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.9rem; color: #D1D5DB; font-weight: bold; }
         input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
-        input:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
+        input:focus { border-color: #60A5FA; }
         
-        .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; width: 100%; }
+        .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s; width: 100%; }
         .btn-primary:active { transform: scale(0.95); background-color: #2563EB; }
         
-        .btn-danger { background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s, background-color 0.2s; }
+        .btn-danger { background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
         .btn-danger:active { background-color: rgba(239, 68, 68, 0.15); transform: scale(0.95); }
 
         .user-info { text-align: center; font-size: 1.2rem; margin-bottom: 5px; color: #60A5FA; font-weight: bold; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
+        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; margin-top: 15px; }
+        .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
     </style>
 </head>
 <body>
@@ -40,21 +45,24 @@
 
         <form id="form-mdp" class="card-form">
             <h3 style="font-size: 1.1rem; margin-bottom: 5px; text-align: center;">Changer mon mot de passe</h3>
-            <div class="form-group">
-                <label for="ancien-mdp">Ancien mot de passe</label>
-                <input type="password" id="ancien-mdp" required>
-            </div>
-            <div class="form-group">
-                <label for="nouveau-mdp">Nouveau mot de passe</label>
-                <input type="password" id="nouveau-mdp" required>
-            </div>
+            <div class="form-group"><label for="ancien-mdp">Ancien mot de passe</label><input type="password" id="ancien-mdp" required></div>
+            <div class="form-group"><label for="nouveau-mdp">Nouveau mot de passe</label><input type="password" id="nouveau-mdp" required></div>
             <button type="submit" class="btn-primary" id="btn-valider">💾 Mettre à jour</button>
         </form>
 
         <div class="card-form" style="border-color: rgba(239, 68, 68, 0.3);">
             <h3 style="font-size: 1.1rem; margin-bottom: 5px; text-align: center; color: #FCA5A5;">Maintenance</h3>
-            <p style="font-size: 0.85rem; color: #D1D5DB; text-align: center; margin-bottom: 10px;">Si l'application n'affiche pas les dernières mises à jour ou rencontre un bug, videz le cache ci-dessous.</p>
-            <button id="btn-vider-cache" class="btn-danger">🗑️ Vider le cache de l'application</button>
+            <p style="font-size: 0.85rem; color: #D1D5DB; text-align: center; margin-bottom: 10px;">Videz le cache ci-dessous pour forcer la mise à jour.</p>
+            <button id="btn-vider-cache" class="btn-danger" type="button">🗑️ Vider le cache de l'application</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="custom-alert">
+        <div class="modal-content">
+            <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
+            <h3 style="font-size: 1.2rem; color: white; margin-bottom: 10px;" id="alert-title">Attention</h3>
+            <p style="color: #D1D5DB; font-size: 0.95rem; line-height: 1.4;" id="alert-message">Message.</p>
+            <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
         </div>
     </div>
 
@@ -62,66 +70,36 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         document.getElementById('display-user').textContent = "👤 " + localStorage.getItem('app_login');
 
-        // GESTION DU MOT DE PASSE
+        let alertCallback = null;
+        function afficherAlerte(titre, message, isSuccess = false, callback = null) {
+            document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
+            document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message;
+            alertCallback = callback; document.getElementById('custom-alert').style.display = 'flex';
+        }
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; if(alertCallback) alertCallback(); });
+
         document.getElementById('form-mdp').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-valider');
-            btn.textContent = "Mise à jour... ⏳"; btn.disabled = true;
-
-            fetch(GOOGLE_SCRIPT_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ 
-                    action: "changer_mdp",
-                    ancienPassword: document.getElementById('ancien-mdp').value,
-                    nouveauPassword: document.getElementById('nouveau-mdp').value,
-                    login: localStorage.getItem('app_login'),
-                    token: localStorage.getItem('app_token')
-                }) 
-            })
+            e.preventDefault(); const btn = document.getElementById('btn-valider'); btn.textContent = "Mise à jour... ⏳"; btn.disabled = true;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "changer_mdp", ancienPassword: document.getElementById('ancien-mdp').value, nouveauPassword: document.getElementById('nouveau-mdp').value, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(res => res.json()).then(data => {
-                if(data.result === "success") {
-                    alert("Mot de passe modifié avec succès !");
-                    document.getElementById('form-mdp').reset();
-                } else {
-                    alert("Erreur : " + data.message);
-                }
+                if(data.result === "success") { afficherAlerte("Succès", "Mot de passe modifié avec succès !", true); document.getElementById('form-mdp').reset(); } 
+                else { afficherAlerte("Erreur", data.message); }
                 btn.textContent = "💾 Mettre à jour"; btn.disabled = false;
-            }).catch(err => {
-                alert("Erreur réseau.");
-                btn.textContent = "💾 Mettre à jour"; btn.disabled = false;
-            });
+            }).catch(err => { afficherAlerte("Erreur", "Problème réseau."); btn.textContent = "💾 Mettre à jour"; btn.disabled = false; });
         });
 
-        // ACTION : VIDER LE CACHE MANUELLEMENT
         document.getElementById('btn-vider-cache').addEventListener('click', function() {
-            const btn = this;
-            btn.textContent = "Nettoyage en cours... ⏳";
-            
+            const btn = this; btn.textContent = "Nettoyage en cours... ⏳";
             let promessesNettoyage = [];
-            
-            // 1. Supprimer le stockage du Service Worker (Fichiers HTML/CSS/JS)
-            if ('caches' in window) {
-                promessesNettoyage.push(
-                    caches.keys().then(names => Promise.all(names.map(name => caches.delete(name))))
-                );
-            }
-
-            // 2. Désinscrire le Service Worker
-            if ('serviceWorker' in navigator) {
-                promessesNettoyage.push(
-                    navigator.serviceWorker.getRegistrations().then(registrations => {
-                        return Promise.all(registrations.map(r => r.unregister()));
-                    })
-                );
-            }
-
-            // 3. Exécuter le nettoyage et recharger
-            Promise.all(promessesNettoyage).finally(() => {
-                alert("Le cache a été vidé avec succès. L'application va se relancer.");
-                window.location.reload(true);
+            if ('caches' in window) promessesNettoyage.push(caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))));
+            if ('serviceWorker' in navigator) promessesNettoyage.push(navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(registrations.map(r => r.unregister()))));
+            Promise.all(promessesNettoyage).finally(() => { 
+                afficherAlerte("Succès", "Le cache a été vidé. L'application va redémarrer.", true, () => { window.location.reload(true); });
             });
         });
+    </script>
+    <script>
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administration</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -40,7 +39,11 @@
         .btn-action:active { transform: scale(0.95); }
         .btn-action:disabled { background-color: #9CA3AF; cursor: not-allowed; transform: none; }
         .btn-export { background: linear-gradient(135deg, #10B981, #059669); }
+        
+        .btn-delete-cat { background: transparent; border: none; color: #FCA5A5; font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0; margin-left: 5px; transition: transform 0.2s; }
+        .btn-delete-cat:active { transform: scale(0.8); color: #EF4444; }
 
+        /* MODALES UNIFIÉES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
@@ -48,10 +51,13 @@
         .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
         .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
         .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
-        
-        /* 🌟 NOUVEAU STYLE : BOUTON CROIX ROUGE CATÉGORIE */
-        .btn-delete-cat { background: transparent; border: none; color: #FCA5A5; font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0; margin-left: 5px; transition: transform 0.2s; }
-        .btn-delete-cat:active { transform: scale(0.8); color: #EF4444; }
+
+        /* Boutons pour la confirmation (Oui/Non) */
+        .modal-buttons { display: flex; gap: 15px; }
+        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .btn-cancel:active { transform: scale(0.95); }
+        .btn-confirm-danger { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .btn-confirm-danger:active { background: #DC2626; transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -75,9 +81,7 @@
         <details>
             <summary>🏷️ Gérer les Catégories <span>▼</span></summary>
             <div class="content-box">
-                <div class="form-group">
-                    <input type="text" id="new-cat" placeholder="Nouvelle catégorie (ex: Céramique)">
-                </div>
+                <div class="form-group"><input type="text" id="new-cat" placeholder="Nouvelle catégorie (ex: Céramique)"></div>
                 <button class="btn-action" id="btn-add-cat" style="background-color: #10B981;">➕ Ajouter la catégorie</button>
                 <p style="font-size: 0.85rem; color: #9CA3AF; margin-top: 10px;">Catégories existantes :</p>
                 <div id="cat-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
@@ -130,18 +134,44 @@
         <div class="modal-content">
             <div class="modal-icon" id="modal-icon">✅</div>
             <h3 class="modal-title" id="modal-title">Succès</h3>
-            <p class="modal-message" id="modal-text">L'action a bien été effectuée.</p>
+            <p class="modal-message" id="modal-text">Action effectuée.</p>
             <button class="btn-modal-ok" id="btn-fermer-modal">OK</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="custom-confirm">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <h3 class="modal-title">Confirmation</h3>
+            <p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" id="btn-confirm-cancel">Annuler</button>
+                <button class="btn-confirm-danger" id="btn-confirm-ok">Confirmer</button>
+            </div>
         </div>
     </div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
-        const customModal = document.getElementById('custom-modal'); const modalIcon = document.getElementById('modal-icon'); const modalTitle = document.getElementById('modal-title'); const modalText = document.getElementById('modal-text');
+        
+        function afficherPopup(titre, message, isSuccess = true) {
+            document.getElementById('modal-icon').textContent = isSuccess ? "✅" : "⚠️";
+            document.getElementById('modal-title').textContent = titre;
+            document.getElementById('modal-text').textContent = message;
+            document.getElementById('custom-modal').style.display = 'flex';
+        }
+        document.getElementById('btn-fermer-modal').addEventListener('click', () => { document.getElementById('custom-modal').style.display = 'none'; });
 
-        function afficherPopup(titre, message, isSuccess = true) { modalIcon.textContent = isSuccess ? "✅" : "⚠️"; modalTitle.textContent = titre; modalText.textContent = message; customModal.style.display = 'flex'; }
-        document.getElementById('btn-fermer-modal').addEventListener('click', () => { customModal.style.display = 'none'; });
+        // Système de Confirmation Custom
+        let actionConfirmationCallback = null;
+        function afficherConfirmation(message, callback) {
+            document.getElementById('confirm-text').textContent = message;
+            actionConfirmationCallback = callback;
+            document.getElementById('custom-confirm').style.display = 'flex';
+        }
+        document.getElementById('btn-confirm-cancel').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; actionConfirmationCallback = null; });
+        document.getElementById('btn-confirm-ok').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; if(actionConfirmationCallback) actionConfirmationCallback(); });
 
         function chargerDashboard() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "get_dashboard" }) })
@@ -153,28 +183,28 @@
             });
         }
 
-        // 🌟 CHARGEMENT ET SUPPRESSION DES CATÉGORIES
+        // CHARGEMENT ET TRI CATÉGORIES
         function chargerCategories() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if(d.result === "success") {
+                    d.data.sort((a, b) => { if(a === "Non classé") return 1; if(b === "Non classé") return -1; return a.localeCompare(b); });
                     const zone = document.getElementById('cat-list'); zone.innerHTML = "";
                     d.data.forEach(c => {
                         zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:12px; font-size:0.85rem; display:inline-flex; align-items:center;">
-                            ${c} <button type="button" class="btn-delete-cat" onclick="supprimerCategorie('${c}')">×</button>
+                            ${c} <button type="button" class="btn-delete-cat" onclick="demanderSuppressionCategorie('${c}')">×</button>
                         </span>`;
                     });
                 }
             });
         }
 
-        function supprimerCategorie(catName) {
-            if(!confirm("Supprimer la catégorie : " + catName + " ?")) return;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_categorie", categorieToDelete: catName, ...payloadBase }) })
-            .then(r => r.json()).then(d => {
-                if(d.result === "success") { chargerCategories(); afficherPopup("Succès", "Catégorie supprimée."); }
+        window.demanderSuppressionCategorie = function(catName) {
+            afficherConfirmation("Voulez-vous vraiment supprimer la catégorie : " + catName + " ?", () => {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_categorie", categorieToDelete: catName, ...payloadBase }) })
+                .then(r => r.json()).then(d => { if(d.result === "success") { chargerCategories(); afficherPopup("Succès", "Catégorie supprimée."); } });
             });
-        }
+        };
 
         document.getElementById('btn-add-cat').addEventListener('click', function() {
             const cat = document.getElementById('new-cat').value.trim(); if(!cat) return;
@@ -186,32 +216,33 @@
             });
         });
 
-        // 🌟 CHARGEMENT ET SUPPRESSION DES UTILISATEURS
+        // CHARGEMENT ET TRI UTILISATEURS
         function chargerUtilisateurs() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "lister_utilisateurs" }) }).then(res => res.json()).then(data => {
                 if(data.result === "success") {
+                    data.data.sort((a,b) => a.login.localeCompare(b.login));
                     const select = document.getElementById('select-user'); select.innerHTML = '<option value="">-- Choisir un membre --</option>';
                     data.data.forEach(user => { if(user.login !== localStorage.getItem('app_login')) { select.innerHTML += `<option value="${user.login}" data-role="${user.role}">${user.login}</option>`; } });
                 }
             });
         }
-        
         document.getElementById('select-user').addEventListener('change', function(e) { const sel = e.target.options[e.target.selectedIndex]; if(sel && sel.value !== "") { document.getElementById('modif-role').value = sel.getAttribute('data-role'); } });
 
         document.getElementById('btn-delete-user').addEventListener('click', function() {
             const cible = document.getElementById('select-user').value;
             if(!cible) return afficherPopup("Attention", "Veuillez sélectionner un membre à supprimer.", false);
-            if(!confirm("⚠️ Attention : Êtes-vous sûr de vouloir supprimer définitivement le compte de " + cible + " ?")) return;
             
-            const btn = this; btn.textContent = "⏳"; btn.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "supprimer_utilisateur", targetLogin: cible }) })
-            .then(res => res.json()).then(data => {
-                if(data.result === "success") { afficherPopup("Compte supprimé", `L'utilisateur n'a plus d'accès.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); }
-                btn.textContent = "🗑️ Supprimer"; btn.disabled = false;
-            }).catch(err => { btn.textContent = "🗑️ Supprimer"; btn.disabled = false; });
+            afficherConfirmation("Êtes-vous sûr de vouloir supprimer définitivement le compte de " + cible + " ?", () => {
+                const btn = document.getElementById('btn-delete-user'); btn.textContent = "⏳"; btn.disabled = true;
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "supprimer_utilisateur", targetLogin: cible }) })
+                .then(res => res.json()).then(data => {
+                    if(data.result === "success") { afficherPopup("Compte supprimé", `L'utilisateur n'a plus d'accès.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); }
+                    btn.textContent = "🗑️ Supprimer"; btn.disabled = false;
+                }).catch(err => { btn.textContent = "🗑️ Supprimer"; btn.disabled = false; });
+            });
         });
 
-        // ACTIONS RESTANTES
+        // RESTE DU CODE (Création, Import, Export)
         document.getElementById('btn-import-mass').addEventListener('click', function() {
             let text = document.getElementById('csv-area').value.trim(); if(!text) return; let lignes = text.split('\n'); let objets = [];
             lignes.forEach(l => { let c = l.split(';'); if(c.length >= 3) objets.push({reference: c[0].trim(), nom: c[1].trim(), emplacement: c[2].trim(), categorie: c[3]?c[3].trim():"Non classé"}); });
@@ -258,7 +289,6 @@
 
         window.addEventListener('DOMContentLoaded', () => { chargerUtilisateurs(); chargerDashboard(); chargerCategories(); });
     </script>
-    
     <script>
         let timeoutId;
         document.addEventListener("visibilitychange", function() {

@@ -24,7 +24,6 @@
         #scanner-box { display: none; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; }
         #reader { width: 100%; border-radius: 8px; overflow: hidden; }
 
-        /* Bloc visuel du Mode Rafale */
         #bloc-rafale-liste { display: none; flex-direction: column; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 12px; margin-top: 15px; }
         .rafale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .rafale-count { background: #10B981; color: white; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
@@ -37,6 +36,11 @@
         .bg-missing { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid #EF4444; }
         .bg-wrong { background: rgba(245, 158, 11, 0.2); color: #FDE047; border: 1px solid #F59E0B; }
         .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #D1D5DB; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
+        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; margin-top: 15px; }
+        .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
     </style>
 </head>
 <body>
@@ -51,57 +55,50 @@
 
         <div id="scanner-box">
             <div id="reader"></div>
-
             <div id="bloc-rafale-liste">
-                <div class="rafale-header">
-                    <span>Objets pointés :</span>
-                    <span class="rafale-count" id="rafale-count">0</span>
-                </div>
+                <div class="rafale-header"><span>Objets pointés :</span><span class="rafale-count" id="rafale-count">0</span></div>
                 <div class="rafale-items" id="rafale-items"></div>
             </div>
-
             <button class="btn" id="btn-cloturer-audit" style="margin-top: 15px; background: #10B981;">📊 Terminer et générer le rapport</button>
         </div>
 
         <div class="report-section" id="bloc-rapport">
             <h2 style="font-size: 1.2rem; color: #60A5FA;">Résultat pour "<span id="nom-zone-rapport"></span>"</h2>
-            
-            <div class="badge-count bg-found">
-                <div>🟢 Confirmés sur place : <span id="count-trouve" style="float:right;">0</span></div>
-            </div>
-            
-            <div class="badge-count bg-missing">
-                <div>🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div>
-                <div class="item-list" id="list-manquants"></div>
-            </div>
-            
-            <div class="badge-count bg-wrong">
-                <div>🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div>
-                <div class="item-list" id="list-egares"></div>
-            </div>
-            
+            <div class="badge-count bg-found"><div>🟢 Confirmés sur place : <span id="count-trouve" style="float:right;">0</span></div></div>
+            <div class="badge-count bg-missing"><div>🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div><div class="item-list" id="list-manquants"></div></div>
+            <div class="badge-count bg-wrong"><div>🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div><div class="item-list" id="list-egares"></div></div>
             <button class="btn" onclick="window.location.reload()" style="background: transparent; border: 1px solid #D1D5DB;">Refaire un audit</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="custom-alert">
+        <div class="modal-content">
+            <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
+            <h3 style="font-size: 1.2rem; color: white; margin-bottom: 10px;" id="alert-title">Attention</h3>
+            <p style="color: #D1D5DB; font-size: 0.95rem; line-height: 1.4;" id="alert-message">Message.</p>
+            <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
         </div>
     </div>
 
     <script>
         let zoneCible = ""; let baseLocale = []; let scannedRefs = []; let scanner;
 
-        // 🌟 FONCTION DE NETTOYAGE (Enlève majuscules, espaces et accents pour éviter les fausses erreurs)
-        function normaliserTexte(txt) {
-            if (!txt) return "";
-            return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        function afficherAlerte(titre, message) {
+            document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('custom-alert').style.display = 'flex';
         }
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+
+        function normaliserTexte(txt) { if (!txt) return ""; return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
 
         document.getElementById('btn-demarrer-audit').addEventListener('click', function() {
             zoneCible = document.getElementById('input-zone').value;
-            if(!zoneCible.trim()) return alert("Spécifiez une zone.");
+            if(!zoneCible.trim()) return afficherAlerte("Attention", "Veuillez spécifier une zone.");
             
             if(localStorage.getItem('miroir_stock')) {
                 baseLocale = JSON.parse(localStorage.getItem('miroir_stock'));
                 ouvrirScannerAudit();
             } else {
-                alert("Base de données locale introuvable. Ouvrez la page d'accueil avec du réseau pour la synchroniser.");
+                afficherAlerte("Hors ligne", "Base de données locale introuvable. Ouvrez la page d'accueil avec du réseau pour la synchroniser.");
             }
         });
 
@@ -112,7 +109,7 @@
             
             scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
             scanner.render((text) => {
-                let ref = String(text).trim().toUpperCase(); // Forcer en texte pur
+                let ref = String(text).trim().toUpperCase(); 
                 if(!scannedRefs.includes(ref)) {
                     scannedRefs.push(ref);
                     if(navigator.vibrate) navigator.vibrate(150);
@@ -129,40 +126,27 @@
         document.getElementById('btn-cloturer-audit').addEventListener('click', function() {
             if(scanner) scanner.clear(); document.getElementById('scanner-box').style.display = 'none';
             document.getElementById('nom-zone-rapport').textContent = zoneCible;
-            
             let zoneCiblePropre = normaliserTexte(zoneCible);
             
-            // 🌟 FILTRAGE ULTRA ROBUSTE
             let attendusIci = baseLocale.filter(a => normaliserTexte(a.emplacement) === zoneCiblePropre && !a.estSorti);
             let trouves = 0; let manquants = []; let egares = [];
 
-            // Vérifier ce qui manque
-            attendusIci.forEach(a => { 
-                let dbRef = String(a.reference).trim().toUpperCase();
-                if(scannedRefs.includes(dbRef)) trouves++; 
-                else manquants.push(`${a.nom} (${a.reference})`); 
-            });
-
-            // Vérifier ce qui est égaré
+            attendusIci.forEach(a => { let dbRef = String(a.reference).trim().toUpperCase(); if(scannedRefs.includes(dbRef)) trouves++; else manquants.push(`${a.nom} (${a.reference})`); });
             scannedRefs.forEach(ref => {
                 let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
-                if(match) {
-                    if(normaliserTexte(match.emplacement) !== zoneCiblePropre) {
-                        egares.push(`${match.nom} (Prévu: ${match.emplacement})`);
-                    }
-                } else {
-                    egares.push(`Réf ${ref} (Inconnue en base)`);
-                }
+                if(match) { if(normaliserTexte(match.emplacement) !== zoneCiblePropre) { egares.push(`${match.nom} (Prévu: ${match.emplacement})`); } } else { egares.push(`Réf ${ref} (Inconnue en base)`); }
             });
 
-            document.getElementById('count-trouve').textContent = trouves;
-            document.getElementById('count-manquant').textContent = manquants.length;
-            document.getElementById('list-manquants').innerHTML = manquants.join('<br>') || "Aucun objet manquant.";
-            
-            document.getElementById('count-egare').textContent = egares.length;
-            document.getElementById('list-egares').innerHTML = egares.join('<br>') || "Aucun objet égaré.";
-            
+            document.getElementById('count-trouve').textContent = trouves; document.getElementById('count-manquant').textContent = manquants.length; document.getElementById('list-manquants').innerHTML = manquants.join('<br>') || "Aucun objet manquant.";
+            document.getElementById('count-egare').textContent = egares.length; document.getElementById('list-egares').innerHTML = egares.join('<br>') || "Aucun objet égaré.";
             document.getElementById('bloc-rapport').style.display = 'flex';
+        });
+    </script>
+    <script>
+        let timeoutId;
+        document.addEventListener("visibilitychange", function() {
+            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
+            else { clearTimeout(timeoutId); }
         });
     </script>
 </body>

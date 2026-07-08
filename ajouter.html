@@ -33,11 +33,18 @@
         .qr-preview { margin: 15px auto; width: 160px; height: 160px; background: white; padding: 10px; border-radius: 8px; border: 2px solid #D1D5DB; }
         .qr-preview img { width: 100%; height: 100%; }
         .hint { font-size: 0.8rem; color: #9CA3AF; margin-top: -3px; }
+
+        /* MODALE D'ALERTE */
+        .alert-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .alert-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
+        .alert-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-alert-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .btn-alert-ok:active { transform: scale(0.95); background-color: #2563EB; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Ajouter</h1></div>
+        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Ajouter / Corriger</h1></div>
 
         <form id="form-ajouter" class="form-action">
             <div class="form-group">
@@ -51,20 +58,16 @@
             </div>
             <div class="form-group">
                 <label for="categorie">Catégorie</label>
-                <select id="categorie" required>
-                    <option value="Non classé">Chargement des catégories...</option>
-                </select>
+                <select id="categorie" required><option value="Non classé">Chargement des catégories...</option></select>
             </div>
             <div class="form-group">
                 <label for="emplacement">Emplacement initial</label>
                 <input type="text" id="emplacement" placeholder="Ex: Réserve A" required>
             </div>
-            
             <div class="form-group">
                 <label for="note">Note / Commentaire (Optionnel)</label>
                 <textarea id="note" rows="3" placeholder="État, remarque particulière..."></textarea>
             </div>
-
             <button type="submit" class="btn-primary" id="btn-valider">💾 Enregistrer l'article</button>
         </form>
     </div>
@@ -73,16 +76,19 @@
         <div class="modal-content">
             <div style="font-size:3.5rem; margin-bottom:10px;">✅</div>
             <h3 style="color:white; margin-bottom:10px;" id="modal-titre">Enregistrement validé !</h3>
-            
-            <div class="qr-preview">
-                <img id="qr-image" src="" alt="QR Code">
-            </div>
-            
+            <div class="qr-preview"><img id="qr-image" src="" alt="QR Code"></div>
             <button type="button" class="btn-primary" id="btn-imprimer" style="margin-bottom:12px; background:#10B981;">🖨️ Imprimer le QR Code</button>
-            
             <button type="button" class="btn-primary" id="btn-corriger" style="margin-bottom:12px; background:#F59E0B;">✏️ Corriger une erreur</button>
-            
-            <button type="button" class="btn-primary" onclick="window.location.reload()" style="background:transparent; border:1px solid #D1D5DB;">Fermer et ajouter un autre</button>
+            <button type="button" class="btn-primary" onclick="window.location.reload()" style="background:transparent; border:1px solid #D1D5DB;">Fermer et continuer</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="custom-alert">
+        <div class="modal-content">
+            <div class="alert-icon" id="alert-icon">⚠️</div>
+            <h3 class="alert-title" id="alert-title">Attention</h3>
+            <p class="alert-message" id="alert-message">Message d'erreur ici.</p>
+            <button class="btn-alert-ok" id="btn-alert-ok">OK</button>
         </div>
     </div>
 
@@ -90,21 +96,28 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
 
-        // CHARGEMENT DES CATÉGORIES
+        // FONCTION POPUP CUSTOM
+        function afficherAlerte(titre, message, isSuccess = false) {
+            document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
+            document.getElementById('alert-title').textContent = titre;
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('custom-alert').style.display = 'flex';
+        }
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+
+        // CHARGEMENT ET TRI DES CATÉGORIES
         window.addEventListener('DOMContentLoaded', () => {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if (d.result === "success") {
-                    const catSelect = document.getElementById('categorie');
-                    catSelect.innerHTML = "";
-                    d.data.forEach(c => {
-                        let selected = (c === "Non classé") ? "selected" : "";
-                        catSelect.innerHTML += `<option value="${c}" ${selected}>${c}</option>`;
-                    });
+                    d.data.sort((a, b) => { if(a === "Non classé") return 1; if(b === "Non classé") return -1; return a.localeCompare(b); });
+                    const catSelect = document.getElementById('categorie'); catSelect.innerHTML = "";
+                    d.data.forEach(c => { let selected = (c === "Non classé") ? "selected" : ""; catSelect.innerHTML += `<option value="${c}" ${selected}>${c}</option>`; });
                     localStorage.setItem('app_categories', JSON.stringify(d.data));
                 }
             }).catch(() => {
                 let cats = JSON.parse(localStorage.getItem('app_categories') || '["Peinture", "Sculpture", "Mobilier", "Non classé"]');
+                cats.sort((a, b) => { if(a === "Non classé") return 1; if(b === "Non classé") return -1; return a.localeCompare(b); });
                 const catSelect = document.getElementById('categorie'); catSelect.innerHTML = "";
                 cats.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
             });
@@ -121,89 +134,45 @@
                 let nom = e.target.value.trim();
                 if (nom.length >= 3) {
                     let prefixe = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase();
-                    if(prefixe.length === 3) {
-                       let randomNum = Math.floor(1000 + Math.random() * 9000);
-                       refInput.value = prefixe + "-" + randomNum;
-                    }
-                } else {
-                    refInput.value = "";
-                }
+                    if(prefixe.length === 3) { let randomNum = Math.floor(1000 + Math.random() * 9000); refInput.value = prefixe + "-" + randomNum; }
+                } else { refInput.value = ""; }
             }
         });
 
         document.getElementById('form-ajouter').addEventListener('submit', function(e) {
             e.preventDefault();
             const refSaisie = refInput.value.trim().toUpperCase();
+            if(!refSaisie) return afficherAlerte("Attention", "Veuillez saisir une référence valide.");
             const btn = document.getElementById('btn-valider');
             btn.textContent = "Enregistrement... ⏳"; btn.disabled = true;
 
             fetch(GOOGLE_SCRIPT_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ 
-                    action: "ajouter",
-                    reference: refSaisie,
-                    nom: nomInput.value.trim(),
-                    categorie: document.getElementById('categorie').value,
-                    emplacement: document.getElementById('emplacement').value.trim(),
-                    note: document.getElementById('note').value.trim(),
-                    ...payloadBase
-                }) 
+                method: 'POST', body: JSON.stringify({ action: "ajouter", reference: refSaisie, nom: nomInput.value.trim(), categorie: document.getElementById('categorie').value, emplacement: document.getElementById('emplacement').value.trim(), note: document.getElementById('note').value.trim(), ...payloadBase }) 
             })
             .then(res => res.json()).then(data => {
                 if(data.result === "success") {
                     document.getElementById('qr-image').src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(refSaisie);
                     document.getElementById('modal-succes').style.display = 'flex';
                 } else if(data.result === "EXPIRED") { window.location.href = "login.html"; } 
-                else { alert("Erreur : " + data.message); btn.textContent = "💾 Enregistrer l'article"; btn.disabled = false; }
-            }).catch(err => { alert("Erreur réseau."); btn.textContent = "💾 Enregistrer l'article"; btn.disabled = false; });
+                else { afficherAlerte("Erreur", data.message); btn.textContent = "💾 Enregistrer l'article"; btn.disabled = false; }
+            }).catch(err => { afficherAlerte("Erreur", "Problème de connexion réseau."); btn.textContent = "💾 Enregistrer l'article"; btn.disabled = false; });
         });
 
-        // 🌟 RETOUR À LA MODIFICATION SANS PERDRE LES DONNÉES
         document.getElementById('btn-corriger').addEventListener('click', function() {
             document.getElementById('modal-succes').style.display = 'none';
-            // On désactive l'auto-génération pour que la référence reste fixée (ainsi le serveur l'écrasera proprement)
             isAutoRef = false; 
             document.getElementById('btn-valider').textContent = "💾 Enregistrer la correction";
             document.getElementById('btn-valider').disabled = false;
         });
 
-        // 🌟 IMPRESSION MOBILE-FRIENDLY VIA IFRAME INVISIBLE
         document.getElementById('btn-imprimer').addEventListener('click', function() {
-            const imgUrl = document.getElementById('qr-image').src;
-            const refImpression = refInput.value.trim().toUpperCase();
-            const nomImpression = nomInput.value.trim();
-            
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-            
+            const imgUrl = document.getElementById('qr-image').src; const refImpression = refInput.value.trim().toUpperCase(); const nomImpression = nomInput.value.trim();
+            const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
             const doc = iframe.contentWindow.document;
-            doc.write(`
-                <html>
-                <head>
-                    <title>Impression QR Code</title>
-                    <style>
-                        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
-                        h2 { margin: 0; font-size: 1.6rem; margin-bottom: 5px; }
-                        p { margin: 0; font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
-                        img { width: 200px; height: 200px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>${nomImpression}</h2>
-                    <p>${refImpression}</p>
-                    <img src="${imgUrl}" onload="window.print();" />
-                </body>
-                </html>
-            `);
-            doc.close();
-            
-            // Nettoyage de l'iframe après 3 secondes
-            setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+            doc.write(`<html><head><title>Impression QR Code</title><style>body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; } h2 { margin: 0; font-size: 1.6rem; margin-bottom: 5px; } p { margin: 0; font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; } img { width: 200px; height: 200px; }</style></head><body><h2>${nomImpression}</h2><p>${refImpression}</p><img src="${imgUrl}" onload="window.print();" /></body></html>`);
+            doc.close(); setTimeout(() => { document.body.removeChild(iframe); }, 3000);
         });
     </script>
-    
     <script>
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
