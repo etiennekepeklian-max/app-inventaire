@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Audit de Zone</title>
+    <title>Audit de Zone / Total</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <script>if (!localStorage.getItem('app_token')) window.location.href = 'login.html';</script>
@@ -16,9 +16,9 @@
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; margin-right: 15px; }
         h1 { font-size: 1.5rem; }
 
-        .zone-card { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; margin-bottom: 15px; }
-        .btn { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s; }
+        .zone-card { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 10px; }
+        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; margin-bottom: 5px; }
+        .btn { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
         .btn:active { transform: scale(0.95); }
 
         #scanner-box { display: none; background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; }
@@ -36,7 +36,8 @@
         .bg-missing { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid #EF4444; }
         .bg-wrong { background: rgba(245, 158, 11, 0.2); color: #FDE047; border: 1px solid #F59E0B; }
         .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #D1D5DB; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
-        
+
+        /* MODALE D'ALERTE */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
         .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; margin-top: 15px; }
@@ -45,32 +46,62 @@
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Audit de Zone</h1></div>
+        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Faire un Audit</h1></div>
         
-        <div class="zone-card" id="step-1">
-            <p style="margin-bottom: 10px; font-size: 0.95rem; color: #D1D5DB;">Entrez l'emplacement exact à auditer :</p>
-            <input type="text" id="input-zone" placeholder="Ex: Réserve C">
-            <button class="btn" id="btn-demarrer-audit">📋 Démarrer le pointage</button>
+        <!-- 🌟 ÉTAPE 1 : CHOIX DU TYPE D'AUDIT -->
+        <div class="zone-card" id="step-choix">
+            <h2 style="font-size: 1.1rem; color: #60A5FA; margin-bottom: 10px; text-align: center;">Choisissez le type d'audit</h2>
+            <button class="btn" id="btn-choix-zone" style="background: #3B82F6;">📍 Audit d'une zone précise</button>
+            <button class="btn" id="btn-choix-total" style="background: #8B5CF6;">🌍 Audit Total de l'inventaire</button>
         </div>
 
+        <!-- 🌟 ÉTAPE 1 BIS : SAISIE DE LA ZONE (Si choix 1) -->
+        <div class="zone-card" id="step-zone-input" style="display: none;">
+            <p style="font-size: 0.95rem; color: #D1D5DB;">Entrez l'emplacement exact à auditer :</p>
+            <input type="text" id="input-zone" placeholder="Ex: Réserve C">
+            <button class="btn" id="btn-demarrer-audit">📋 Démarrer le pointage</button>
+            <button class="btn" id="btn-retour-choix" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Annuler</button>
+        </div>
+
+        <!-- 🌟 ÉTAPE 2 : LE SCANNER -->
         <div id="scanner-box">
             <div id="reader"></div>
             <div id="bloc-rafale-liste">
-                <div class="rafale-header"><span>Objets pointés :</span><span class="rafale-count" id="rafale-count">0</span></div>
+                <div class="rafale-header">
+                    <span>Objets pointés :</span>
+                    <span class="rafale-count" id="rafale-count">0</span>
+                </div>
                 <div class="rafale-items" id="rafale-items"></div>
             </div>
             <button class="btn" id="btn-cloturer-audit" style="margin-top: 15px; background: #10B981;">📊 Terminer et générer le rapport</button>
         </div>
 
+        <!-- 🌟 ÉTAPE 3 : LE RAPPORT D'ANOMALIES -->
         <div class="report-section" id="bloc-rapport">
-            <h2 style="font-size: 1.2rem; color: #60A5FA;">Résultat pour "<span id="nom-zone-rapport"></span>"</h2>
-            <div class="badge-count bg-found"><div>🟢 Confirmés sur place : <span id="count-trouve" style="float:right;">0</span></div></div>
-            <div class="badge-count bg-missing"><div>🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div><div class="item-list" id="list-manquants"></div></div>
-            <div class="badge-count bg-wrong"><div>🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div><div class="item-list" id="list-egares"></div></div>
-            <button class="btn" onclick="window.location.reload()" style="background: transparent; border: 1px solid #D1D5DB;">Refaire un audit</button>
+            <h2 style="font-size: 1.2rem; color: #60A5FA;" id="titre-rapport">Résultat de l'Audit</h2>
+            
+            <div class="badge-count bg-found">
+                <div>🟢 Confirmés : <span id="count-trouve" style="float:right;">0</span></div>
+            </div>
+            
+            <div class="badge-count bg-missing">
+                <div id="label-manquants">🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div>
+                <div class="item-list" id="list-manquants"></div>
+            </div>
+            
+            <div class="badge-count bg-wrong">
+                <div id="label-egares">🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div>
+                <div class="item-list" id="list-egares"></div>
+            </div>
+            
+            <!-- 🖨️ NOUVEAU BOUTON D'IMPRESSION -->
+            <button class="btn" id="btn-imprimer-rapport" style="background: #10B981; margin-top: 10px;">🖨️ Imprimer le rapport d'anomalies</button>
+            
+            <button class="btn" onclick="window.location.reload()" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Refaire un audit</button>
         </div>
     </div>
 
+    <!-- MODALE D'ALERTE CUSTOM -->
     <div class="modal-overlay" id="custom-alert">
         <div class="modal-content">
             <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
@@ -81,29 +112,69 @@
     </div>
 
     <script>
-        let zoneCible = ""; let baseLocale = []; let scannedRefs = []; let scanner;
+        let typeAudit = ""; // "zone" ou "total"
+        let zoneCible = ""; 
+        let baseLocale = []; 
+        let scannedRefs = []; 
+        let scanner;
+        
+        // Stockage des listes pour le rapport à imprimer
+        let lastReportManquants = [];
+        let lastReportEgares = [];
 
+        // Système d'Alerte Custom
         function afficherAlerte(titre, message) {
-            document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('custom-alert').style.display = 'flex';
+            document.getElementById('alert-title').textContent = titre; 
+            document.getElementById('alert-message').textContent = message; 
+            document.getElementById('custom-alert').style.display = 'flex';
         }
-        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { 
+            document.getElementById('custom-alert').style.display = 'none'; 
+        });
 
-        function normaliserTexte(txt) { if (!txt) return ""; return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
+        function normaliserTexte(txt) { 
+            if (!txt) return ""; 
+            return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); 
+        }
+
+        // --- GESTION DES BOUTONS DE CHOIX ---
+        document.getElementById('btn-choix-zone').addEventListener('click', () => {
+            document.getElementById('step-choix').style.display = 'none';
+            document.getElementById('step-zone-input').style.display = 'flex';
+        });
+
+        document.getElementById('btn-retour-choix').addEventListener('click', () => {
+            document.getElementById('step-zone-input').style.display = 'none';
+            document.getElementById('step-choix').style.display = 'flex';
+            document.getElementById('input-zone').value = "";
+        });
+
+        document.getElementById('btn-choix-total').addEventListener('click', () => {
+            typeAudit = "total";
+            zoneCible = "Audit Total";
+            lancerProcessusScanner();
+        });
 
         document.getElementById('btn-demarrer-audit').addEventListener('click', function() {
+            typeAudit = "zone";
             zoneCible = document.getElementById('input-zone').value;
-            if(!zoneCible.trim()) return afficherAlerte("Attention", "Veuillez spécifier une zone.");
-            
+            if(!zoneCible.trim()) return afficherAlerte("Attention", "Veuillez spécifier le nom de la zone.");
+            lancerProcessusScanner();
+        });
+
+        function lancerProcessusScanner() {
             if(localStorage.getItem('miroir_stock')) {
                 baseLocale = JSON.parse(localStorage.getItem('miroir_stock'));
                 ouvrirScannerAudit();
             } else {
-                afficherAlerte("Hors ligne", "Base de données locale introuvable. Ouvrez la page d'accueil avec du réseau pour la synchroniser.");
+                afficherAlerte("Hors ligne", "Base de données locale introuvable. Ouvrez la page d'accueil avec du réseau pour la synchroniser en arrière-plan.");
             }
-        });
+        }
 
+        // --- LE SCANNER ---
         function ouvrirScannerAudit() {
-            document.getElementById('step-1').style.display = 'none';
+            document.getElementById('step-choix').style.display = 'none';
+            document.getElementById('step-zone-input').style.display = 'none';
             document.getElementById('scanner-box').style.display = 'block';
             document.getElementById('bloc-rafale-liste').style.display = 'flex'; 
             
@@ -123,30 +194,140 @@
             });
         }
 
+        // --- GÉNÉRATION DU RAPPORT DE FIN ---
         document.getElementById('btn-cloturer-audit').addEventListener('click', function() {
-            if(scanner) scanner.clear(); document.getElementById('scanner-box').style.display = 'none';
-            document.getElementById('nom-zone-rapport').textContent = zoneCible;
-            let zoneCiblePropre = normaliserTexte(zoneCible);
+            if(scanner) scanner.clear(); 
+            document.getElementById('scanner-box').style.display = 'none';
+            document.getElementById('titre-rapport').textContent = (typeAudit === "total") ? "Résultat de l'Audit Total" : `Résultat pour "${zoneCible}"`;
             
-            let attendusIci = baseLocale.filter(a => normaliserTexte(a.emplacement) === zoneCiblePropre && !a.estSorti);
-            let trouves = 0; let manquants = []; let egares = [];
+            lastReportManquants = [];
+            lastReportEgares = [];
+            let trouves = 0; 
+            
+            if (typeAudit === "zone") {
+                // LOGIQUE AUDIT DE ZONE
+                let zoneCiblePropre = normaliserTexte(zoneCible);
+                let attendusIci = baseLocale.filter(a => normaliserTexte(a.emplacement) === zoneCiblePropre && !a.estSorti);
 
-            attendusIci.forEach(a => { let dbRef = String(a.reference).trim().toUpperCase(); if(scannedRefs.includes(dbRef)) trouves++; else manquants.push(`${a.nom} (${a.reference})`); });
-            scannedRefs.forEach(ref => {
-                let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
-                if(match) { if(normaliserTexte(match.emplacement) !== zoneCiblePropre) { egares.push(`${match.nom} (Prévu: ${match.emplacement})`); } } else { egares.push(`Réf ${ref} (Inconnue en base)`); }
-            });
+                attendusIci.forEach(a => { 
+                    let dbRef = String(a.reference).trim().toUpperCase();
+                    if(scannedRefs.includes(dbRef)) trouves++; 
+                    else lastReportManquants.push(`${a.nom} (${a.reference})`); 
+                });
 
-            document.getElementById('count-trouve').textContent = trouves; document.getElementById('count-manquant').textContent = manquants.length; document.getElementById('list-manquants').innerHTML = manquants.join('<br>') || "Aucun objet manquant.";
-            document.getElementById('count-egare').textContent = egares.length; document.getElementById('list-egares').innerHTML = egares.join('<br>') || "Aucun objet égaré.";
+                scannedRefs.forEach(ref => {
+                    let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
+                    if(match) {
+                        if(normaliserTexte(match.emplacement) !== zoneCiblePropre) {
+                            lastReportEgares.push(`${match.nom} (Prévu: ${match.emplacement})`);
+                        }
+                    } else {
+                        lastReportEgares.push(`Réf ${ref} (Inconnue en base)`);
+                    }
+                });
+                document.getElementById('label-egares').innerHTML = `🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">${lastReportEgares.length}</span>`;
+
+            } else {
+                // LOGIQUE AUDIT TOTAL
+                // Tout ce qui n'est pas "Sorti" est censé être scanné
+                let attendusPartout = baseLocale.filter(a => !a.estSorti);
+
+                attendusPartout.forEach(a => {
+                    let dbRef = String(a.reference).trim().toUpperCase();
+                    if(scannedRefs.includes(dbRef)) trouves++;
+                    else lastReportManquants.push(`${a.nom} (${a.reference}) - Prévu: ${a.emplacement}`);
+                });
+
+                scannedRefs.forEach(ref => {
+                    let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
+                    if(!match) {
+                        lastReportEgares.push(`Réf ${ref} (Inconnue en base)`);
+                    } else if (match.estSorti) {
+                        // Il a été scanné physiquement, mais dans la base il est marqué comme "Sorti"
+                        lastReportEgares.push(`${match.nom} (${ref}) - Normalement "Sorti"`);
+                    }
+                });
+                document.getElementById('label-egares').innerHTML = `🟡 Inconnus ou Sortis : <span id="count-egare" style="float:right;">${lastReportEgares.length}</span>`;
+            }
+
+            // AFFICHAGE DES RÉSULTATS
+            document.getElementById('count-trouve').textContent = trouves;
+            document.getElementById('count-manquant').textContent = lastReportManquants.length;
+            document.getElementById('list-manquants').innerHTML = lastReportManquants.join('<br>') || "Aucun objet manquant.";
+            
+            document.getElementById('list-egares').innerHTML = lastReportEgares.join('<br>') || "Aucune anomalie.";
+            
             document.getElementById('bloc-rapport').style.display = 'flex';
         });
+
+        // --- IMPRESSION DU RAPPORT D'ANOMALIES ---
+        document.getElementById('btn-imprimer-rapport').addEventListener('click', function() {
+            let titreHtml = (typeAudit === 'total') ? "Rapport d'Audit Total de l'Inventaire" : `Rapport d'Audit : ${zoneCible}`;
+            let titreEgaresHtml = (typeAudit === 'total') ? "Inconnus ou déclarés 'Sortis'" : "Égarés (Mal rangés)";
+            
+            let listManquantsHtml = lastReportManquants.length > 0 
+                ? lastReportManquants.map(m => `<li>${m}</li>`).join('') 
+                : "<li>Aucun objet manquant. Parfait !</li>";
+                
+            let listEgaresHtml = lastReportEgares.length > 0 
+                ? lastReportEgares.map(e => `<li>${e}</li>`).join('') 
+                : "<li>Aucune anomalie constatée.</li>";
+
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document;
+            
+            doc.write(`
+                <html>
+                <head>
+                    <title>Rapport d'Anomalies</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.4; }
+                        h1 { color: #1A2B56; border-bottom: 2px solid #1A2B56; padding-bottom: 10px; font-size: 1.5rem; }
+                        h2 { margin-top: 25px; font-size: 1.2rem; }
+                        .text-red { color: #DC2626; }
+                        .text-orange { color: #D97706; }
+                        ul { margin-top: 10px; background: #f9f9f9; padding: 15px 30px; border-radius: 8px; border: 1px solid #eee; }
+                        li { margin-bottom: 8px; font-size: 1rem; }
+                        .footer { margin-top: 40px; font-size: 0.9rem; color: #666; font-style: italic; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${titreHtml}</h1>
+                    <p><b>Date :</b> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+                    
+                    <h2 class="text-red">🔴 Objets Manquants (${lastReportManquants.length})</h2>
+                    <ul>${listManquantsHtml}</ul>
+                    
+                    <h2 class="text-orange">🟡 Objets ${titreEgaresHtml} (${lastReportEgares.length})</h2>
+                    <ul>${listEgaresHtml}</ul>
+
+                    <p class="footer">Rapport généré automatiquement par l'application Gestion de Stock.</p>
+                    
+                    <script>window.onload = function() { window.print(); }<\/script>
+                </body>
+                </html>
+            `);
+            doc.close();
+            
+            // Nettoyage de l'iframe après 3 secondes
+            setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+        });
     </script>
+    
+    <!-- 🔒 SÉCURITÉ : DÉCONNEXION APRÈS 30s EN ARRIÈRE-PLAN -->
     <script>
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
-            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
-            else { clearTimeout(timeoutId); }
+            if (document.hidden) {
+                timeoutId = setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = "login.html";
+                }, 30000); 
+            } else {
+                clearTimeout(timeoutId);
+            }
         });
     </script>
 </body>

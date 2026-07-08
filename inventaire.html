@@ -66,7 +66,6 @@
         <div class="header"><a href="index.html" class="btn-header">⬅</a><h1 id="titre-page">Inventaire</h1><button id="btn-toggle-vue" class="btn-header">🕒</button></div>
         <div id="vue-inventaire">
             <div class="filtres-pilules" id="tri-inventaire">
-                <!-- LE TRI PAR DÉFAUT EST MAINTENANT SUR LA DATE -->
                 <button class="btn-pilule" data-sort="nom">🔤 Nom</button>
                 <button class="btn-pilule" data-sort="categorie">🏷️ Catégorie</button>
                 <button class="btn-pilule" data-sort="emplacement">📍 Emplacement</button>
@@ -95,7 +94,6 @@
         </div>
     </div>
 
-    <!-- MODALE D'ALERTE -->
     <div class="modal-overlay" id="custom-alert">
         <div class="modal-content">
             <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
@@ -115,9 +113,40 @@
         function afficherAlerte(titre, message) { document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('custom-alert').style.display = 'flex'; }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
+        // 🌟 FONCTION GLOBALE POUR IMPRIMER LE QR DEPUIS LA FICHE
+        window.imprimerQRCode = function(refEncoded, nomEncoded) {
+            const ref = decodeURIComponent(refEncoded);
+            const nom = decodeURIComponent(nomEncoded);
+            const imgUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(ref);
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document;
+            doc.write(`
+                <html>
+                <head>
+                    <title>Impression QR Code</title>
+                    <style>
+                        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
+                        h2 { margin: 0; font-size: 1.6rem; margin-bottom: 5px; }
+                        p { margin: 0; font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
+                        img { width: 200px; height: 200px; }
+                    </style>
+                </head>
+                <body>
+                    <h2>${nom}</h2>
+                    <p>${ref}</p>
+                    <img src="${imgUrl}" onload="window.print();" />
+                </body>
+                </html>
+            `);
+            doc.close();
+            setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+        };
+
         const vueInventaire = document.getElementById('vue-inventaire'); const vueHistorique = document.getElementById('vue-historique'); const btnToggleVue = document.getElementById('btn-toggle-vue'); const titrePage = document.getElementById('titre-page'); const loaderInv = document.getElementById('loader-inv'); const listeInventaire = document.getElementById('liste-inventaire'); const compteurTexte = document.getElementById('compteur-texte'); const searchBar = document.getElementById('search-bar'); const emptyInv = document.getElementById('empty-inv'); const loaderHist = document.getElementById('loader-hist'); const listeHistorique = document.getElementById('liste-historique'); const emptyHist = document.getElementById('empty-hist'); const vueDetails = document.getElementById('vue-details');
         
-        // 🌟 LES NOUVELLES VARIABLES DE TRI (Date, par défaut décroissant/le plus récent en premier)
         let vueActuelle = "inventaire"; let historiquesData = []; let articlesData = []; let currentFilterHist = "Tous"; 
         let currentSortInv = "date"; 
         let sortAsc = false; 
@@ -158,7 +187,40 @@
         
         document.getElementById('btn-retour-liste').addEventListener('click', function() { vueDetails.style.display = 'none'; vueInventaire.style.display = 'flex'; });
         function ouvrirFicheObjet(ref, articleLocal) { vueInventaire.style.display = 'none'; vueDetails.style.display = 'flex'; document.getElementById('detail-nom').textContent = articleLocal.nom; document.getElementById('detail-contenu').innerHTML = "<p style='text-align:center; color:#60A5FA; margin-top:20px;'>Récupération des détails... ⏳</p>"; window.scrollTo(0,0); if (navigator.onLine) { fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), reference: ref }) }).then(res => res.json()).then(item => { if (item.result === "success") renderFicheHtml(ref, item); else renderFicheHtml(ref, articleLocal); }).catch(() => renderFicheHtml(ref, articleLocal)); } else { renderFicheHtml(ref, articleLocal); } }
-        function renderFicheHtml(ref, item) { const detailContenu = document.getElementById('detail-contenu'); const refRow = `<p>Référence : <span class="valeur">${ref} <button class="btn-copy" onclick="copierTexte('${ref}', event)">${SVG_COPY}</button></span></p>`; if (localStorage.getItem('app_role') === 'admin') { let dateFormatee = item.dateAjout || item.date ? new Date(item.dateAjout || item.date).toLocaleDateString('fr-FR') : "Inconnue"; let dateSortieFormatee = item.estSorti ? "le " + (item.dateSortie ? new Date(item.dateSortie).toLocaleDateString('fr-FR') : "Inconnue") : "En stock actif"; let statutColor = item.estSorti ? "#EF4444" : "#FFFFFF"; let notesHtml = `<h4 style="font-size:0.9rem; margin-top:15px; color:#9CA3AF;">📝 Notes & Incidents</h4><div class="notes-area">${item.notes || "Aucune note consignée."}</div>`; detailContenu.innerHTML = refRow + `<p>Catégorie : <span class="valeur">${item.categorie || "Non classé"}</span></p><p>Emplacement : <span class="valeur">${item.emplacement}</span></p><p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p><p>Créé par : <span class="valeur">${item.utilisateur || "Inconnu"}</span></p><p>Statut sortie : <span class="valeur" style="color:${statutColor};">${dateSortieFormatee}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>${notesHtml}<button class="btn-primary" style="margin-top:10px;padding:12px;font-size:1rem;background:#8B5CF6;" onclick="window.location.search='?ref=${ref}'">🕒 Suivre l'historique complet</button>`; } else { detailContenu.innerHTML = refRow + `<p>Nom de l'objet : <span class="valeur">${item.nom}</span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>`; } }
+        
+        function renderFicheHtml(ref, item) { 
+            const detailContenu = document.getElementById('detail-contenu'); 
+            const refRow = `<p>Référence : <span class="valeur">${ref} <button class="btn-copy" onclick="copierTexte('${ref}', event)">${SVG_COPY}</button></span></p>`; 
+            
+            // On encode pour éviter que des guillemets dans le nom cassent le onClick
+            const safeRef = encodeURIComponent(ref);
+            const safeNom = encodeURIComponent(item.nom || "");
+            
+            if (localStorage.getItem('app_role') === 'admin') { 
+                let dateFormatee = item.dateAjout || item.date ? new Date(item.dateAjout || item.date).toLocaleDateString('fr-FR') : "Inconnue"; 
+                let dateSortieFormatee = item.estSorti ? "le " + (item.dateSortie ? new Date(item.dateSortie).toLocaleDateString('fr-FR') : "Inconnue") : "En stock actif"; 
+                let statutColor = item.estSorti ? "#EF4444" : "#FFFFFF"; 
+                let notesHtml = `<h4 style="font-size:0.9rem; margin-top:15px; color:#9CA3AF;">📝 Notes & Incidents</h4><div class="notes-area">${item.notes || "Aucune note consignée."}</div>`; 
+                
+                detailContenu.innerHTML = refRow + `
+                    <p>Catégorie : <span class="valeur">${item.categorie || "Non classé"}</span></p>
+                    <p>Emplacement : <span class="valeur">${item.emplacement}</span></p>
+                    <p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p>
+                    <p>Créé par : <span class="valeur">${item.utilisateur || "Inconnu"}</span></p>
+                    <p>Statut sortie : <span class="valeur" style="color:${statutColor};">${dateSortieFormatee}</span></p>
+                    <p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p>
+                    <p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>
+                    ${notesHtml}
+                    <button class="btn-primary" style="margin-top:10px;padding:12px;font-size:1rem;background:#10B981;" onclick="imprimerQRCode('${safeRef}', '${safeNom}')">🖨️ Imprimer l'étiquette QR</button>
+                    <button class="btn-primary" style="margin-top:10px;padding:12px;font-size:1rem;background:#8B5CF6;" onclick="window.location.search='?ref=${ref}'">🕒 Suivre l'historique complet</button>`; 
+            } else { 
+                detailContenu.innerHTML = refRow + `
+                    <p>Nom de l'objet : <span class="valeur">${item.nom}</span></p>
+                    <p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>
+                    <button class="btn-primary" style="margin-top:15px;padding:12px;font-size:1rem;background:#10B981;" onclick="imprimerQRCode('${safeRef}', '${safeNom}')">🖨️ Imprimer l'étiquette QR</button>
+                `; 
+            } 
+        }
         
         function chargerHistoriqueFiltre(filtreRef) { loaderHist.style.display = 'block'; listeHistorique.innerHTML = ""; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_historique", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) }).then(res => res.json()).then(data => { if (data.result === "success") { loaderHist.style.display = 'none'; historiquesData = data.data; if(filtreRef) { document.getElementById('filtre-historique').style.display = 'none'; historiquesData = historiquesData.filter(log => log.reference === filtreRef); } afficherLogs(); } }); }
         document.querySelectorAll('#filtre-historique .btn-pilule').forEach(btn => { btn.addEventListener('click', function() { document.querySelectorAll('#filtre-historique .btn-pilule').forEach(b => b.classList.remove('active')); this.classList.add('active'); currentFilterHist = this.getAttribute('data-filter'); afficherLogs(); }); });

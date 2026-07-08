@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administration</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -32,6 +33,7 @@
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.9rem; color: #D1D5DB; }
         input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; }
+        input[type="file"] { padding: 9px; cursor: pointer; }
         input:focus, select:focus, textarea:focus { border-color: #60A5FA; }
         option { background-color: #1A2B56; color: white; }
         
@@ -78,21 +80,25 @@
             </div>
         </details>
 
+        <!-- 🌟 GESTION DES CATÉGORIES -->
         <details>
             <summary>🏷️ Gérer les Catégories <span>▼</span></summary>
             <div class="content-box">
-                <div class="form-group"><input type="text" id="new-cat" placeholder="Nouvelle catégorie (ex: Céramique)"></div>
+                <div class="form-group">
+                    <input type="text" id="new-cat" placeholder="Nouvelle catégorie (ex: Céramique)">
+                </div>
                 <button class="btn-action" id="btn-add-cat" style="background-color: #10B981;">➕ Ajouter la catégorie</button>
                 <p style="font-size: 0.85rem; color: #9CA3AF; margin-top: 10px;">Catégories existantes :</p>
                 <div id="cat-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
             </div>
         </details>
 
+        <!-- 🌟 NOUVEAU : IMPORTATION CSV VIA FICHIER -->
         <details>
             <summary>📥 Importation CSV en masse <span>▼</span></summary>
             <div class="content-box">
-                <p style="font-size:0.85rem; color:#D1D5DB;">Copiez/collez ici jusqu'à 500 lignes. Le format <b>DOIT</b> être :<br><i>reference;nom;emplacement;categorie</i></p>
-                <textarea id="csv-area" rows="6" placeholder="ART-01;Peinture bleue;Réserve A;Peinture" style="font-family:monospace; font-size:0.85rem;"></textarea>
+                <p style="font-size:0.85rem; color:#D1D5DB;">Sélectionnez votre fichier CSV (Jusqu'à 500 lignes).<br>Format : <b>reference;nom;emplacement;categorie</b></p>
+                <input type="file" id="csv-file" accept=".csv" />
                 <button class="btn-action btn-export" id="btn-import-mass">Lancer l'import groupé</button>
             </div>
         </details>
@@ -104,6 +110,7 @@
             </div>
         </details>
 
+        <!-- 🌟 GÉRER L'ÉQUIPE -->
         <details>
             <summary>👥 Gérer l'équipe <span>▼</span></summary>
             <div class="content-box">
@@ -130,15 +137,17 @@
         </details>
     </div>
 
+    <!-- MODALE INFO STANDARD -->
     <div class="modal-overlay" id="custom-modal">
         <div class="modal-content">
             <div class="modal-icon" id="modal-icon">✅</div>
             <h3 class="modal-title" id="modal-title">Succès</h3>
-            <p class="modal-message" id="modal-text">Action effectuée.</p>
+            <p class="modal-message" id="modal-text">L'action a bien été effectuée.</p>
             <button class="btn-modal-ok" id="btn-fermer-modal">OK</button>
         </div>
     </div>
 
+    <!-- MODALE CONFIRMATION -->
     <div class="modal-overlay" id="custom-confirm">
         <div class="modal-content">
             <div class="modal-icon">⚠️</div>
@@ -226,6 +235,7 @@
                 }
             });
         }
+        
         document.getElementById('select-user').addEventListener('change', function(e) { const sel = e.target.options[e.target.selectedIndex]; if(sel && sel.value !== "") { document.getElementById('modif-role').value = sel.getAttribute('data-role'); } });
 
         document.getElementById('btn-delete-user').addEventListener('click', function() {
@@ -242,17 +252,61 @@
             });
         });
 
-        // RESTE DU CODE (Création, Import, Export)
+        // 🌟 IMPORTATION CSV VIA INPUT FILE
         document.getElementById('btn-import-mass').addEventListener('click', function() {
-            let text = document.getElementById('csv-area').value.trim(); if(!text) return; let lignes = text.split('\n'); let objets = [];
-            lignes.forEach(l => { let c = l.split(';'); if(c.length >= 3) objets.push({reference: c[0].trim(), nom: c[1].trim(), emplacement: c[2].trim(), categorie: c[3]?c[3].trim():"Non classé"}); });
-            if(objets.length === 0) return afficherPopup("Erreur", "Format invalide.", false);
-            this.textContent = "Import en cours... ⏳"; this.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "bulk_import", items: objets, ...payloadBase }) })
-            .then(res => res.json()).then(data => {
-                if(data.result === "success") { afficherPopup("Import réussi", `${data.count} objets ajoutés !`); document.getElementById('csv-area').value = ""; chargerDashboard(); } else afficherPopup("Erreur", data.message, false);
-                this.textContent = "Lancer l'import groupé"; this.disabled = false;
-            });
+            const fileInput = document.getElementById('csv-file');
+            if (!fileInput.files.length) return afficherPopup("Attention", "Veuillez sélectionner un fichier CSV.", false);
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                let text = e.target.result.trim();
+                if (!text) return afficherPopup("Erreur", "Le fichier est vide.", false);
+                
+                let lignes = text.split('\n'); 
+                let objets = [];
+                lignes.forEach(l => { 
+                    let c = l.split(';'); 
+                    if(c.length >= 3) {
+                        objets.push({
+                            reference: c[0].trim(), 
+                            nom: c[1].trim(), 
+                            emplacement: c[2].trim(), 
+                            categorie: c[3] ? c[3].trim() : "Non classé"
+                        }); 
+                    }
+                });
+                
+                if(objets.length === 0) return afficherPopup("Erreur", "Format invalide ou fichier vide.", false);
+                
+                const btn = document.getElementById('btn-import-mass');
+                btn.textContent = "Import en cours... ⏳"; 
+                btn.disabled = true;
+                
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "bulk_import", items: objets, ...payloadBase }) })
+                .then(res => res.json()).then(data => {
+                    if(data.result === "success") { 
+                        afficherPopup("Import réussi", `${data.count} objets ajoutés !`); 
+                        document.getElementById('csv-file').value = ""; 
+                        chargerDashboard(); 
+                    } else {
+                        afficherPopup("Erreur", data.message, false);
+                    }
+                    btn.textContent = "Lancer l'import groupé"; 
+                    btn.disabled = false;
+                }).catch(err => {
+                    afficherPopup("Erreur", "Problème réseau.", false);
+                    btn.textContent = "Lancer l'import groupé"; 
+                    btn.disabled = false;
+                });
+            };
+            
+            reader.onerror = function() {
+                afficherPopup("Erreur", "Impossible de lire le fichier.", false);
+            };
+            
+            reader.readAsText(file);
         });
 
         document.getElementById('form-creer').addEventListener('submit', function(e) {
