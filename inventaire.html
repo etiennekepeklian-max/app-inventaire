@@ -66,10 +66,11 @@
         <div class="header"><a href="index.html" class="btn-header">⬅</a><h1 id="titre-page">Inventaire</h1><button id="btn-toggle-vue" class="btn-header">🕒</button></div>
         <div id="vue-inventaire">
             <div class="filtres-pilules" id="tri-inventaire">
-                <button class="btn-pilule active" data-sort="nom">🔤 Nom</button>
+                <!-- LE TRI PAR DÉFAUT EST MAINTENANT SUR LA DATE -->
+                <button class="btn-pilule" data-sort="nom">🔤 Nom</button>
                 <button class="btn-pilule" data-sort="categorie">🏷️ Catégorie</button>
                 <button class="btn-pilule" data-sort="emplacement">📍 Emplacement</button>
-                <button class="btn-pilule" data-sort="date">📅 Date d'ajout</button>
+                <button class="btn-pilule active" data-sort="date">📅 Date d'ajout</button>
             </div>
             <div class="search-container"><input type="text" id="search-bar" class="search-bar" placeholder="Rechercher..."></div>
             <div class="compteur" id="compteur-texte">Chargement...</div>
@@ -94,6 +95,7 @@
         </div>
     </div>
 
+    <!-- MODALE D'ALERTE -->
     <div class="modal-overlay" id="custom-alert">
         <div class="modal-content">
             <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
@@ -114,7 +116,11 @@
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
         const vueInventaire = document.getElementById('vue-inventaire'); const vueHistorique = document.getElementById('vue-historique'); const btnToggleVue = document.getElementById('btn-toggle-vue'); const titrePage = document.getElementById('titre-page'); const loaderInv = document.getElementById('loader-inv'); const listeInventaire = document.getElementById('liste-inventaire'); const compteurTexte = document.getElementById('compteur-texte'); const searchBar = document.getElementById('search-bar'); const emptyInv = document.getElementById('empty-inv'); const loaderHist = document.getElementById('loader-hist'); const listeHistorique = document.getElementById('liste-historique'); const emptyHist = document.getElementById('empty-hist'); const vueDetails = document.getElementById('vue-details');
-        let vueActuelle = "inventaire"; let historiquesData = []; let articlesData = []; let currentFilterHist = "Tous"; let currentSortInv = "nom"; let sortAsc = true;
+        
+        // 🌟 LES NOUVELLES VARIABLES DE TRI (Date, par défaut décroissant/le plus récent en premier)
+        let vueActuelle = "inventaire"; let historiquesData = []; let articlesData = []; let currentFilterHist = "Tous"; 
+        let currentSortInv = "date"; 
+        let sortAsc = false; 
         
         window.addEventListener('DOMContentLoaded', function() { const urlParams = new URLSearchParams(window.location.search); const refCible = urlParams.get('ref'); if (refCible) { vueInventaire.style.display = 'none'; vueHistorique.style.display = 'flex'; titrePage.textContent = "Suivi " + refCible; btnToggleVue.textContent = "📦"; vueActuelle = "historique"; chargerHistoriqueFiltre(refCible); } else { chargerInventaire(); } });
         btnToggleVue.addEventListener('click', function() { if (vueActuelle === "inventaire") { vueInventaire.style.display = 'none'; vueDetails.style.display = 'none'; vueHistorique.style.display = 'flex'; titrePage.textContent = "Historique"; btnToggleVue.textContent = "📦"; vueActuelle = "historique"; chargerHistoriqueFiltre(null); } else { window.location.search = ""; } });
@@ -123,7 +129,31 @@
         
         document.querySelectorAll('#tri-inventaire .btn-pilule').forEach(btn => { btn.addEventListener('click', function() { const critere = this.getAttribute('data-sort'); if (currentSortInv === critere) sortAsc = !sortAsc; else { currentSortInv = critere; sortAsc = true; } document.querySelectorAll('#tri-inventaire .btn-pilule').forEach(b => b.classList.remove('active')); this.classList.add('active'); trierEtAfficherInventaire(); }); });
         searchBar.addEventListener('input', trierEtAfficherInventaire);
-        function trierEtAfficherInventaire() { const terme = searchBar.value.toLowerCase().trim(); let listFiltree = articlesData.filter(a => { const nomSafe = String(a.nom || "").toLowerCase(); const refSafe = String(a.reference || "").toLowerCase(); const empSafe = String(a.emplacement || "").toLowerCase(); const catSafe = String(a.categorie || "").toLowerCase(); return nomSafe.includes(terme) || refSafe.includes(terme) || empSafe.includes(terme) || catSafe.includes(terme); }); listFiltree.sort((a, b) => { let valA = a[currentSortInv] || ""; let valB = b[currentSortInv] || ""; if (currentSortInv === 'date') { valA = new Date(a.date).getTime() || 0; valB = new Date(b.date).getTime() || 0; } else { valA = valA.toString().toLowerCase(); valB = valB.toString().toLowerCase(); } if (valA < valB) return sortAsc ? -1 : 1; if (valA > valB) return sortAsc ? 1 : -1; return 0; }); afficherArticles(listFiltree); }
+        
+        function trierEtAfficherInventaire() { 
+            const terme = searchBar.value.toLowerCase().trim(); 
+            let listFiltree = articlesData.filter(a => { 
+                const nomSafe = String(a.nom || "").toLowerCase(); const refSafe = String(a.reference || "").toLowerCase(); const empSafe = String(a.emplacement || "").toLowerCase(); const catSafe = String(a.categorie || "").toLowerCase(); 
+                return nomSafe.includes(terme) || refSafe.includes(terme) || empSafe.includes(terme) || catSafe.includes(terme); 
+            }); 
+            
+            listFiltree.sort((a, b) => { 
+                let valA = a[currentSortInv] || ""; let valB = b[currentSortInv] || ""; 
+                if (currentSortInv === 'date') { 
+                    valA = new Date(a.date).getTime() || 0; 
+                    valB = new Date(b.date).getTime() || 0; 
+                } else { 
+                    valA = valA.toString().toLowerCase(); 
+                    valB = valB.toString().toLowerCase(); 
+                } 
+                if (valA < valB) return sortAsc ? -1 : 1; 
+                if (valA > valB) return sortAsc ? 1 : -1; 
+                return 0; 
+            }); 
+            
+            afficherArticles(listFiltree); 
+        }
+        
         function afficherArticles(articles) { listeInventaire.innerHTML = ""; if (articles.length === 0) { compteurTexte.textContent = "0 trouvé"; emptyInv.style.display = 'block'; return; } compteurTexte.textContent = `${articles.length} article(s)`; emptyInv.style.display = 'none'; articles.forEach(article => { const card = document.createElement('div'); card.className = 'item-card'; let dStr = article.date ? "le " + new Date(article.date).toLocaleDateString('fr-FR') : ""; card.innerHTML = `<div class="item-header"><span class="item-nom">${article.nom}</span><div class="badges-container"><span class="item-cat">🎨 ${article.categorie || "Non classé"}</span><span class="item-ref">${article.reference} <button class="btn-copy" onclick="copierTexte('${article.reference}', event)">${SVG_COPY}</button></span></div></div><div class="item-emplacement">📍 ${article.emplacement}</div><div class="item-footer"><span>Par : ${article.utilisateur}</span><span>${dStr}</span></div>`; card.addEventListener('click', (e) => { if (e.target.closest('.btn-copy')) return; ouvrirFicheObjet(article.reference, article); }); listeInventaire.appendChild(card); }); }
         
         document.getElementById('btn-retour-liste').addEventListener('click', function() { vueDetails.style.display = 'none'; vueInventaire.style.display = 'flex'; });
