@@ -33,10 +33,12 @@
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.9rem; color: #D1D5DB; }
         input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; }
-        input[type="file"] { padding: 9px; cursor: pointer; }
         input:focus, select:focus, textarea:focus { border-color: #60A5FA; }
         option { background-color: #1A2B56; color: white; }
         
+        .file-upload-label { background-color: rgba(96, 165, 250, 0.05); border: 2px dashed #60A5FA; color: #60A5FA; padding: 20px 10px; border-radius: 12px; text-align: center; display: block; cursor: pointer; transition: all 0.2s; font-size: 1.05rem; font-weight: bold; }
+        .file-upload-label:active { background-color: rgba(96, 165, 250, 0.15); transform: scale(0.98); }
+
         .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; cursor: pointer; transition: transform 0.2s; width: 100%; font-size: 1rem; }
         .btn-action:active { transform: scale(0.95); }
         .btn-action:disabled { background-color: #9CA3AF; cursor: not-allowed; transform: none; }
@@ -45,7 +47,6 @@
         .btn-delete-cat { background: transparent; border: none; color: #FCA5A5; font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0; margin-left: 5px; transition: transform 0.2s; }
         .btn-delete-cat:active { transform: scale(0.8); color: #EF4444; }
 
-        /* MODALES UNIFIÉES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
@@ -54,7 +55,6 @@
         .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
         .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
 
-        /* Boutons pour la confirmation (Oui/Non) */
         .modal-buttons { display: flex; gap: 15px; }
         .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
         .btn-cancel:active { transform: scale(0.95); }
@@ -80,7 +80,6 @@
             </div>
         </details>
 
-        <!-- 🌟 GESTION DES CATÉGORIES -->
         <details>
             <summary>🏷️ Gérer les Catégories <span>▼</span></summary>
             <div class="content-box">
@@ -93,24 +92,25 @@
             </div>
         </details>
 
-        <!-- 🌟 NOUVEAU : IMPORTATION CSV VIA FICHIER -->
         <details>
-            <summary>📥 Importation CSV en masse <span>▼</span></summary>
+            <summary>📥 Importation CSV <span>▼</span></summary>
             <div class="content-box">
-                <p style="font-size:0.85rem; color:#D1D5DB;">Sélectionnez votre fichier CSV (Jusqu'à 500 lignes).<br>Format : <b>reference;nom;emplacement;categorie</b></p>
-                <input type="file" id="csv-file" accept=".csv" />
-                <button class="btn-action btn-export" id="btn-import-mass">Lancer l'import groupé</button>
+                <p style="font-size:0.85rem; color:#D1D5DB;">Chargez un fichier CSV respectant les <b>11 colonnes</b> de la base de données (séparateur: point-virgule).</p>
+                <input type="file" id="csv-file" accept=".csv" style="display: none;" />
+                <label for="csv-file" class="file-upload-label">
+                    <span id="file-name-display">📁 Toucher pour choisir un fichier .CSV</span>
+                </label>
+                <button class="btn-action btn-export" id="btn-import-mass">Lancer l'import / Mise à jour</button>
             </div>
         </details>
 
         <details>
             <summary>📥 Export Données <span>▼</span></summary>
             <div class="content-box">
-                <button class="btn-action btn-export" id="btn-export">📊 Télécharger Inventaire (CSV)</button>
+                <button class="btn-action btn-export" id="btn-export">📊 Télécharger la base (CSV)</button>
             </div>
         </details>
 
-        <!-- 🌟 GÉRER L'ÉQUIPE -->
         <details>
             <summary>👥 Gérer l'équipe <span>▼</span></summary>
             <div class="content-box">
@@ -137,48 +137,18 @@
         </details>
     </div>
 
-    <!-- MODALE INFO STANDARD -->
-    <div class="modal-overlay" id="custom-modal">
-        <div class="modal-content">
-            <div class="modal-icon" id="modal-icon">✅</div>
-            <h3 class="modal-title" id="modal-title">Succès</h3>
-            <p class="modal-message" id="modal-text">L'action a bien été effectuée.</p>
-            <button class="btn-modal-ok" id="btn-fermer-modal">OK</button>
-        </div>
-    </div>
-
-    <!-- MODALE CONFIRMATION -->
-    <div class="modal-overlay" id="custom-confirm">
-        <div class="modal-content">
-            <div class="modal-icon">⚠️</div>
-            <h3 class="modal-title">Confirmation</h3>
-            <p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p>
-            <div class="modal-buttons">
-                <button class="btn-cancel" id="btn-confirm-cancel">Annuler</button>
-                <button class="btn-confirm-danger" id="btn-confirm-ok">Confirmer</button>
-            </div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="custom-modal"><div class="modal-content"><div class="modal-icon" id="modal-icon">✅</div><h3 class="modal-title" id="modal-title">Succès</h3><p class="modal-message" id="modal-text">Action effectuée.</p><button class="btn-modal-ok" id="btn-fermer-modal">OK</button></div></div>
+    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><div class="modal-icon">⚠️</div><h3 class="modal-title">Confirmation</h3><p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel">Annuler</button><button class="btn-confirm-danger" id="btn-confirm-ok">Confirmer</button></div></div></div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         
-        function afficherPopup(titre, message, isSuccess = true) {
-            document.getElementById('modal-icon').textContent = isSuccess ? "✅" : "⚠️";
-            document.getElementById('modal-title').textContent = titre;
-            document.getElementById('modal-text').textContent = message;
-            document.getElementById('custom-modal').style.display = 'flex';
-        }
+        function afficherPopup(titre, message, isSuccess = true) { document.getElementById('modal-icon').textContent = isSuccess ? "✅" : "⚠️"; document.getElementById('modal-title').textContent = titre; document.getElementById('modal-text').textContent = message; document.getElementById('custom-modal').style.display = 'flex'; }
         document.getElementById('btn-fermer-modal').addEventListener('click', () => { document.getElementById('custom-modal').style.display = 'none'; });
 
-        // Système de Confirmation Custom
         let actionConfirmationCallback = null;
-        function afficherConfirmation(message, callback) {
-            document.getElementById('confirm-text').textContent = message;
-            actionConfirmationCallback = callback;
-            document.getElementById('custom-confirm').style.display = 'flex';
-        }
+        function afficherConfirmation(message, callback) { document.getElementById('confirm-text').textContent = message; actionConfirmationCallback = callback; document.getElementById('custom-confirm').style.display = 'flex'; }
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; actionConfirmationCallback = null; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; if(actionConfirmationCallback) actionConfirmationCallback(); });
 
@@ -192,7 +162,6 @@
             });
         }
 
-        // CHARGEMENT ET TRI CATÉGORIES
         function chargerCategories() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) })
             .then(r => r.json()).then(d => {
@@ -207,25 +176,15 @@
                 }
             });
         }
-
-        window.demanderSuppressionCategorie = function(catName) {
-            afficherConfirmation("Voulez-vous vraiment supprimer la catégorie : " + catName + " ?", () => {
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_categorie", categorieToDelete: catName, ...payloadBase }) })
-                .then(r => r.json()).then(d => { if(d.result === "success") { chargerCategories(); afficherPopup("Succès", "Catégorie supprimée."); } });
-            });
-        };
+        window.demanderSuppressionCategorie = function(catName) { afficherConfirmation("Voulez-vous vraiment supprimer la catégorie : " + catName + " ?", () => { fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_categorie", categorieToDelete: catName, ...payloadBase }) }).then(r => r.json()).then(d => { if(d.result === "success") { chargerCategories(); afficherPopup("Succès", "Catégorie supprimée."); } }); }); };
 
         document.getElementById('btn-add-cat').addEventListener('click', function() {
             const cat = document.getElementById('new-cat').value.trim(); if(!cat) return;
             this.textContent = "Ajout... ⏳";
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_categorie", nouvelleCategorie: cat, ...payloadBase }) })
-            .then(r => r.json()).then(d => {
-                if(d.result === "success") { document.getElementById('new-cat').value = ""; chargerCategories(); afficherPopup("Succès", "Catégorie ajoutée."); }
-                this.textContent = "➕ Ajouter la catégorie";
-            });
+            .then(r => r.json()).then(d => { if(d.result === "success") { document.getElementById('new-cat').value = ""; chargerCategories(); afficherPopup("Succès", "Catégorie ajoutée."); } this.textContent = "➕ Ajouter la catégorie"; });
         });
 
-        // CHARGEMENT ET TRI UTILISATEURS
         function chargerUtilisateurs() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "lister_utilisateurs" }) }).then(res => res.json()).then(data => {
                 if(data.result === "success") {
@@ -235,120 +194,95 @@
                 }
             });
         }
-        
         document.getElementById('select-user').addEventListener('change', function(e) { const sel = e.target.options[e.target.selectedIndex]; if(sel && sel.value !== "") { document.getElementById('modif-role').value = sel.getAttribute('data-role'); } });
 
         document.getElementById('btn-delete-user').addEventListener('click', function() {
-            const cible = document.getElementById('select-user').value;
-            if(!cible) return afficherPopup("Attention", "Veuillez sélectionner un membre à supprimer.", false);
-            
+            const cible = document.getElementById('select-user').value; if(!cible) return afficherPopup("Attention", "Veuillez sélectionner un membre à supprimer.", false);
             afficherConfirmation("Êtes-vous sûr de vouloir supprimer définitivement le compte de " + cible + " ?", () => {
                 const btn = document.getElementById('btn-delete-user'); btn.textContent = "⏳"; btn.disabled = true;
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "supprimer_utilisateur", targetLogin: cible }) })
-                .then(res => res.json()).then(data => {
-                    if(data.result === "success") { afficherPopup("Compte supprimé", `L'utilisateur n'a plus d'accès.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); }
-                    btn.textContent = "🗑️ Supprimer"; btn.disabled = false;
-                }).catch(err => { btn.textContent = "🗑️ Supprimer"; btn.disabled = false; });
+                .then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Compte supprimé", `L'utilisateur n'a plus d'accès.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); } btn.textContent = "🗑️ Supprimer"; btn.disabled = false; }).catch(err => { btn.textContent = "🗑️ Supprimer"; btn.disabled = false; });
             });
         });
 
-        // 🌟 IMPORTATION CSV VIA INPUT FILE
+        document.getElementById('csv-file').addEventListener('change', function(e) {
+            const display = document.getElementById('file-name-display');
+            if(this.files && this.files.length > 0) { display.innerHTML = `<span style="color:#10B981;">📄 ${this.files[0].name}</span>`; } else { display.textContent = "📁 Toucher pour choisir un fichier .CSV"; }
+        });
+
+        // 🌟 IMPORT INTELLIGENT
         document.getElementById('btn-import-mass').addEventListener('click', function() {
             const fileInput = document.getElementById('csv-file');
-            if (!fileInput.files.length) return afficherPopup("Attention", "Veuillez sélectionner un fichier CSV.", false);
+            if (!fileInput.files.length) return afficherPopup("Attention", "Veuillez d'abord sélectionner un fichier CSV.", false);
             
-            const file = fileInput.files[0];
             const reader = new FileReader();
-            
             reader.onload = function(e) {
-                let text = e.target.result.trim();
-                if (!text) return afficherPopup("Erreur", "Le fichier est vide.", false);
+                let text = e.target.result.trim(); if (!text) return afficherPopup("Erreur", "Le fichier est vide.", false);
+                let lignes = text.split('\n'); let objets = [];
                 
-                let lignes = text.split('\n'); 
-                let objets = [];
-                lignes.forEach(l => { 
-                    let c = l.split(';'); 
-                    if(c.length >= 3) {
+                // Si la première ligne contient les en-têtes (Reference, Ref...), on l'ignore
+                let startIdx = (lignes[0].toLowerCase().includes("reference") || lignes[0].toLowerCase().includes("ref")) ? 1 : 0;
+                
+                for(let i = startIdx; i < lignes.length; i++) {
+                    let c = lignes[i].split(';'); 
+                    if(c.length >= 3 && c[0] && c[0].trim() !== "") {
                         objets.push({
-                            reference: c[0].trim(), 
-                            nom: c[1].trim(), 
-                            emplacement: c[2].trim(), 
-                            categorie: c[3] ? c[3].trim() : "Non classé"
+                            reference: c[0] ? c[0].trim() : undefined, 
+                            nom: c[1] ? c[1].trim() : undefined, 
+                            emplacement: c[2] ? c[2].trim() : undefined, 
+                            dateAjout: c[3] ? c[3].trim() : undefined,
+                            utilisateur: c[4] ? c[4].trim() : undefined,
+                            dateSortie: c[6] ? c[6].trim() : undefined,
+                            motifSortie: c[7] ? c[7].trim() : undefined,
+                            utilisateurSortie: c[8] ? c[8].trim() : undefined,
+                            categorie: c[9] ? c[9].trim() : undefined,
+                            note: c[10] ? c[10].trim() : undefined
                         }); 
                     }
-                });
+                }
                 
                 if(objets.length === 0) return afficherPopup("Erreur", "Format invalide ou fichier vide.", false);
-                
-                const btn = document.getElementById('btn-import-mass');
-                btn.textContent = "Import en cours... ⏳"; 
-                btn.disabled = true;
+                const btn = document.getElementById('btn-import-mass'); btn.textContent = "Import en cours... ⏳"; btn.disabled = true;
                 
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "bulk_import", items: objets, ...payloadBase }) })
                 .then(res => res.json()).then(data => {
-                    if(data.result === "success") { 
-                        afficherPopup("Import réussi", `${data.count} objets ajoutés !`); 
-                        document.getElementById('csv-file').value = ""; 
-                        chargerDashboard(); 
-                    } else {
-                        afficherPopup("Erreur", data.message, false);
-                    }
-                    btn.textContent = "Lancer l'import groupé"; 
-                    btn.disabled = false;
-                }).catch(err => {
-                    afficherPopup("Erreur", "Problème réseau.", false);
-                    btn.textContent = "Lancer l'import groupé"; 
-                    btn.disabled = false;
-                });
+                    if(data.result === "success") { afficherPopup("Import réussi", `${data.count} objets traités !`); document.getElementById('csv-file').value = ""; document.getElementById('file-name-display').textContent = "📁 Toucher pour choisir un fichier .CSV"; chargerDashboard(); } else { afficherPopup("Erreur", data.message, false); }
+                    btn.textContent = "Lancer l'import / Mise à jour"; btn.disabled = false;
+                }).catch(err => { afficherPopup("Erreur", "Problème réseau.", false); btn.textContent = "Lancer l'import / Mise à jour"; btn.disabled = false; });
             };
-            
-            reader.onerror = function() {
-                afficherPopup("Erreur", "Impossible de lire le fichier.", false);
-            };
-            
-            reader.readAsText(file);
+            reader.readAsText(fileInput.files[0]);
         });
 
-        document.getElementById('form-creer').addEventListener('submit', function(e) {
-            e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Création... ⏳"; btn.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "creer_utilisateur", newLogin: document.getElementById('creer-login').value.trim(), newPassword: document.getElementById('creer-mdp').value, newRole: document.getElementById('creer-role').value }) })
-            .then(res => res.json()).then(data => {
-                if(data.result === "success") { afficherPopup("Compte créé !", `L'utilisateur a été ajouté.`); document.getElementById('form-creer').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); }
-                btn.textContent = "Créer l'utilisateur"; btn.disabled = false;
-            });
-        });
-
-        document.getElementById('form-modifier').addEventListener('submit', function(e) {
-            e.preventDefault(); const cible = document.getElementById('select-user').value; if(!cible) return afficherPopup("Attention", "Sélectionnez un membre.", false);
-            const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Mise à jour... ⏳"; btn.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "modifier_utilisateur", targetLogin: cible, newRole: document.getElementById('modif-role').value, newPassword: document.getElementById('modif-mdp').value }) })
-            .then(res => res.json()).then(data => {
-                if(data.result === "success") { afficherPopup("Mise à jour réussie !", `Compte modifié.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); }
-                btn.textContent = "Mettre à jour le compte"; btn.disabled = false;
-            });
-        });
-
+        // 🌟 EXPORT CONFORME AUX 11 COLONNES
         document.getElementById('btn-export').addEventListener('click', function() {
             const btn = this; btn.textContent = "Génération...";
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "inventaire" }) })
             .then(res => res.json()).then(data => {
                 if(data.result === "success") {
-                    let csvContent = "data:text/csv;charset=utf-8,\\uFEFFRef;Nom;Categorie;Lieu;Ajouté par\\n";
-                    data.data.forEach(r => csvContent += `${r.reference};${r.nom};${r.categorie};${r.emplacement};${r.utilisateur}\\n`);
-                    const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "stock.csv"); document.body.appendChild(link); link.click();
+                    // Les 11 colonnes de la base
+                    let csvContent = "data:text/csv;charset=utf-8,\uFEFFReference;Nom;Emplacement;Date_Ajout;Utilisateur;Image_QR;Date_Sortie;Motif_Sortie;Utilisateur_Sortie;Categorie;Notes\n";
+                    
+                    let sanitize = (str) => {
+                        if(!str) return "";
+                        return String(str).replace(/;/g, ",").replace(/\n/g, " | "); // Empêche les retours à la ligne ou points-virgules de casser le fichier
+                    };
+
+                    data.data.forEach(r => {
+                        csvContent += `${sanitize(r.reference)};${sanitize(r.nom)};${sanitize(r.emplacement)};${sanitize(r.dateAjout)};${sanitize(r.utilisateur)};${sanitize(r.imageQR)};${sanitize(r.dateSortie)};${sanitize(r.motifSortie)};${sanitize(r.utilisateurSortie)};${sanitize(r.categorie)};${sanitize(r.notes)}\n`;
+                    });
+
+                    const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "stock_complet.csv"); document.body.appendChild(link); link.click();
                 } else { afficherPopup("Erreur", "Impossible de générer le fichier.", false); }
-                btn.textContent = "📊 Télécharger Inventaire (CSV)";
+                btn.textContent = "📊 Télécharger la base (CSV)";
             });
         });
 
+        document.getElementById('form-creer').addEventListener('submit', function(e) { e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Création... ⏳"; btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "creer_utilisateur", newLogin: document.getElementById('creer-login').value.trim(), newPassword: document.getElementById('creer-mdp').value, newRole: document.getElementById('creer-role').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Compte créé !", `L'utilisateur a été ajouté.`); document.getElementById('form-creer').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); } btn.textContent = "Créer l'utilisateur"; btn.disabled = false; }); });
+        document.getElementById('form-modifier').addEventListener('submit', function(e) { e.preventDefault(); const cible = document.getElementById('select-user').value; if(!cible) return afficherPopup("Attention", "Sélectionnez un membre.", false); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Mise à jour... ⏳"; btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "modifier_utilisateur", targetLogin: cible, newRole: document.getElementById('modif-role').value, newPassword: document.getElementById('modif-mdp').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Mise à jour réussie !", `Compte modifié.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } else { afficherPopup("Erreur", data.message, false); } btn.textContent = "Mettre à jour le compte"; btn.disabled = false; }); });
         window.addEventListener('DOMContentLoaded', () => { chargerUtilisateurs(); chargerDashboard(); chargerCategories(); });
     </script>
     <script>
-        let timeoutId;
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
-            else { clearTimeout(timeoutId); }
-        });
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>

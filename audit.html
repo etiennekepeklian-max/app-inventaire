@@ -48,14 +48,12 @@
     <div class="container">
         <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Faire un Audit</h1></div>
         
-        <!-- 🌟 ÉTAPE 1 : CHOIX DU TYPE D'AUDIT -->
         <div class="zone-card" id="step-choix">
             <h2 style="font-size: 1.1rem; color: #60A5FA; margin-bottom: 10px; text-align: center;">Choisissez le type d'audit</h2>
             <button class="btn" id="btn-choix-zone" style="background: #3B82F6;">📍 Audit d'une zone précise</button>
             <button class="btn" id="btn-choix-total" style="background: #8B5CF6;">🌍 Audit Total de l'inventaire</button>
         </div>
 
-        <!-- 🌟 ÉTAPE 1 BIS : SAISIE DE LA ZONE (Si choix 1) -->
         <div class="zone-card" id="step-zone-input" style="display: none;">
             <p style="font-size: 0.95rem; color: #D1D5DB;">Entrez l'emplacement exact à auditer :</p>
             <input type="text" id="input-zone" placeholder="Ex: Réserve C">
@@ -63,45 +61,25 @@
             <button class="btn" id="btn-retour-choix" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Annuler</button>
         </div>
 
-        <!-- 🌟 ÉTAPE 2 : LE SCANNER -->
         <div id="scanner-box">
             <div id="reader"></div>
             <div id="bloc-rafale-liste">
-                <div class="rafale-header">
-                    <span>Objets pointés :</span>
-                    <span class="rafale-count" id="rafale-count">0</span>
-                </div>
+                <div class="rafale-header"><span>Objets pointés :</span><span class="rafale-count" id="rafale-count">0</span></div>
                 <div class="rafale-items" id="rafale-items"></div>
             </div>
             <button class="btn" id="btn-cloturer-audit" style="margin-top: 15px; background: #10B981;">📊 Terminer et générer le rapport</button>
         </div>
 
-        <!-- 🌟 ÉTAPE 3 : LE RAPPORT D'ANOMALIES -->
         <div class="report-section" id="bloc-rapport">
             <h2 style="font-size: 1.2rem; color: #60A5FA;" id="titre-rapport">Résultat de l'Audit</h2>
-            
-            <div class="badge-count bg-found">
-                <div>🟢 Confirmés : <span id="count-trouve" style="float:right;">0</span></div>
-            </div>
-            
-            <div class="badge-count bg-missing">
-                <div id="label-manquants">🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div>
-                <div class="item-list" id="list-manquants"></div>
-            </div>
-            
-            <div class="badge-count bg-wrong">
-                <div id="label-egares">🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div>
-                <div class="item-list" id="list-egares"></div>
-            </div>
-            
-            <!-- 🖨️ NOUVEAU BOUTON D'IMPRESSION -->
+            <div class="badge-count bg-found"><div>🟢 Confirmés : <span id="count-trouve" style="float:right;">0</span></div></div>
+            <div class="badge-count bg-missing"><div id="label-manquants">🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div><div class="item-list" id="list-manquants"></div></div>
+            <div class="badge-count bg-wrong"><div id="label-egares">🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div><div class="item-list" id="list-egares"></div></div>
             <button class="btn" id="btn-imprimer-rapport" style="background: #10B981; margin-top: 10px;">🖨️ Imprimer le rapport d'anomalies</button>
-            
             <button class="btn" onclick="window.location.reload()" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Refaire un audit</button>
         </div>
     </div>
 
-    <!-- MODALE D'ALERTE CUSTOM -->
     <div class="modal-overlay" id="custom-alert">
         <div class="modal-content">
             <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
@@ -112,69 +90,70 @@
     </div>
 
     <script>
-        let typeAudit = ""; // "zone" ou "total"
-        let zoneCible = ""; 
-        let baseLocale = []; 
-        let scannedRefs = []; 
-        let scanner;
-        
-        // Stockage des listes pour le rapport à imprimer
-        let lastReportManquants = [];
-        let lastReportEgares = [];
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+        let typeAudit = ""; let zoneCible = ""; let baseLocale = []; let scannedRefs = []; let scanner;
+        let lastReportManquants = []; let lastReportEgares = [];
 
-        // Système d'Alerte Custom
-        function afficherAlerte(titre, message) {
+        function afficherAlerte(titre, message, boutonCache = false) {
             document.getElementById('alert-title').textContent = titre; 
             document.getElementById('alert-message').textContent = message; 
+            document.getElementById('btn-alert-ok').style.display = boutonCache ? 'none' : 'block';
             document.getElementById('custom-alert').style.display = 'flex';
         }
-        document.getElementById('btn-alert-ok').addEventListener('click', () => { 
-            document.getElementById('custom-alert').style.display = 'none'; 
-        });
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
-        function normaliserTexte(txt) { 
-            if (!txt) return ""; 
-            return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); 
-        }
+        function normaliserTexte(txt) { if (!txt) return ""; return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
 
-        // --- GESTION DES BOUTONS DE CHOIX ---
-        document.getElementById('btn-choix-zone').addEventListener('click', () => {
-            document.getElementById('step-choix').style.display = 'none';
-            document.getElementById('step-zone-input').style.display = 'flex';
-        });
-
-        document.getElementById('btn-retour-choix').addEventListener('click', () => {
-            document.getElementById('step-zone-input').style.display = 'none';
-            document.getElementById('step-choix').style.display = 'flex';
-            document.getElementById('input-zone').value = "";
-        });
+        document.getElementById('btn-choix-zone').addEventListener('click', () => { document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'flex'; });
+        document.getElementById('btn-retour-choix').addEventListener('click', () => { document.getElementById('step-zone-input').style.display = 'none'; document.getElementById('step-choix').style.display = 'flex'; document.getElementById('input-zone').value = ""; });
 
         document.getElementById('btn-choix-total').addEventListener('click', () => {
-            typeAudit = "total";
-            zoneCible = "Audit Total";
-            lancerProcessusScanner();
+            typeAudit = "total"; zoneCible = "Audit Total"; lancerProcessusScanner();
         });
 
         document.getElementById('btn-demarrer-audit').addEventListener('click', function() {
-            typeAudit = "zone";
-            zoneCible = document.getElementById('input-zone').value;
+            typeAudit = "zone"; zoneCible = document.getElementById('input-zone').value;
             if(!zoneCible.trim()) return afficherAlerte("Attention", "Veuillez spécifier le nom de la zone.");
             lancerProcessusScanner();
         });
 
+        // 🌟 NOUVEAU : On force le téléchargement du stock pour s'assurer que l'audit est parfait
         function lancerProcessusScanner() {
+            document.getElementById('step-choix').style.display = 'none';
+            document.getElementById('step-zone-input').style.display = 'none';
+            
+            if(navigator.onLine) {
+                document.getElementById('alert-icon').textContent = "🔄";
+                afficherAlerte("Synchronisation", "Téléchargement de l'inventaire récent...", true);
+                
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+                .then(r => r.json()).then(d => {
+                    document.getElementById('custom-alert').style.display = 'none';
+                    if (d.result === "success") {
+                        localStorage.setItem('miroir_stock', JSON.stringify(d.data));
+                        baseLocale = d.data;
+                        ouvrirScannerAudit();
+                    } else { fallbackLocal(); }
+                }).catch(() => {
+                    document.getElementById('custom-alert').style.display = 'none';
+                    fallbackLocal();
+                });
+            } else {
+                fallbackLocal();
+            }
+        }
+
+        function fallbackLocal() {
+            document.getElementById('alert-icon').textContent = "⚠️";
             if(localStorage.getItem('miroir_stock')) {
                 baseLocale = JSON.parse(localStorage.getItem('miroir_stock'));
                 ouvrirScannerAudit();
             } else {
-                afficherAlerte("Hors ligne", "Base de données locale introuvable. Ouvrez la page d'accueil avec du réseau pour la synchroniser en arrière-plan.");
+                afficherAlerte("Hors ligne", "Base de données introuvable. Veuillez vous connecter au réseau.");
             }
         }
 
-        // --- LE SCANNER ---
         function ouvrirScannerAudit() {
-            document.getElementById('step-choix').style.display = 'none';
-            document.getElementById('step-zone-input').style.display = 'none';
             document.getElementById('scanner-box').style.display = 'block';
             document.getElementById('bloc-rafale-liste').style.display = 'flex'; 
             
@@ -186,26 +165,21 @@
                     if(navigator.vibrate) navigator.vibrate(150);
                     
                     document.getElementById('rafale-count').textContent = scannedRefs.length;
-                    const item = document.createElement('div');
-                    item.className = 'rafale-item';
+                    const item = document.createElement('div'); item.className = 'rafale-item';
                     item.innerHTML = `<span>${ref}</span> <span style="color: #10B981; font-size: 1.1rem;">✔️</span>`;
                     document.getElementById('rafale-items').prepend(item);
                 }
             });
         }
 
-        // --- GÉNÉRATION DU RAPPORT DE FIN ---
         document.getElementById('btn-cloturer-audit').addEventListener('click', function() {
             if(scanner) scanner.clear(); 
             document.getElementById('scanner-box').style.display = 'none';
             document.getElementById('titre-rapport').textContent = (typeAudit === "total") ? "Résultat de l'Audit Total" : `Résultat pour "${zoneCible}"`;
             
-            lastReportManquants = [];
-            lastReportEgares = [];
-            let trouves = 0; 
+            lastReportManquants = []; lastReportEgares = []; let trouves = 0; 
             
             if (typeAudit === "zone") {
-                // LOGIQUE AUDIT DE ZONE
                 let zoneCiblePropre = normaliserTexte(zoneCible);
                 let attendusIci = baseLocale.filter(a => normaliserTexte(a.emplacement) === zoneCiblePropre && !a.estSorti);
 
@@ -217,21 +191,13 @@
 
                 scannedRefs.forEach(ref => {
                     let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
-                    if(match) {
-                        if(normaliserTexte(match.emplacement) !== zoneCiblePropre) {
-                            lastReportEgares.push(`${match.nom} (Prévu: ${match.emplacement})`);
-                        }
-                    } else {
-                        lastReportEgares.push(`Réf ${ref} (Inconnue en base)`);
-                    }
+                    if(match) { if(normaliserTexte(match.emplacement) !== zoneCiblePropre) { lastReportEgares.push(`${match.nom} (Prévu: ${match.emplacement})`); }
+                    } else { lastReportEgares.push(`Réf ${ref} (Inconnue en base)`); }
                 });
                 document.getElementById('label-egares').innerHTML = `🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">${lastReportEgares.length}</span>`;
 
             } else {
-                // LOGIQUE AUDIT TOTAL
-                // Tout ce qui n'est pas "Sorti" est censé être scanné
                 let attendusPartout = baseLocale.filter(a => !a.estSorti);
-
                 attendusPartout.forEach(a => {
                     let dbRef = String(a.reference).trim().toUpperCase();
                     if(scannedRefs.includes(dbRef)) trouves++;
@@ -240,95 +206,36 @@
 
                 scannedRefs.forEach(ref => {
                     let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
-                    if(!match) {
-                        lastReportEgares.push(`Réf ${ref} (Inconnue en base)`);
-                    } else if (match.estSorti) {
-                        // Il a été scanné physiquement, mais dans la base il est marqué comme "Sorti"
-                        lastReportEgares.push(`${match.nom} (${ref}) - Normalement "Sorti"`);
-                    }
+                    if(!match) { lastReportEgares.push(`Réf ${ref} (Inconnue en base)`); } 
+                    else if (match.estSorti) { lastReportEgares.push(`${match.nom} (${ref}) - Normalement "Sorti"`); }
                 });
                 document.getElementById('label-egares').innerHTML = `🟡 Inconnus ou Sortis : <span id="count-egare" style="float:right;">${lastReportEgares.length}</span>`;
             }
 
-            // AFFICHAGE DES RÉSULTATS
             document.getElementById('count-trouve').textContent = trouves;
             document.getElementById('count-manquant').textContent = lastReportManquants.length;
             document.getElementById('list-manquants').innerHTML = lastReportManquants.join('<br>') || "Aucun objet manquant.";
-            
+            document.getElementById('count-egare').textContent = lastReportEgares.length;
             document.getElementById('list-egares').innerHTML = lastReportEgares.join('<br>') || "Aucune anomalie.";
             
             document.getElementById('bloc-rapport').style.display = 'flex';
         });
 
-        // --- IMPRESSION DU RAPPORT D'ANOMALIES ---
         document.getElementById('btn-imprimer-rapport').addEventListener('click', function() {
             let titreHtml = (typeAudit === 'total') ? "Rapport d'Audit Total de l'Inventaire" : `Rapport d'Audit : ${zoneCible}`;
             let titreEgaresHtml = (typeAudit === 'total') ? "Inconnus ou déclarés 'Sortis'" : "Égarés (Mal rangés)";
-            
-            let listManquantsHtml = lastReportManquants.length > 0 
-                ? lastReportManquants.map(m => `<li>${m}</li>`).join('') 
-                : "<li>Aucun objet manquant. Parfait !</li>";
-                
-            let listEgaresHtml = lastReportEgares.length > 0 
-                ? lastReportEgares.map(e => `<li>${e}</li>`).join('') 
-                : "<li>Aucune anomalie constatée.</li>";
+            let listManquantsHtml = lastReportManquants.length > 0 ? lastReportManquants.map(m => `<li>${m}</li>`).join('') : "<li>Aucun objet manquant. Parfait !</li>";
+            let listEgaresHtml = lastReportEgares.length > 0 ? lastReportEgares.map(e => `<li>${e}</li>`).join('') : "<li>Aucune anomalie constatée.</li>";
 
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
+            const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
             const doc = iframe.contentWindow.document;
             
-            doc.write(`
-                <html>
-                <head>
-                    <title>Rapport d'Anomalies</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.4; }
-                        h1 { color: #1A2B56; border-bottom: 2px solid #1A2B56; padding-bottom: 10px; font-size: 1.5rem; }
-                        h2 { margin-top: 25px; font-size: 1.2rem; }
-                        .text-red { color: #DC2626; }
-                        .text-orange { color: #D97706; }
-                        ul { margin-top: 10px; background: #f9f9f9; padding: 15px 30px; border-radius: 8px; border: 1px solid #eee; }
-                        li { margin-bottom: 8px; font-size: 1rem; }
-                        .footer { margin-top: 40px; font-size: 0.9rem; color: #666; font-style: italic; }
-                    </style>
-                </head>
-                <body>
-                    <h1>${titreHtml}</h1>
-                    <p><b>Date :</b> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
-                    
-                    <h2 class="text-red">🔴 Objets Manquants (${lastReportManquants.length})</h2>
-                    <ul>${listManquantsHtml}</ul>
-                    
-                    <h2 class="text-orange">🟡 Objets ${titreEgaresHtml} (${lastReportEgares.length})</h2>
-                    <ul>${listEgaresHtml}</ul>
-
-                    <p class="footer">Rapport généré automatiquement par l'application Gestion de Stock.</p>
-                    
-                    <script>window.onload = function() { window.print(); }<\/script>
-                </body>
-                </html>
-            `);
-            doc.close();
-            
-            // Nettoyage de l'iframe après 3 secondes
-            setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+            doc.write(`<html><head><title>Rapport d'Anomalies</title><style>body { font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.4; } h1 { color: #1A2B56; border-bottom: 2px solid #1A2B56; padding-bottom: 10px; font-size: 1.5rem; } h2 { margin-top: 25px; font-size: 1.2rem; } .text-red { color: #DC2626; } .text-orange { color: #D97706; } ul { margin-top: 10px; background: #f9f9f9; padding: 15px 30px; border-radius: 8px; border: 1px solid #eee; } li { margin-bottom: 8px; font-size: 1rem; } .footer { margin-top: 40px; font-size: 0.9rem; color: #666; font-style: italic; }</style></head><body><h1>${titreHtml}</h1><p><b>Date :</b> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p><h2 class="text-red">🔴 Objets Manquants (${lastReportManquants.length})</h2><ul>${listManquantsHtml}</ul><h2 class="text-orange">🟡 Objets ${titreEgaresHtml} (${lastReportEgares.length})</h2><ul>${listEgaresHtml}</ul><p class="footer">Rapport généré automatiquement par l'application Gestion de Stock.</p><script>window.onload = function() { window.print(); }<\/script></body></html>`);
+            doc.close(); setTimeout(() => { document.body.removeChild(iframe); }, 3000);
         });
     </script>
-    
-    <!-- 🔒 SÉCURITÉ : DÉCONNEXION APRÈS 30s EN ARRIÈRE-PLAN -->
     <script>
-        let timeoutId;
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                timeoutId = setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = "login.html";
-                }, 30000); 
-            } else {
-                clearTimeout(timeoutId);
-            }
-        });
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>
