@@ -31,18 +31,19 @@
     <div class="login-box">
         <img src="icon-192.png" alt="Logo" class="app-logo">
         <h1>Authentification</h1>
-        <form id="login-form" style="width: 100%;">
+        
+        <div id="login-form-container" style="width: 100%;">
             <div class="form-group">
                 <label>Identifiant</label>
-                <input type="text" id="login" required autocomplete="username">
+                <input type="text" id="login" autocomplete="off" spellcheck="false" data-lpignore="true">
             </div>
             <div class="form-group">
                 <label>Mot de passe</label>
-                <input type="password" id="password" required autocomplete="current-password">
+                <input type="password" id="password" autocomplete="new-password" spellcheck="false" data-lpignore="true">
             </div>
-            <button type="submit" class="btn-login" id="btn-submit">Se connecter</button>
+            <button type="button" class="btn-login" id="btn-submit">Se connecter</button>
             <div class="error-message" id="error-msg"></div>
-        </form>
+        </div>
     </div>
     
     <div class="app-version" id="version-display">Version 0.1.1</div>
@@ -57,22 +58,34 @@
             window.location.href = 'index.html'; 
         }
 
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit'); 
+        function executerConnexion() {
+            const loginInput = document.getElementById('login').value.trim();
+            const passwordInput = document.getElementById('password').value;
             const errorBox = document.getElementById('error-msg');
+            const btn = document.getElementById('btn-submit');
+
+            if (!loginInput || !passwordInput) {
+                errorBox.textContent = "Veuillez remplir tous les champs.";
+                errorBox.style.display = 'block';
+                return;
+            }
+
             btn.disabled = true; btn.textContent = "Connexion... ⏳"; errorBox.style.display = 'none';
 
             fetch(GOOGLE_SCRIPT_URL, { 
                 method: 'POST', 
                 body: JSON.stringify({ 
                     action: "login", 
-                    login: document.getElementById('login').value.trim(), 
-                    password: document.getElementById('password').value 
+                    login: loginInput, 
+                    password: passwordInput 
                 }) 
             })
             .then(res => res.json()).then(data => {
                 if (data.result === "success") {
+                    // Nettoyage immédiat des champs en mémoire pour ne laisser aucune trace au navigateur
+                    document.getElementById('login').value = "";
+                    document.getElementById('password').value = "";
+                    
                     localStorage.setItem('app_token', data.token); 
                     localStorage.setItem('app_login', data.login); 
                     localStorage.setItem('app_role', data.role);
@@ -89,6 +102,16 @@
                 btn.disabled = false; 
                 btn.textContent = "Se connecter"; 
             });
+        }
+
+        document.getElementById('btn-submit').addEventListener('click', executerConnexion);
+
+        // Simulation du comportement natif d'un formulaire pour la touche Entrée
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') executerConnexion();
+        });
+        document.getElementById('login').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('password').focus();
         });
 
         if ('serviceWorker' in navigator) { 
