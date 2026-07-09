@@ -13,6 +13,7 @@
         body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
+        /* Header avec retour arrière et icône historique global */
         .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; width: 100%; justify-content: center; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
@@ -20,11 +21,14 @@
         .btn-hist-global:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
+        /* Barre de recherche et filtres */
         .search-bar { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px; color: white; font-size: 1rem; outline: none; }
+        .search-bar::placeholder { color: #9CA3AF; }
         .filter-row { display: flex; gap: 8px; width: 100%; margin-bottom: 5px; }
         .btn-filter { flex: 1; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #60A5FA; padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-filter.active { background: #3B82F6; color: white; border-color: #60A5FA; }
 
+        /* Cartes d'objets (Liste) */
         .stock-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
         .stock-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; }
         .stock-card:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
@@ -39,29 +43,40 @@
         .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
 
+        /* Modales Mobiles Unifiées */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 92%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         .modal-title { font-size: 1.25rem; color: #60A5FA; margin-bottom: 12px; font-weight: bold; text-align: left; }
         .modal-body { text-align: left; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: #D1D5DB; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
         .modal-body p { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
         .modal-body span.valeur { color: white; font-weight: bold; }
-        .notes-area { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
-        .btn-copy { background: transparent; border: none; color: #60A5FA; cursor: pointer; margin-left: 5px; }
-        .hist-row { font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 5px 0; color: #E5E7EB; text-align: left; }
         
+        .notes-area { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
+        .btn-copy { background: transparent; border: none; color: #60A5FA; cursor: pointer; margin-left: 5px; vertical-align: middle; }
+
+        .hist-row { font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 0; color: #E5E7EB; text-align: left; }
+        .hist-row:last-child { border-bottom: none; }
+        
+        /* Selecteur personnalisé pour l'historique */
+        .select-tri { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 10px; color: #FFFFFF; font-size: 0.85rem; width: 100%; outline: none; margin-top: 5px; margin-bottom: 15px; }
+        .select-tri option { background-color: #1A2B56; color: white; }
+
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Flèche retour et icône d'historique global pour l'admin -->
         <div class="header">
             <button class="btn-retour" onclick="history.back()">⬅</button>
             <h1>Inventaire Général</h1>
             <button class="btn-hist-global" id="btn-global-hist" title="Historique Global" onclick="ouvrirHistoriqueGlobal()">🕒</button>
         </div>
         
+        <!-- Moteur de recherche live -->
         <input type="text" id="input-recherche" class="search-bar" placeholder="Rechercher nom, code, lieu, catégorie...">
         
+        <!-- Filtres -->
         <div class="filter-row">
             <button class="btn-filter active" id="tri-recent" onclick="changerTri('recent')">🕒 Récent</button>
             <button class="btn-filter" id="tri-nom" onclick="changerTri('nom')">🔤 Nom</button>
@@ -69,66 +84,282 @@
             <button class="btn-filter" id="tri-lieu" onclick="changerTri('lieu')">📍 Lieu</button>
         </div>
 
-        <p id="msg-chargement" style="text-align:center; font-size:0.9rem; color:#60A5FA;">Synchronisation... ⏳</p>
+        <p id="msg-chargement" style="text-align:center; font-size:0.9rem; color:#60A5FA;">Synchronisation de la base... ⏳</p>
+        
+        <!-- Conteneur de la liste -->
         <div class="stock-list" id="liste-stock"></div>
     </div>
 
+    <!-- MODALE FOUILLE / DESCRIPTIVE DE L'OBJET -->
     <div class="modal-overlay" id="modal-fiche">
         <div class="modal-content">
-            <h3 class="modal-title" id="fiche-nom">Détails</h3>
+            <h3 class="modal-title" id="fiche-nom">Détails de l'article</h3>
             <div class="modal-body" id="fiche-corps"></div>
-            <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:6px; font-size:0.85rem; padding:10px;">🕒 Historique mouvement</button>
-            <button class="btn-primary" onclick="fermerFiche()" style="background:transparent; border:1px solid #D1D5DB;">Fermer</button>
+            
+            <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:6px; font-size:0.85rem; padding:10px;">🕒 Historique complet des mouvements</button>
+            
+            <!-- Section Kit / Assemblage -->
+            <div id="wrapper-kit" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px; margin-bottom:8px; display:none;">
+                <p style="font-size:0.8rem; color:#60A5FA; font-weight:bold; text-align:left; margin-bottom:4px;">📦 Assembler des articles dans ce Lot</p>
+                <div style="display:flex; gap:6px; margin-bottom:5px;">
+                    <input type="text" id="input-sub-ref" placeholder="Sous-référence..." style="padding:6px; font-size:0.85rem;">
+                    <button type="button" class="btn-primary" id="btn-add-sub" style="background:#10B981; padding:6px; width:auto; font-size:0.8rem;">Ajouter</button>
+                </div>
+                <div id="kit-preview-list" style="font-size:0.7rem; color:#93C5FD; text-align:left; font-family:monospace; margin-bottom:5px;"></div>
+                <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:8px; font-size:0.8rem;">💾 Valider la composition du lot</button>
+            </div>
+
+            <p style="text-align:left; font-size:0.8rem; font-weight:bold; color:#9CA3AF; margin-bottom:4px;">📝 Notes & Suivi d'incidents</p>
+            <div class="notes-area" id="fiche-notes"></div>
+            
+            <!-- Ajout rapide de note -->
+            <div id="wrapper-note" style="display:flex; gap:6px; margin-bottom:10px;">
+                <input type="text" id="input-fiche-note" placeholder="Taper une remarque..." style="padding:8px; font-size:0.85rem;">
+                <button class="btn-primary" id="btn-save-fiche-note" style="background:#10B981; padding:8px; width:auto; font-size:0.85rem;">Ajouter</button>
+            </div>
+
+            <button class="btn-primary" id="btn-print-fiche-qr" style="background:#10B981; margin-bottom:6px;">🖨️ Réimprimer l'étiquette QR</button>
+            <button class="btn-primary" onclick="fermerFiche()" style="background:transparent; border:1px solid #D1D5DB;">Fermer la fiche</button>
         </div>
     </div>
 
+    <!-- 🌟 SOUS-NIVEAU DE MODALE : JOURNAL DE MOUVEMENTS CHRONOLOGIQUES (AVEC TRI) -->
     <div class="modal-overlay" id="modal-pop-hist">
-        <div class="modal-content" style="max-width:340px;">
-            <h3 class="modal-title" style="text-align:center;">Journal de bord</h3>
-            <div class="modal-body" id="container-rows-hist" style="max-height:300px;"></div>
+        <div class="modal-content" style="max-width:360px;">
+            <h3 class="modal-title" style="text-align:center;">🕒 Journal de bord</h3>
+            
+            <div style="text-align: left;">
+                <label for="select-tri-hist" style="font-size: 0.8rem; color: #60A5FA; font-weight: bold;">Trier l'historique par :</label>
+                <select id="select-tri-hist" class="select-tri" onchange="appliquerTriHistorique()">
+                    <option value="date-desc">📅 Date (Plus récent d'abord)</option>
+                    <option value="date-asc">📅 Date (Plus ancien d'abord)</option>
+                    <option value="nom">🔤 Nom de l'objet (A-Z)</option>
+                    <option value="action">⚙️ Type d'action</option>
+                    <option value="utilisateur">👤 Utilisateur (A-Z)</option>
+                    <option value="emplacement">📍 Emplacement</option>
+                </select>
+            </div>
+
+            <div class="modal-body" id="container-rows-hist" style="max-height:280px; margin-bottom:10px;"></div>
             <button class="btn-primary" onclick="document.getElementById('modal-pop-hist').style.display='none'">Fermer</button>
         </div>
     </div>
+
+    <!-- ENCART ALERTE UNIFIÉ -->
+    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size:1.1rem; color:white; margin-bottom:5px;" id="alert-title">Attention</h3><p style="color:#D1D5DB; font-size:0.9rem;" id="alert-message"></p><button class="btn-primary" id="btn-alert-ok" style="margin-top:15px; padding:10px;">OK</button></div></div>
 
     <div class="app-version" id="version-display"></div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
-        let inventaireComplet = []; let refActive = "";
+        const SVG_COPY = `<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="display:inline-block; vertical-align:middle;"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>`;
+        
+        let inventaireComplet = []; 
+        let inventaireFiltre = []; 
+        let triActuel = "recent"; 
+        let refActive = ""; 
+        let trackedSubRefs = [];
+        let historiqueActuel = []; // Stockage temporaire des données d'historique pour le tri en direct
 
-        document.getElementById('version-display').textContent = "Version 0.9.1";
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9.1');
 
+        function afficherAlerte(titre, message, isSuccess = false) {
+            document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
+            document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message;
+            document.getElementById('custom-alert').style.display = 'flex';
+        }
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+
+        window.copierReference = function(ref, e) { if(e) e.stopPropagation(); navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); }); };
+
+        // INITIALISATION ET RÉCUPÉRATION INVENTAIRE
         window.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('app_role') === 'admin') document.getElementById('btn-global-hist').style.display = 'block';
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", ...payloadBase }) })
-            .then(r => r.json()).then(d => { if(d.result==="success") { inventaireComplet=d.data; document.getElementById('msg-chargement').style.display='none'; renderListe(); } });
+            if (localStorage.getItem('app_role') === 'admin') {
+                document.getElementById('btn-global-hist').style.display = 'block';
+            }
+            if(navigator.onLine) {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", ...payloadBase }) })
+                .then(r => r.json()).then(d => {
+                    document.getElementById('msg-chargement').style.display = 'none';
+                    if (d.result === "success") { 
+                        inventaireComplet = d.data; 
+                        localStorage.setItem('miroir_stock', JSON.stringify(d.data)); 
+                        appliquerTriEtFiltre(); 
+                    } else { chargerFailsafeLocal(); }
+                }).catch(() => { chargerFailsafeLocal(); });
+            } else { chargerFailsafeLocal(); }
         });
 
-        // 🌟 CORRECTION HISTORIQUE GLOBAL
-        function ouvrirHistoriqueGlobal() {
-            const rowBox = document.getElementById('container-rows-hist'); rowBox.textContent = "Chargement... ⏳";
-            document.getElementById('modal-pop-hist').style.display = 'flex';
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_historique", ...payloadBase }) })
-            .then(r => r.json()).then(d => {
-                if(d.result==="success") { rowBox.innerHTML = d.data.map(l => `<div class="hist-row"><b>${new Date(l.date).toLocaleString()}</b><br>[${l.action}] ${l.nom} : ${l.detail}</div>`).join(''); }
+        function chargerFailsafeLocal() {
+            document.getElementById('msg-chargement').style.display = 'none';
+            if(localStorage.getItem('miroir_stock')) { 
+                inventaireComplet = JSON.parse(localStorage.getItem('miroir_stock')); 
+                appliquerTriEtFiltre(); 
+            } else { 
+                document.getElementById('liste-stock').innerHTML = "<p style='text-align:center;color:#FCA5A5;'>Base locale indisponible.</p>"; 
+            }
+        }
+
+        // 🌟 GESTION INTÉGRALE DE LA RECHERCHE ET DES TRIS DE L'INVENTAIRE
+        document.getElementById('input-recherche').addEventListener('input', appliquerTriEtFiltre);
+        
+        function changerTri(type) {
+            triActuel = type; 
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            if(type==='recent') document.getElementById('tri-recent').classList.add('active');
+            if(type==='nom') document.getElementById('tri-nom').classList.add('active');
+            if(type==='cat') document.getElementById('tri-cat').classList.add('active');
+            if(type==='lieu') document.getElementById('tri-lieu').classList.add('active');
+            appliquerTriEtFiltre();
+        }
+
+        function appliquerTriEtFiltre() {
+            let s = document.getElementById('input-recherche').value.trim().toLowerCase();
+            let role = localStorage.getItem('app_role');
+            let listeDeBase = role === 'admin' ? inventaireComplet : inventaireComplet.filter(x => !x.estSorti);
+
+            if(s) {
+                inventaireFiltre = listeDeBase.filter(x => String(x.nom).toLowerCase().includes(s) || String(x.reference).toLowerCase().includes(s) || String(x.emplacement).toLowerCase().includes(s) || String(x.categorie).toLowerCase().includes(s));
+            } else { 
+                inventaireFiltre = [...listeDeBase]; 
+            }
+
+            if (triActuel === "recent") { inventaireFiltre.sort((a, b) => new Date(b.dateAjout || 0) - new Date(a.dateAjout || 0)); } 
+            else if (triActuel === "nom") { inventaireFiltre.sort((a, b) => String(a.nom).localeCompare(String(b.nom))); } 
+            else if (triActuel === "cat") { inventaireFiltre.sort((a, b) => { if(a.categorie === "Non classé") return 1; if(b.categorie === "Non classé") return -1; return String(a.categorie).localeCompare(String(b.categorie)); }); } 
+            else if (triActuel === "lieu") { inventaireFiltre.sort((a, b) => String(a.emplacement).localeCompare(String(b.emplacement))); }
+            
+            renderListe();
+        }
+
+        function renderListe() {
+            const container = document.getElementById('liste-stock'); 
+            container.innerHTML = "";
+            if(inventaireFiltre.length === 0) { 
+                container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article.</p>"; 
+                return; 
+            }
+            inventaireFiltre.forEach(item => {
+                const card = document.createElement('div'); card.className = 'stock-card'; 
+                card.onclick = () => ouvrirFiche(item);
+                let outText = item.estSorti ? '<span class="status-badge-out">🔴 ARCHIVÉ (SORTI)</span>' : '';
+                card.innerHTML = `<div class="card-left"><div class="card-title">${item.nom}</div><div class="card-ref">${item.reference}</div></div><div class="card-right"><div class="card-loc">${item.emplacement || "N/A"}</div><div class="card-cat">${item.categorie}</div>${outText}</div>`;
+                container.appendChild(card);
             });
         }
 
-        // 🌟 CORRECTION HISTORIQUE INDIVIDUEL
-        document.getElementById('btn-hist-indiv').addEventListener('click', function() {
-            const rowBox = document.getElementById('container-rows-hist'); rowBox.textContent = "Chargement... ⏳";
+        // FICHE DESCRIPTIVE D'UN OBJET
+        function ouvrirFiche(item) {
+            refActive = item.reference; trackedSubRefs = []; document.getElementById('kit-preview-list').textContent = "";
+            document.getElementById('fiche-nom').textContent = item.nom; document.getElementById('fiche-notes').textContent = item.notes || "Aucune note consignée.";
+            
+            let dForm = item.dateAjout ? new Date(item.dateAjout).toLocaleDateString('fr-FR') : "Inconnue";
+            let c = document.getElementById('fiche-corps');
+            let baseRows = `<p>Référence : <span class="valeur">${item.reference} <button class="btn-copy" onclick="copierReference('${item.reference}', event)">${SVG_COPY}</button></span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p><p>Catégorie : <span class="valeur">${item.categorie}</span></p>`;
+            
+            if(localStorage.getItem('app_role') === 'admin') {
+                let dOutForm = item.dateSortie ? "le " + new Date(item.dateSortie).toLocaleDateString('fr-FR') : "En stock actif";
+                c.innerHTML = baseRows + `<p>Date de création : <span class="valeur">${dForm}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Registre Sortie : <span class="valeur">${dOutForm}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "N/A"}</span></p>`;
+            } else { c.innerHTML = baseRows; }
+
+            let role = localStorage.getItem('app_role');
+            if(role === 'lecteur') { document.getElementById('wrapper-kit').style.display = 'none'; document.getElementById('wrapper-note').style.display = 'none'; } 
+            else { document.getElementById('wrapper-kit').style.display = 'block'; document.getElementById('wrapper-note').style.display = 'flex'; }
+            document.getElementById('modal-fiche').style.display = 'flex';
+        }
+        function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
+
+        // 🌟 GESTION DE L'HISTORIQUE (AVEC SYSTÈME DE TRI INTÉGRÉ)
+        function appliquerTriHistorique() {
+            const critere = document.getElementById('select-tri-hist').value;
+            const rowBox = document.getElementById('container-rows-hist');
+            
+            let dataTriee = [...historiqueActuel];
+            
+            dataTriee.sort((a, b) => {
+                if (critere === 'date-desc') return new Date(b.date) - new Date(a.date);
+                if (critere === 'date-asc') return new Date(a.date) - new Date(b.date);
+                if (critere === 'nom') return String(a.nom || '').localeCompare(String(b.nom || ''));
+                if (critere === 'action') return String(a.action || '').localeCompare(String(b.action || ''));
+                if (critere === 'utilisateur') return String(a.utilisateur || '').localeCompare(String(b.utilisateur || ''));
+                if (critere === 'emplacement') return String(a.emplacement || a.detail || '').localeCompare(String(b.emplacement || b.detail || ''));
+                return 0;
+            });
+            
+            if (dataTriee.length > 0) {
+                rowBox.innerHTML = dataTriee.map(l => {
+                    let dObj = new Date(l.date); 
+                    let str = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+                    let actionBadge = `<span style="color:#60A5FA; font-weight:bold;">[${l.action}]</span>`;
+                    return `<div class="hist-row"><b>${str}</b><br>${actionBadge} <b>${l.nom || 'Objet inconnu'}</b> par <i>${l.utilisateur}</i> <br><span style="color:#D1D5DB;">${l.detail}</span></div>`;
+                }).join('');
+            } else {
+                rowBox.innerHTML = "<p style='text-align:center;'>Aucun historique trouvé.</p>";
+            }
+        }
+
+        // Ouverture de l'historique Global (Toute la base)
+        function ouvrirHistoriqueGlobal() {
+            const rowBox = document.getElementById('container-rows-hist'); 
+            rowBox.innerHTML = "<p style='text-align:center;'>Chargement... ⏳</p>";
+            document.getElementById('select-tri-hist').value = "date-desc"; // Reset du selecteur sur Date récente
             document.getElementById('modal-pop-hist').style.display = 'flex';
+            
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_historique", ...payloadBase }) })
+            .then(r => r.json()).then(d => {
+                if(d.result === "success") {
+                    historiqueActuel = d.data;
+                    appliquerTriHistorique();
+                } else { rowBox.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>"; }
+            }).catch(() => { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de réseau.</p>"; });
+        }
+
+        // Ouverture de l'historique Individuel (Un seul objet)
+        document.getElementById('btn-hist-indiv').addEventListener('click', function() {
+            const rowBox = document.getElementById('container-rows-hist'); 
+            rowBox.innerHTML = "<p style='text-align:center;'>Chargement... ⏳</p>";
+            document.getElementById('select-tri-hist').value = "date-desc"; // Reset du selecteur
+            document.getElementById('modal-pop-hist').style.display = 'flex';
+            
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_item_history", reference: refActive, ...payloadBase }) })
-            .then(r => r.json()).then(d => { if(d.result==="success") rowBox.innerHTML = d.data.map(l => `<div class="hist-row"><b>${new Date(l.date).toLocaleString()}</b><br>[${l.action}] : ${l.detail}</div>`).join(''); });
+            .then(r => r.json()).then(d => {
+                if(d.result === "success") {
+                    historiqueActuel = d.data;
+                    appliquerTriHistorique();
+                } else { rowBox.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>"; }
+            }).catch(() => { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de réseau.</p>"; });
         });
 
-        function ouvrirFiche(item) { refActive = item.reference; document.getElementById('fiche-nom').textContent = item.nom; document.getElementById('fiche-corps').innerHTML = `<p>Réf : <span class="valeur">${item.reference}</span></p><p>Lieu : <span class="valeur">${item.emplacement}</span></p>`; document.getElementById('modal-fiche').style.display = 'flex'; }
-        function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
-        
-        function changerTri(t) { /* Logique de tri maintenue */ renderListe(); }
-        document.getElementById('input-recherche').addEventListener('input', renderListe);
-        function renderListe() { /* Logique de rendu maintenue */ }
+        // 🌟 KITS ET BUNDLES
+        document.getElementById('btn-add-sub').addEventListener('click', function() {
+            let val = document.getElementById('input-sub-ref').value.trim().toUpperCase();
+            if(val && !trackedSubRefs.includes(val)) { trackedSubRefs.push(val); document.getElementById('input-sub-ref').value = ""; document.getElementById('kit-preview-list').innerHTML = trackedSubRefs.map(r => `📦 ${r}`).join('<br>'); }
+        });
+        document.getElementById('btn-save-kit').addEventListener('click', function() {
+            if(trackedSubRefs.length === 0) return;
+            let packText = `[Composition Lot/Kit]: Contient ${trackedSubRefs.length} articles (${trackedSubRefs.join(', ')})`;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: packText, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('kit-preview-list').textContent = ""; trackedSubRefs = []; afficherAlerte("Succès", "Lot assemblé !", true); } });
+        });
+
+        // 🌟 SUIVI DES INCIDENTS (NOTES)
+        document.getElementById('btn-save-fiche-note').addEventListener('click', function() {
+            let txt = document.getElementById('input-fiche-note').value.trim(); if(!txt) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: txt, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('input-fiche-note').value = ""; } });
+        });
+
+        // 🌟 RÉIMPRESSION STRICTE QR
+        document.getElementById('btn-print-fiche-qr').addEventListener('click', function() {
+            const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document;
+            doc.write(`<html><head><style>body { text-align: center; padding-top: 20px; } img.logo { width: 60px; margin-bottom: 8px; } div.box { border: 1px solid #ccc; padding: 15px; width: 170px; margin: 0 auto; border-radius: 6px; }</style></head><body><div class="box"><img class="logo" src="icon-192.png"/><br><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(refActive)}" onload="window.print();"/></div></body></html>`);
+            doc.close(); setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+        });
+    </script>
+    <script>
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>
