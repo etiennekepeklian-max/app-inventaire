@@ -39,7 +39,6 @@
         .btn-hist-global:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.4rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
 
-        /* 🌟 NOUVEAU : FILTRES MULTICRITÈRES CROISÉS */
         .search-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
         .search-bar { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; color: white; font-size: 1rem; outline: none; }
         .search-bar::placeholder { color: var(--text-muted); }
@@ -51,7 +50,6 @@
         .btn-filter { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-muted); padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .btn-filter.active { background: var(--accent-blue); color: white; border-color: rgba(96, 165, 250, 0.5); }
 
-        /* Liste et Cartes d'objets (Glassmorphism) */
         .stock-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
         .stock-card { background: var(--glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .stock-card:active { transform: scale(0.96); background: var(--glass-highlight); }
@@ -63,22 +61,18 @@
         .card-cat { font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; color: var(--text-muted); display: inline-block; width: max-content; align-self: flex-end; }
         .status-badge-out { font-size: 0.75rem; color: #FCA5A5; font-weight: bold; }
 
-        /* 🌟 NOUVEAU : SKELETON LOADERS (Animation de chargement) */
         @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
         .skeleton { background: linear-gradient(to right, rgba(255,255,255,0.05) 8%, rgba(255,255,255,0.1) 18%, rgba(255,255,255,0.05) 33%); background-size: 800px 100%; animation: shimmer 2s infinite linear; border-radius: 6px; }
         .skeleton-card { display: flex; justify-content: space-between; }
         .skeleton-text-lg { width: 120px; height: 18px; margin-bottom: 8px; }
         .skeleton-text-sm { width: 80px; height: 14px; }
 
-        /* Boutons d'action */
         .btn-primary { background-color: var(--accent-blue); border: none; padding: 14px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         .btn-primary:active { transform: scale(0.96); }
 
-        /* Bouton d'Aide Global Flottant */
         .btn-global-help { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; text-decoration: none; color: var(--text-main); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
         .btn-global-help:active { transform: scale(0.85); background: var(--glass-highlight); }
 
-        /* Modales en Glassmorphism */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
         .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 92%; max-width: 380px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         .modal-title { font-size: 1.25rem; color: #60A5FA; margin-bottom: 12px; font-weight: bold; text-align: left; }
@@ -87,13 +81,20 @@
         .modal-body p { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
         .modal-body span.valeur { color: white; font-weight: bold; }
         
+        /* 🌟 NOUVEAU : Styles pour la Galerie Photos */
+        .fiche-photo { height: 75px; width: 75px; border-radius: 8px; object-fit: cover; border: 1px solid var(--glass-border); cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; }
+        .fiche-photo:active { transform: scale(0.9); }
+        #modal-photo-fullscreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); flex-direction: column; padding: 20px; }
+        #fullscreen-img-target { max-width: 100%; max-height: 80vh; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 10px 50px rgba(0,0,0,0.8); object-fit: contain; }
+        .btn-close-photo { margin-top: 25px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 12px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); }
+        .btn-close-photo:active { background: rgba(255,255,255,0.25); transform: scale(0.95); }
+
         .notes-area { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; font-size: 0.85rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
         .btn-copy { background: transparent; border: none; color: #60A5FA; cursor: pointer; margin-left: 5px; vertical-align: middle; }
 
         .hist-row { font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 0; color: #E5E7EB; text-align: left; line-height: 1.4;}
         .hist-row:last-child { border-bottom: none; }
         
-        /* 🌟 NOUVEAU : Modale Lecture Rapide (Double Tap) */
         .quick-view-ref { font-size: 2.5rem; font-family: monospace; color: #60A5FA; font-weight: 900; letter-spacing: 2px; margin: 15px 0; }
         .quick-view-qr { width: 160px; height: 160px; margin: 0 auto 20px auto; border-radius: 10px; border: 4px solid white; }
 
@@ -124,14 +125,11 @@
         </div>
         
         <div class="stock-list" id="liste-stock">
-            <!-- Skeletons Loaders injectés en JS -->
-        </div>
+            </div>
     </div>
 
-    <!-- BOUTON D'AIDE GLOBAL -->
     <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
-    <!-- 🌟 NOUVEAU : MODALE LECTURE RAPIDE (DOUBLE TAP) -->
     <div class="modal-overlay" id="modal-quick-view">
         <div class="modal-content" style="align-items: center;">
             <h3 style="color: white; font-size: 1.1rem; text-transform: uppercase;">Contrôle Rapide</h3>
@@ -141,12 +139,13 @@
         </div>
     </div>
 
-    <!-- MODALE FOUILLE / DESCRIPTIVE DE L'OBJET -->
     <div class="modal-overlay" id="modal-fiche">
         <div class="modal-content">
             <h3 class="modal-title" id="fiche-nom">Détails de l'article</h3>
             <div class="modal-body" id="fiche-corps"></div>
             
+            <div id="fiche-photos" style="display:none; gap:10px; overflow-x:auto; margin-bottom:15px; padding-bottom:5px;"></div>
+
             <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:10px; font-size:0.9rem;" onclick="triggerHaptic()">🕒 Historique complet des mouvements</button>
             
             <div id="wrapper-kit" style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); padding:12px; border-radius:12px; margin-bottom:10px; display:none;">
@@ -172,7 +171,11 @@
         </div>
     </div>
 
-    <!-- MODALE HISTORIQUE GLOBAL (SUPER-FILTRES) -->
+    <div id="modal-photo-fullscreen" onclick="fermerPhotoBigger()">
+        <img id="fullscreen-img-target" src="" alt="Zoom Photo" onclick="event.stopPropagation()">
+        <button class="btn-close-photo" onclick="triggerHaptic(); fermerPhotoBigger()">Retour à la fiche</button>
+    </div>
+
     <div class="modal-overlay" id="modal-pop-hist">
         <div class="modal-content" style="max-width:380px; padding:15px;">
             <h3 class="modal-title" style="text-align:center; font-size:1.15rem; margin-bottom:15px; color:white;">🕒 Journal de bord</h3>
@@ -219,7 +222,11 @@
         document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
 
         // 🌟 RETOUR HAPTIQUE GLOBAL
-        window.triggerHaptic = function() { if (navigator.vibrate) { navigator.vibrate(40); } };
+        window.triggerHaptic = function() { 
+            if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
+                navigator.vibrate(40); 
+            }
+        };
 
         function afficherAlerte(titre, message, isSuccess = false) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
@@ -231,7 +238,16 @@
 
         window.copierReference = function(ref, e) { if(e) e.stopPropagation(); triggerHaptic(); navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); }); };
 
-        // 🌟 AFFICHER SKELETONS LOADERS AVANT LES DONNÉES
+        // 🌟 ZOOM PHOTO
+        window.ouvrirPhotoBigger = function(src) {
+            document.getElementById('fullscreen-img-target').src = src;
+            document.getElementById('modal-photo-fullscreen').style.display = 'flex';
+        };
+        window.fermerPhotoBigger = function() {
+            document.getElementById('modal-photo-fullscreen').style.display = 'none';
+            document.getElementById('fullscreen-img-target').src = '';
+        };
+
         function renderSkeletons() {
             const container = document.getElementById('liste-stock');
             container.innerHTML = "";
@@ -251,7 +267,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            renderSkeletons(); // Affichage immédiat des Skeletons au lancement
+            renderSkeletons(); 
             
             if (localStorage.getItem('app_role') === 'admin') {
                 document.getElementById('btn-global-hist').style.display = 'block';
@@ -279,7 +295,6 @@
             }
         }
 
-        // 🌟 PEUPLER DYNAMIQUEMENT LES FILTRES CROISÉS (Catégorie & Lieu)
         function peuplerFiltresCroises() {
             const categories = [...new Set(inventaireComplet.map(item => item.categorie))].filter(Boolean).sort();
             const emplacements = [...new Set(inventaireComplet.map(item => item.emplacement))].filter(Boolean).sort();
@@ -306,7 +321,6 @@
             appliquerTriEtFiltre();
         }
 
-        // 🌟 FILTRES MULTICRITÈRES CROISÉS
         function appliquerTriEtFiltre() {
             let search = document.getElementById('input-recherche').value.trim().toLowerCase();
             let filCat = document.getElementById('filter-cat').value;
@@ -329,7 +343,6 @@
             renderListe();
         }
 
-        // 🌟 GESTION DE LA LECTURE RAPIDE (DOUBLE TAP)
         let tapTimer = null;
         let lastTapTime = 0;
         
@@ -338,12 +351,10 @@
             let tapLength = currentTime - lastTapTime;
 
             if (tapLength < 300 && tapLength > 0) {
-                // DOUBLE TAP DÉTECTÉ
                 clearTimeout(tapTimer);
                 triggerHaptic();
                 ouvrirLectureRapide(item);
             } else {
-                // SINGLE TAP (Attente courte pour voir si c'est un double)
                 tapTimer = setTimeout(() => {
                     triggerHaptic();
                     ouvrirFiche(item);
@@ -385,14 +396,35 @@
                 c.innerHTML = baseRows + `<p>Date de création : <span class="valeur">${dForm}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Registre Sortie : <span class="valeur">${dOutForm}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "N/A"}</span></p>`;
             } else { c.innerHTML = baseRows; }
 
+            // 🌟 GESTION DE L'AFFICHAGE DES PHOTOS (Sécurisé)
+            const photoContainer = document.getElementById('fiche-photos');
+            photoContainer.innerHTML = '';
+            let photosArray = [];
+            
+            if (item.photos && Array.isArray(item.photos)) { photosArray = item.photos; }
+            else if (item.photos && typeof item.photos === 'string') {
+                try { photosArray = JSON.parse(item.photos); } catch(e) { photosArray = [item.photos]; }
+            } else if (item.imageQR) { photosArray = [item.imageQR]; }
+            
+            if (photosArray.length > 0) {
+                photoContainer.style.display = 'flex';
+                photosArray.forEach(p => {
+                    if(p && p.length > 10) { 
+                        photoContainer.innerHTML += `<img src="${p}" class="fiche-photo" onclick="triggerHaptic(); ouvrirPhotoBigger('${p}')" />`;
+                    }
+                });
+            } else {
+                photoContainer.style.display = 'none';
+            }
+
             let role = localStorage.getItem('app_role');
             if(role === 'lecteur') { document.getElementById('wrapper-kit').style.display = 'none'; document.getElementById('wrapper-note').style.display = 'none'; } 
             else { document.getElementById('wrapper-kit').style.display = 'block'; document.getElementById('wrapper-note').style.display = 'flex'; }
             document.getElementById('modal-fiche').style.display = 'flex';
         }
+
         function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
 
-        // GESTION DES FILTRES HISTORIQUE DYNAMIQUES
         document.getElementById('hist-search').addEventListener('input', appliquerFiltresHistorique);
         document.getElementById('hist-sort-date').addEventListener('change', appliquerFiltresHistorique);
         document.getElementById('hist-filter-user').addEventListener('change', appliquerFiltresHistorique);

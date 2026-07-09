@@ -86,6 +86,14 @@
         .info-card p { font-size: 0.95rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .info-card span.valeur { color: #FFFFFF; font-weight: bold; display: flex; align-items: center; }
 
+        /* 🌟 GALERIE PHOTOS */
+        .fiche-photo { height: 75px; width: 75px; border-radius: 8px; object-fit: cover; border: 1px solid var(--glass-border); cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); flex-shrink: 0; }
+        .fiche-photo:active { transform: scale(0.9); }
+        #modal-photo-fullscreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); flex-direction: column; padding: 20px; }
+        #fullscreen-img-target { max-width: 100%; max-height: 80vh; border-radius: 12px; border: 1px solid var(--glass-border); box-shadow: 0 10px 50px rgba(0,0,0,0.8); object-fit: contain; }
+        .btn-close-photo { margin-top: 25px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 12px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); }
+        .btn-close-photo:active { background: rgba(255,255,255,0.25); transform: scale(0.95); }
+
         .notes-area { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); font-size: 0.85rem; color: #D1D5DB; max-height: 100px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
 
         .choix-actions { display: flex; gap: 10px; margin-top: 5px; }
@@ -170,6 +178,8 @@
                 <h2 id="info-nom">Fiche Objet</h2>
                 <div id="zone-details-roles"></div>
                 
+                <div id="fiche-photos" style="display:none; gap:10px; overflow-x:auto; margin-bottom:5px; padding-bottom:5px;"></div>
+
                 <button class="btn-primary" id="btn-voir-historique-objet" style="background:#8B5CF6; padding:12px; font-size:0.9rem; margin-top:5px;" onclick="triggerHaptic()">🕒 Historique de cet objet</button>
 
                 <div style="background: rgba(0,0,0,0.2); padding:12px; border-radius:12px; margin-top:8px; border:1px solid var(--glass-border);">
@@ -230,6 +240,11 @@
 
     <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
+    <div id="modal-photo-fullscreen" onclick="fermerPhotoBigger()">
+        <img id="fullscreen-img-target" src="" alt="Zoom Photo" onclick="event.stopPropagation()">
+        <button class="btn-close-photo" onclick="triggerHaptic(); fermerPhotoBigger()">Retour à la fiche</button>
+    </div>
+
     <div class="modal-overlay" id="modal-confirmation">
         <div class="modal-content">
             <h3 class="modal-title" style="color: #FCA5A5;">⚠️ Confirmation</h3>
@@ -278,13 +293,23 @@
         let modeActuel = "unique"; let referenceScannee = ""; let listeRafale = []; let html5QrcodeScanner;
         let trackedKitRefs = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.2');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
 
         // 🌟 RETOUR HAPTIQUE GLOBAL
         window.triggerHaptic = function() {
             if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
                 navigator.vibrate(40); 
             }
+        };
+
+        // 🌟 ZOOM PHOTO
+        window.ouvrirPhotoBigger = function(src) {
+            document.getElementById('fullscreen-img-target').src = src;
+            document.getElementById('modal-photo-fullscreen').style.display = 'flex';
+        };
+        window.fermerPhotoBigger = function() {
+            document.getElementById('modal-photo-fullscreen').style.display = 'none';
+            document.getElementById('fullscreen-img-target').src = '';
         };
 
         // 🌟 ALERTE SONORE : ERREUR CRITIQUE (Objet sorti ou inconnu)
@@ -380,6 +405,27 @@
                 zoneDetails.innerHTML = refRow + `<p>Catégorie : <span class="valeur">${item.categorie}</span></p><p>Emplacement : <span class="valeur">${item.emplacement}</span></p><p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Statut sortie : <span class="valeur">${dateSortieFormatee}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>`;
             } else { zoneDetails.innerHTML = refRow + `<p>Nom de l'objet : <span class="valeur">${item.nom}</span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>`; }
             
+            // 🌟 GESTION DE L'AFFICHAGE DES PHOTOS (Sécurisé)
+            const photoContainer = document.getElementById('fiche-photos');
+            photoContainer.innerHTML = '';
+            let photosArray = [];
+            
+            if (item.photos && Array.isArray(item.photos)) { photosArray = item.photos; }
+            else if (item.photos && typeof item.photos === 'string') {
+                try { photosArray = JSON.parse(item.photos); } catch(e) { photosArray = [item.photos]; }
+            } else if (item.imageQR) { photosArray = [item.imageQR]; }
+            
+            if (photosArray.length > 0) {
+                photoContainer.style.display = 'flex';
+                photosArray.forEach(p => {
+                    if(p && p.length > 10) { 
+                        photoContainer.innerHTML += `<img src="${p}" class="fiche-photo" onclick="triggerHaptic(); ouvrirPhotoBigger('${p}')" />`;
+                    }
+                });
+            } else {
+                photoContainer.style.display = 'none';
+            }
+
             if (item.estSorti) { document.getElementById('actions-actives').style.display = 'none'; document.getElementById('btn-reintegrer').style.display = 'block'; } 
             else { document.getElementById('actions-actives').style.display = 'flex'; document.getElementById('btn-reintegrer').style.display = 'none'; }
             infoCardRafale.style.display = 'none'; infoCardUnique.style.display = 'block'; blocInfos.style.display = 'flex';
