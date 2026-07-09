@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Centre d'aide</title>
+    <title>Centre d'aide - v0.9</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; transition: transform 0.2s; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
         
@@ -28,121 +28,59 @@
         details li { margin-bottom: 8px; }
         .tag { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #93C5FD; }
         .highlight { color: #10B981; font-weight: bold; }
+        .app-version { position: fixed; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Centre d'aide</h1></div>
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Centre d'aide</h1></div>
         
-        <p class="intro-text">
-            💡 <b>Astuce :</b> Cliquez sur le petit logo à droite d'une référence pour la copier instantanément !
-        </p>
+        <p class="intro-text">Bienvenue dans la version 0.9. Voici comment utiliser vos nouveaux outils logistiques.</p>
 
         <details open>
-            <summary>🔍 Rechercher et Scanner</summary>
-            <p>Ouvrez la fiche complète d'un objet en flashant son QR Code ou en tapant une partie de son nom/référence.</p>
+            <summary>🔍 Recherche et Scan Commercial</summary>
             <ul>
-                <li><b>Détails :</b> Affiche l'emplacement, la catégorie, le créateur, les notes et le statut.</li>
-                <li><b>Ajouter une note :</b> Insérez une remarque datée et signée à votre nom directement depuis la fiche.</li>
-                <li><b>Actions :</b> Depuis cette fiche, vous pouvez <span class="tag">Déplacer</span> ou <span class="tag">Sortir</span> l'objet.</li>
-                <li>↩️ <b>Réintégrer :</b> Si vous scannez un objet qui était "Sorti", un bouton vous permettra de le remettre instantanément en stock actif.</li>
+                <li><b>Scan universel :</b> Le lecteur reconnait vos QR codes internes ET les codes-barres standards (EAN/UPC) du commerce.</li>
+                <li><b>Historique objet :</b> Sur n'importe quelle fiche, cliquez sur "Historique mouvement" pour voir précisément qui a bougé l'objet et quand.</li>
+                <li><b>Lots & Kits :</b> Utilisez l'assembleur de lots pour lier plusieurs références à un objet "Parent". Idéal pour les kits, boîtes mystères ou expéditions groupées.</li>
             </ul>
         </details>
 
         <details>
-            <summary>➕ Ajouter / Corriger un objet</summary>
-            <p>Ce module permet d'enregistrer de nouveaux objets dans l'inventaire.</p>
+            <summary>📦 Audit et Rapport</summary>
             <ul>
-                <li><b>Référence auto :</b> Tapez le nom de l'objet, la référence se génère toute seule. Vous pouvez la modifier si besoin.</li>
-                <li><b>Catégories :</b> Sélectionnez la catégorie dans le menu déroulant (trié de A à Z).</li>
-                <li><b>Notes :</b> Vous pouvez ajouter un commentaire (état, remarque particulière).</li>
-                <li>🖨️ Une fois validé, imprimez <b>l'étiquette QR Code</b> directement depuis votre mobile.</li>
-                <li>✏️ <b>Corriger :</b> Si vous avez fait une erreur de frappe, cliquez sur "Corriger une erreur" après validation, modifiez le texte et ré-enregistrez pour écraser la faute.</li>
+                <li><b>Auto-diagnostic :</b> Un objet scanné qui est déclaré "Sorti" en base sera immédiatement signalé en anomalie.</li>
+                <li><b>Fusion :</b> Copiez/Collez des listes de scans pour assembler le travail de plusieurs opérateurs sur une même zone.</li>
+                <li><b>Impression épurée :</b> Le rapport généré est automatiquement mis en page pour ne conserver que l'essentiel : les présences, les manquants et les anomalies.</li>
             </ul>
         </details>
 
         <details>
-            <summary>🔄 Déplacer un article</summary>
-            <p>Pour modifier l'emplacement d'un objet existant.</p>
+            <summary>⚙️ Administration et Diagnostics</summary>
             <ul>
-                <li>Flashez le QR code ou saisissez manuellement sa référence.</li>
-                <li>Indiquez sa nouvelle destination (ex: Camionnette B).</li>
+                <li><b>Zones structurées :</b> Les emplacements sont désormais gérés via une liste administrative unique pour éviter les doublons de saisie.</li>
+                <li><b>Diagnostic Système (🩺) :</b> Accédez à la tuile Diag pour tester la santé de votre serveur, de votre caméra et du stockage de votre appareil en un clic.</li>
+                <li><b>Rôles avancés :</b> Le nouveau rôle "Lecteur" permet de scanner et auditer sans risque de modifier la base de données.</li>
             </ul>
         </details>
 
         <details>
-            <summary>📤 Sortir un article</summary>
-            <p>Pour archiver un objet qui quitte le stock (Vente, Restauration, Destruction...).</p>
+            <summary>📋 Gestion quotidienne</summary>
             <ul>
-                <li>Indiquez obligatoirement la raison (le motif) pour valider la sortie. Il sera conservé dans l'historique et sur la fiche de l'objet.</li>
-            </ul>
-        </details>
-
-        <details>
-            <summary>📋 Inventaire et Historique</summary>
-            <p>Consultez la base de données complète, triée <span class="highlight">par défaut du plus récent au plus ancien</span>.</p>
-            <ul>
-                <li><b>Tri & Recherche :</b> Utilisez les boutons bleus pour trier par Nom, Catégorie ou Lieu. La barre de recherche filtre instantanément la liste.</li>
-                <li><b>Fiche au clic :</b> Touchez n'importe quelle carte pour ouvrir la fiche détaillée.</li>
-                <li>🖨️ <b>Réimprimer :</b> Depuis la fiche d'un objet en inventaire, vous pouvez réimprimer son QR Code à tout moment.</li>
-                <li>🕒 <b>L'Historique (Admin) :</b> L'icône en haut à droite permet de voir le journal de bord de toutes les actions de l'équipe.</li>
-            </ul>
-        </details>
-
-        <details>
-            <summary>🚀 Le Mode Rafale (Scan multiple)</summary>
-            <p>Disponible dans la zone "Rechercher et Scanner", ce mode permet de traiter des lots d'objets.</p>
-            <ul>
-                <li>Scannez vos objets à la chaîne. La caméra reste allumée et mémorise la liste.</li>
-                <li>Une fois terminé, choisissez de déplacer ou d'archiver tout le lot d'objets en <b>un seul clic</b>.</li>
-            </ul>
-        </details>
-
-        <details>
-            <summary>📦 Faire un Audit</summary>
-            <p>Outil de pointage puissant pour vérifier votre stock. Synchronisé en temps réel avec la base de données.</p>
-            <ul>
-                <li><b>Audit de zone :</b> Spécifiez une réserve et scannez ce qui s'y trouve.</li>
-                <li><b>Audit Total :</b> Scannez tous les objets de l'entreprise sans distinction de pièces.</li>
-                <li>🛠️ <b>Outils d'audit :</b> Si un QR est illisible, utilisez la <b>Saisie Manuelle</b>. Vous pouvez aussi <b>Mettre en pause</b> votre audit pour le reprendre plus tard, ou utiliser la <b>Fusion Collaborative</b> pour assembler vos scans avec ceux d'un collègue.</li>
-                <li><b>Le Rapport :</b> L'application calcule les objets confirmés (🟢), manquants (🔴), et inconnus ou mal rangés (🟡).</li>
-                <li>🖨️ Vous pouvez <b>Imprimer le rapport détaillé</b> à la fin de l'audit pour conserver une trace des anomalies et des présences.</li>
-            </ul>
-        </details>
-
-        <details>
-            <summary>⚙️ L'Administration (Réservé Admin)</summary>
-            <p>Espace de gestion réservé aux responsables de l'application :</p>
-            <ul>
-                <li>🏷️ <b>Gérer les catégories :</b> Ajoutez de nouvelles catégories ou supprimez-en avec la croix rouge.</li>
-                <li>📥 <b>Import de fichier CSV :</b> Chargez un fichier pour importer jusqu'à 500 objets. L'outil est <span class="highlight">intelligent</span> : si une référence du fichier existe déjà dans l'application, elle sera mise à jour au lieu d'être créée en double.</li>
-                <li>📤 <b>Export CSV :</b> Téléchargez l'inventaire formaté en 11 colonnes, structuré exactement comme la base de données.</li>
-                <li>👥 <b>L'équipe :</b> Créez de nouveaux accès, modifiez les mots de passe, ou supprimez définitivement des comptes.</li>
-            </ul>
-        </details>
-
-        <details>
-            <summary>👤 Mon Profil & Sécurité</summary>
-            <p>Accessible via l'icône Profil sur la page d'accueil :</p>
-            <ul>
-                <li><b>Mot de passe :</b> Modifiez votre clé d'accès personnelle.</li>
-                <li><b>Vider le cache :</b> Un bouton de maintenance pour forcer la mise à jour visuelle si l'application rencontre un bug d'affichage.</li>
-                <li>⏱️ <b>Sécurité d'arrière-plan :</b> Si l'application reste cachée ou que votre téléphone est verrouillé pendant plus de <b>30 secondes</b>, l'accès se bloque automatiquement pour protéger vos données.</li>
+                <li><b>Historique Global :</b> Accessible aux Admins via l'icône 🕒 dans la barre de titre de l'inventaire.</li>
+                <li><b>Impression étiquette :</b> L'impression a été simplifiée pour ne conserver que votre logo et le QR code de l'objet.</li>
             </ul>
         </details>
     </div>
-    
+
+    <div class="app-version" id="version-display">Version 0.9</div>
+
     <script>
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                timeoutId = setTimeout(() => {
-                    localStorage.clear();
-                    window.location.href = "login.html";
-                }, 30000); 
-            } else {
-                clearTimeout(timeoutId);
-            }
+            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
+            else { clearTimeout(timeoutId); }
         });
     </script>
 </body>
