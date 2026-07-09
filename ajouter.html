@@ -42,6 +42,7 @@
 
         .btn-action { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
         .btn-action:active { transform: scale(0.95); }
+        .btn-action:disabled { background-color: #6B7280; cursor: not-allowed; box-shadow: none; }
         .btn-print { background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: none; }
 
         #scanner-box { display: none; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
@@ -224,7 +225,10 @@
                 if (data.result === "success") {
                     afficherPopup("Enregistré !", `L'objet "${item.nom}" est synchronisé.`);
                     document.getElementById('btn-imprimer-qr').style.display = 'flex';
-                    btn.textContent = "Mis à jour avec succès ✔️";
+                    
+                    // CORRECTIF 3 : On réactive le bouton pour permettre la correction
+                    btn.disabled = false;
+                    btn.textContent = "💾 Mettre à jour la fiche";
                 } else {
                     afficherPopup("Erreur", data.message, false);
                     btn.disabled = false; btn.textContent = "💾 Enregistrer en Base";

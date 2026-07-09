@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Centre d'aide - v0.9</title>
+    <title>Centre d'aide</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,9 +17,7 @@
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
         
-        .intro-text { font-size: 0.95rem; color: #D1D5DB; text-align: center; margin-bottom: 15px; line-height: 1.5; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; }
-        
-        details { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin-bottom: 5px; transition: all 0.3s ease; }
+        details { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin-bottom: 5px; transition: all 0.3s ease; display: none; /* Masqué par défaut, affiché via JS selon le rôle */ }
         summary { font-size: 1.1rem; font-weight: bold; color: #FFFFFF; cursor: pointer; list-style: none; display: flex; align-items: center; outline: none; }
         summary::-webkit-details-marker { display: none; }
         details[open] summary { margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; color: #60A5FA; }
@@ -27,56 +25,90 @@
         details ul { padding-left: 20px; color: #D1D5DB; font-size: 0.95rem; line-height: 1.5; }
         details li { margin-bottom: 8px; }
         .tag { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #93C5FD; }
-        .highlight { color: #10B981; font-weight: bold; }
+        
         .app-version { position: fixed; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Centre d'aide</h1></div>
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Mode d'emploi</h1></div>
         
-        <p class="intro-text">Bienvenue dans la version 0.9. Voici comment utiliser vos nouveaux outils logistiques.</p>
-
-        <details open>
-            <summary>🔍 Recherche et Scan Commercial</summary>
+        <details class="role-all" open>
+            <summary>🔍 Recherche et Inventaire</summary>
+            <p>Ce module vous permet de localiser rapidement un objet et de consulter sa fiche.</p>
             <ul>
-                <li><b>Scan universel :</b> Le lecteur reconnait vos QR codes internes ET les codes-barres standards (EAN/UPC) du commerce.</li>
-                <li><b>Historique objet :</b> Sur n'importe quelle fiche, cliquez sur "Historique mouvement" pour voir précisément qui a bougé l'objet et quand.</li>
-                <li><b>Lots & Kits :</b> Utilisez l'assembleur de lots pour lier plusieurs références à un objet "Parent". Idéal pour les kits, boîtes mystères ou expéditions groupées.</li>
+                <li><b>Scanner un code :</b> Utilisez l'appareil photo pour scanner un QR code généré par l'application ou un code-barres commercial standard.</li>
+                <li><b>Recherche textuelle :</b> Tapez le nom, la catégorie ou la référence d'un objet.</li>
+                <li><b>Historique :</b> Sur la fiche d'un objet, cliquez sur "Historique des mouvements" pour voir le journal détaillé des actions liées à cet article.</li>
             </ul>
         </details>
 
-        <details>
-            <summary>📦 Audit et Rapport</summary>
+        <details class="role-write">
+            <summary>➕ Ajouter ou Corriger un objet</summary>
+            <p>Utilisez ce module pour faire entrer un nouvel objet dans le stock ou corriger une erreur.</p>
             <ul>
-                <li><b>Auto-diagnostic :</b> Un objet scanné qui est déclaré "Sorti" en base sera immédiatement signalé en anomalie.</li>
-                <li><b>Fusion :</b> Copiez/Collez des listes de scans pour assembler le travail de plusieurs opérateurs sur une même zone.</li>
-                <li><b>Impression épurée :</b> Le rapport généré est automatiquement mis en page pour ne conserver que l'essentiel : les présences, les manquants et les anomalies.</li>
+                <li><b>Création rapide :</b> Tapez un nom long (plus de 3 lettres), et une référence unique sera générée automatiquement.</li>
+                <li><b>Associer un code existant :</b> Cliquez sur l'icône 📷 pour scanner le code-barres original du produit (EAN) et le lier à la fiche.</li>
+                <li><b>Correction :</b> Si vous avez fait une erreur en ajoutant un objet, modifiez les champs et cliquez à nouveau sur "Mettre à jour la fiche".</li>
+                <li><b>Impression :</b> Une fois validé, vous pouvez imprimer une étiquette propre contenant le QR code.</li>
             </ul>
         </details>
 
-        <details>
-            <summary>⚙️ Administration et Diagnostics</summary>
+        <details class="role-write">
+            <summary>🔄 Déplacer et 📤 Sortir</summary>
+            <p>Ces modules permettent de tracer les flux de la marchandise.</p>
             <ul>
-                <li><b>Zones structurées :</b> Les emplacements sont désormais gérés via une liste administrative unique pour éviter les doublons de saisie.</li>
-                <li><b>Diagnostic Système (🩺) :</b> Accédez à la tuile Diag pour tester la santé de votre serveur, de votre caméra et du stockage de votre appareil en un clic.</li>
-                <li><b>Rôles avancés :</b> Le nouveau rôle "Lecteur" permet de scanner et auditer sans risque de modifier la base de données.</li>
+                <li><b>Déplacement individuel :</b> Scannez un objet et sélectionnez sa nouvelle zone dans le menu déroulant.</li>
+                <li><b>Mode Rafale 🚀 :</b> Dans le module de Scan, basculez en "Mode Rafale". Scannez plusieurs objets à la suite pour les déplacer ou les sortir simultanément. <i>(Une alerte se déclenchera si vous scannez un objet déjà sorti).</i></li>
+                <li><b>Archivage (Sortie) :</b> Un motif est obligatoire (Vendu, Détruit, etc.). L'objet disparaîtra du stock actif mais restera conservé dans l'historique global de la base.</li>
             </ul>
         </details>
 
-        <details>
-            <summary>📋 Gestion quotidienne</summary>
+        <details class="role-write">
+            <summary>📦 Lots, Kits et Audits</summary>
             <ul>
-                <li><b>Historique Global :</b> Accessible aux Admins via l'icône 🕒 dans la barre de titre de l'inventaire.</li>
-                <li><b>Impression étiquette :</b> L'impression a été simplifiée pour ne conserver que votre logo et le QR code de l'objet.</li>
+                <li><b>Assembler des Kits :</b> Sur la fiche descriptive d'un objet (Parent), ouvrez la section "Mode Lot" pour y associer d'autres sous-références.</li>
+                <li><b>Faire un Audit :</b> Choisissez une zone spécifique. Le système calculera les objets attendus. Scannez tout ce que vous voyez. Le rapport final (imprimable) croisera vos scans avec la base pour lister les manquants et les anomalies (ex: un objet prévu ailleurs).</li>
+            </ul>
+        </details>
+
+        <details class="role-admin">
+            <summary>⚙️ Administration du système</summary>
+            <p>Outils exclusifs au rôle Administrateur.</p>
+            <ul>
+                <li><b>Tableau de bord :</b> Suivez les statistiques, les alertes d'anomalies, les objets dormants (+6 mois) et l'activité de l'équipe du jour.</li>
+                <li><b>Structure (Zones/Catégories) :</b> Ajoutez ou supprimez les emplacements officiels pour éviter les fautes de frappe sur le terrain.</li>
+                <li><b>Import/Export CSV :</b> Téléchargez la sauvegarde complète ou importez un tableau Excel. Le système est intelligent : si une référence existe déjà, il mettra à jour sa fiche sans créer de doublon.</li>
+                <li><b>Équipe :</b> Gérez les mots de passe et les droits (Admin, Standard, ou Lecteur).</li>
+                <li><b>Diagnostics :</b> Vérifiez l'état de la connexion avec le serveur Google et de la caméra de l'appareil.</li>
+                <li><b>Historique Global :</b> Accessible via l'icône 🕒 dans l'inventaire, permet de voir l'intégralité du registre et de le filtrer (Par action, date, utilisateur...).</li>
             </ul>
         </details>
     </div>
 
-    <div class="app-version" id="version-display">Version 0.9</div>
+    <div class="app-version" id="version-display"></div>
 
     <script>
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+        
+        // GESTION DYNAMIQUE DE L'AFFICHAGE SELON LE RÔLE
+        window.addEventListener('DOMContentLoaded', () => {
+            const role = localStorage.getItem('app_role') || 'lecteur'; // Sécurité : lecteur par défaut
+            
+            // Tout le monde voit .role-all (déjà géré par le display par défaut de detail)
+            document.querySelectorAll('.role-all').forEach(el => el.style.display = 'block');
+
+            // Standards et Admins voient l'écriture
+            if (role === 'standard' || role === 'admin') {
+                document.querySelectorAll('.role-write').forEach(el => el.style.display = 'block');
+            }
+
+            // Seulement les Admins voient l'administration
+            if (role === 'admin') {
+                document.querySelectorAll('.role-admin').forEach(el => el.style.display = 'block');
+            }
+        });
+
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 

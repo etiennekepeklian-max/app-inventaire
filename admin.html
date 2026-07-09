@@ -18,22 +18,18 @@
         body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
-        /* Header avec retour arrière intelligent */
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
-        /* Menu de navigation interne (Tuiles) */
         .admin-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
         .nav-tile { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 12px 5px; text-align: center; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: #FFFFFF; transition: all 0.2s; }
         .nav-tile.active { background: #3B82F6; border-color: #60A5FA; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
 
-        /* Sections de contenu */
         .admin-section { display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 15px; flex-direction: column; gap: 15px; }
         .admin-section.active { display: flex; }
 
-        /* Widgets du Tableau de Bord */
         .widget-row { display: flex; gap: 10px; }
         .widget { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; text-align: center; }
         .widget-num { font-size: 1.6rem; font-weight: 900; color: #FFFFFF; }
@@ -45,7 +41,6 @@
         .panel-row { font-size: 0.8rem; color: #D1D5DB; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
         .panel-row:last-child { border-bottom: none; }
 
-        /* Formulaires et listes */
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.85rem; color: #D1D5DB; font-weight: bold; }
         input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; }
@@ -55,14 +50,10 @@
         .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; cursor: pointer; transition: transform 0.2s; width: 100%; font-size: 1rem; }
         .btn-action:active { transform: scale(0.95); }
         .btn-export { background: linear-gradient(135deg, #10B981, #059669); }
-
-        /* Sélecteur de fichier ergonomique */
         .file-upload-label { background-color: rgba(96, 165, 250, 0.05); border: 2px dashed #60A5FA; color: #60A5FA; padding: 20px 10px; border-radius: 12px; text-align: center; display: block; cursor: pointer; transition: all 0.2s; font-size: 1.05rem; font-weight: bold; }
-        .file-upload-label:active { background-color: rgba(96, 165, 250, 0.15); transform: scale(0.98); }
-        
+
         .btn-delete-tag { background: transparent; border: none; color: #FCA5A5; font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0; margin-left: 6px; }
 
-        /* Modales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
@@ -74,7 +65,6 @@
         .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
         .btn-confirm-danger { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
 
-        /* Styles Diagnostics */
         .diag-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.05); }
 
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
@@ -262,8 +252,9 @@
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; actionConfirmationCallback = null; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; if(actionConfirmationCallback) actionConfirmationCallback(); });
 
+        // CORRECTIF 4 : FONCTIONS DE CHARGEMENT RETOURNANT DES PROMESSES POUR ÉVITER LE CONFLIT GOOGLE SCRIPT
         function chargerDashboard() {
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "get_dashboard" }) })
+            return fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "get_dashboard" }) })
             .then(res => res.json()).then(data => {
                 if(data.result === "success") {
                     let d = data.data;
@@ -290,18 +281,19 @@
                     if(d.recentExits.length > 0) { panSorties.innerHTML = d.recentExits.map(s => `<div class="panel-row"><span>📦 ${s.nom}</span><span style="font-size:0.75rem; font-style:italic;">Motif: ${s.motif} (${s.utilisateur})</span></div>`).join(''); } 
                     else { panSorties.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune sortie consignée.</p>`; }
                 }
-            });
+            }).catch(e => console.error("Erreur Dashboard"));
         }
 
         function chargerCategories() {
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) }).then(r => r.json()).then(d => {
+            return fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) }).then(r => r.json()).then(d => {
                 if(d.result === "success") {
                     d.data.sort((a, b) => { if(a === "Non classé") return 1; if(b === "Non classé") return -1; return a.localeCompare(b); });
                     const zone = document.getElementById('cat-list'); zone.innerHTML = "";
                     d.data.forEach(c => zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:12px; font-size:0.85rem; display:inline-flex; align-items:center;">${c} <button type="button" class="btn-delete-tag" onclick="supprCat('${c}')">×</button></span>`);
                 }
-            });
+            }).catch(e => console.error("Erreur Catégories"));
         }
+
         function supprCat(name) { afficherConfirmation(`Supprimer la catégorie ${name} ?`, () => { fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_categorie", categorieToDelete: name, ...payloadBase }) }).then(r => r.json()).then(d => { if(d.result==="success"){ chargerCategories(); afficherPopup("Succès","Catégorie retirée."); } }); }); }
         
         document.getElementById('btn-add-cat').addEventListener('click', function() {
@@ -310,14 +302,15 @@
         });
 
         function chargerEmplacements() {
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", ...payloadBase }) }).then(r => r.json()).then(d => {
+            return fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", ...payloadBase }) }).then(r => r.json()).then(d => {
                 if(d.result === "success") {
                     d.data.sort((a, b) => a.localeCompare(b));
                     const zone = document.getElementById('emp-list'); zone.innerHTML = "";
                     d.data.forEach(e => zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:12px; font-size:0.85rem; display:inline-flex; align-items:center;">${e} <button type="button" class="btn-delete-tag" onclick="supprEmp('${e}')">×</button></span>`);
                 }
-            });
+            }).catch(e => console.error("Erreur Emplacements"));
         }
+
         function supprEmp(name) { afficherConfirmation(`Supprimer la zone ${name} ?`, () => { fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete_emplacement", emplacementToDelete: name, ...payloadBase }) }).then(r => r.json()).then(d => { if(d.result==="success"){ chargerEmplacements(); afficherPopup("Succès","Zone retirée."); } }); }); }
         
         document.getElementById('btn-add-emp').addEventListener('click', function() {
@@ -326,14 +319,15 @@
         });
 
         function chargerUtilisateurs() {
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "lister_utilisateurs" }) }).then(res => res.json()).then(data => {
+            return fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "lister_utilisateurs" }) }).then(res => res.json()).then(data => {
                 if(data.result === "success") {
                     data.data.sort((a,b) => a.login.localeCompare(b.login));
                     const select = document.getElementById('select-user'); select.innerHTML = '<option value="">-- Choisir un membre --</option>';
                     data.data.forEach(user => { if(user.login !== localStorage.getItem('app_login')) { select.innerHTML += `<option value="${user.login}" data-role="${user.role}">${user.login}</option>`; } });
                 }
-            });
+            }).catch(e => console.error("Erreur Utilisateurs"));
         }
+
         document.getElementById('select-user').addEventListener('change', function(e) { const sel = e.target.options[e.target.selectedIndex]; if(sel && sel.value !== "") { document.getElementById('modif-role').value = sel.getAttribute('data-role'); } });
 
         document.getElementById('btn-delete-user').addEventListener('click', function() {
@@ -401,6 +395,14 @@
             try { localStorage.setItem('test', 'ok'); localStorage.removeItem('test'); results.push({name: "Mémoire (LocalStorage)", status: "🟢 OK"}); } catch(e) { results.push({name: "Mémoire (LocalStorage)", status: "🔴 PLEIN/BLOQUÉ"}); }
             container.innerHTML = results.map(r => `<div class="diag-item"><span>${r.name}</span><span style="font-weight:bold;">${r.status}</span></div>`).join('');
         }
+
+        // CORRECTIF 4 : Exécution séquentielle pour éviter la surcharge du serveur Google
+        window.addEventListener('DOMContentLoaded', () => { 
+            chargerDashboard()
+                .then(() => chargerCategories())
+                .then(() => chargerEmplacements())
+                .then(() => chargerUtilisateurs());
+        });
     </script>
 </body>
 </html>

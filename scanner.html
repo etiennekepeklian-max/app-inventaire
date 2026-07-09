@@ -235,7 +235,7 @@
 
         document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
 
-        // CORRECTIF : Chargement des emplacements au démarrage de la page
+        // Chargement des emplacements au démarrage
         window.addEventListener('DOMContentLoaded', () => {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(r => r.json()).then(d => {
@@ -345,6 +345,7 @@
             html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 250, height: 250} }, false); html5QrcodeScanner.render(onScanSuccess, onScanFailure); 
         });
 
+        // CORRECTIF 2 : ALERTE ANOMALIE EN MODE RAFALE
         function onScanSuccess(decodedText, decodedResult) { 
             const ref = decodedText.trim().toUpperCase();
             if (modeActuel === "unique") {
@@ -355,7 +356,22 @@
             } else if (modeActuel === "rafale") {
                 if (!listeRafale.includes(ref)) {
                     listeRafale.push(ref); rafaleCount.textContent = listeRafale.length; if (navigator.vibrate) navigator.vibrate(200);
-                    const item = document.createElement('div'); item.className = 'rafale-item'; item.innerHTML = `<span>${ref}</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`; rafaleItems.prepend(item); 
+                    
+                    const item = document.createElement('div'); item.className = 'rafale-item'; item.id = 'rafale-item-' + ref;
+                    item.innerHTML = `<span>${ref} ⏳</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`; 
+                    rafaleItems.prepend(item); 
+                    
+                    // Vérification asynchrone pour l'alerte d'anomalie
+                    fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", reference: ref, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+                    .then(res => res.json()).then(data => {
+                        const domItem = document.getElementById('rafale-item-' + ref);
+                        if(data.result === "success" && data.estSorti) {
+                            if(domItem) domItem.innerHTML = `<span style="color:#FCA5A5;">⚠️ ${ref} (DÉJÀ SORTI)</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
+                            afficherAlerte("⚠️ Anomalie Détectée", `L'objet scanné (${ref}) est enregistré comme étant déjà SORTI !`);
+                        } else {
+                            if(domItem) domItem.innerHTML = `<span>${ref}</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
+                        }
+                    });
                 }
             }
         } 
