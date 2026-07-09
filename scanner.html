@@ -14,7 +14,6 @@
         body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; position: relative; }
         
-        /* Header avec flèche retour arrière intelligente */
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
@@ -36,7 +35,8 @@
         
         .search-box-text { width: 100%; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
-        input:focus { border-color: #60A5FA; }
+        option { background-color: #1A2B56; color: white; }
+        input:focus, select:focus { border-color: #60A5FA; }
 
         .results-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
         .result-row { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
@@ -44,9 +44,7 @@
 
         .actions-scanner { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         .btn-terminer-rafale { background: linear-gradient(135deg, #10B981, #059669); border: none; padding: 18px; border-radius: 12px; color: white; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; width: 100%; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); cursor: pointer; }
-
         .btn-large-danger { background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.15rem; cursor: pointer; width: 100%; margin-top: 15px; }
-        .btn-large-danger:active { background-color: rgba(239, 68, 68, 0.15); transform: scale(0.95); }
 
         #bloc-rafale-liste { display: none; flex-direction: column; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 12px; margin-top: 15px; }
         .rafale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
@@ -78,7 +76,6 @@
         #result-box { display: none; flex-direction: column; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); width: 100%; }
         .icon-success { font-size: 3.5rem; margin-bottom: 10px; }
 
-        /* Modales mobiles unifiées */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
@@ -88,7 +85,7 @@
         .modal-buttons { display: flex; gap: 15px; margin-top: 15px;}
         .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
         .btn-confirm { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; }
 
         .hist-row { font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 6px 0; color: #E5E7EB; }
         .hist-row:last-child { border-bottom: none; }
@@ -169,7 +166,14 @@
             
             <button class="btn-primary" id="btn-reintegrer" style="background:#10B981; display:none; margin-top:10px;">↩️ Réintégrer l'objet en stock actif</button>
             
-            <div id="form-deplacer" class="form-action"><div class="form-group"><label>Nouvel emplacement</label><input type="text" id="nouvel-emplacement" placeholder="Ex: Réserve B"></div><button class="btn-valider-deplacer" id="btn-valider-deplacer">Valider le déplacement</button></div>
+            <div id="form-deplacer" class="form-action">
+                <div class="form-group">
+                    <label>Nouvel emplacement</label>
+                    <select id="nouvel-emplacement" required><option value="">Chargement...</option></select>
+                </div>
+                <button class="btn-valider-deplacer" id="btn-valider-deplacer">Valider le déplacement</button>
+            </div>
+            
             <div id="form-sortir" class="form-action"><div class="form-group"><label>Motif de la sortie</label><input type="text" id="motif-sortie" placeholder="Ex: Restauration..."></div><button class="btn-valider-sortir" id="btn-ouvrir-modal">Archiver et Sortir</button></div>
 
             <button id="btn-annuler-action" class="btn-large-danger" style="margin-top: 20px;">❌ Annuler la sélection</button>
@@ -229,23 +233,25 @@
         let modeActuel = "unique"; let referenceScannee = ""; let listeRafale = []; let html5QrcodeScanner;
         let trackedKitRefs = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+
+        // CORRECTIF : Chargement des emplacements au démarrage de la page
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(r => r.json()).then(d => {
+                if (d.result === "success") {
+                    d.data.sort((a, b) => a.localeCompare(b));
+                    const empSelect = document.getElementById('nouvel-emplacement');
+                    empSelect.innerHTML = '<option value="">-- Choisir la destination --</option>';
+                    d.data.forEach(e => empSelect.innerHTML += `<option value="${e}">${e}</option>`);
+                }
+            });
+        });
 
         const SVG_COPY = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>`;
+        window.copierTexte = function(texte, event) { if(event) event.stopPropagation(); navigator.clipboard.writeText(texte).then(() => { if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); } }); };
 
-        window.copierTexte = function(texte, event) {
-            if(event) event.stopPropagation();
-            navigator.clipboard.writeText(texte).then(() => {
-                if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); }
-            });
-        };
-
-        function afficherAlerte(titre, message, isSuccess = false) {
-            document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
-            document.getElementById('alert-title').textContent = titre;
-            document.getElementById('alert-message').textContent = message;
-            document.getElementById('custom-alert').style.display = 'flex';
-        }
+        function afficherAlerte(titre, message, isSuccess = false) { document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️"; document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('custom-alert').style.display = 'flex'; }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
         const btnModeUnique = document.getElementById('btn-mode-unique'); const btnModeRafale = document.getElementById('btn-mode-rafale'); const modeSelector = document.getElementById('mode-selector');
@@ -282,10 +288,7 @@
             blocScanner.style.display = 'none'; modeSelector.style.display = 'none';
             const refRow = `<p>Référence : <span class="valeur">${item.reference} <button class="btn-copy" onclick="copierTexte('${item.reference}', event)">${SVG_COPY}</button></span></p>`;
             
-            // 🌟 5. DETECTION ANOMALIE SI L'OBJET EST SORTI
-            if (item.estSorti) {
-                afficherAlerte("⚠️ Alerte Anomalie", "Cet objet est enregistré comme étant SORTI de l'inventaire !");
-            }
+            if (item.estSorti) { afficherAlerte("⚠️ Alerte Anomalie", "Cet objet est enregistré comme étant SORTI de l'inventaire !"); }
 
             if (localStorage.getItem('app_role') === 'admin') {
                 let dateFormatee = item.dateAjout ? new Date(item.dateAjout).toLocaleDateString('fr-FR') : "Inconnue";
@@ -296,7 +299,6 @@
             infoCardRafale.style.display = 'none'; infoCardUnique.style.display = 'block'; blocInfos.style.display = 'flex';
         }
 
-        // 🌟 3. POP-UP DÉTAILLÉ DE L'HISTORIQUE INDIVIDUEL DE L'OBJET
         document.getElementById('btn-voir-historique-objet').addEventListener('click', function() {
             const container = document.getElementById('history-rows-container'); container.innerHTML = "Chargement... ⏳";
             document.getElementById('modal-item-history').style.display = 'flex';
@@ -311,14 +313,10 @@
             }).catch(() => { container.textContent = "Erreur de chargement."; });
         });
 
-        // 🌟 1. INTERFACE ASSEMBLEUR DE KITS & LOTS
         document.getElementById('btn-mode-kit').addEventListener('click', () => { document.getElementById('zone-composition-kit').style.display = 'flex'; });
         document.getElementById('btn-add-sub-ref').addEventListener('click', function() {
             let sub = document.getElementById('input-sub-ref').value.trim().toUpperCase();
-            if(sub && !trackedKitRefs.includes(sub)) {
-                trackedKitRefs.push(sub); document.getElementById('input-sub-ref').value = "";
-                document.getElementById('kit-tracked-list').innerHTML = trackedKitRefs.map(r => `📦 ${r}`).join('<br>');
-            }
+            if(sub && !trackedKitRefs.includes(sub)) { trackedKitRefs.push(sub); document.getElementById('input-sub-ref').value = ""; document.getElementById('kit-tracked-list').innerHTML = trackedKitRefs.map(r => `📦 ${r}`).join('<br>'); }
         });
         document.getElementById('btn-save-kit').addEventListener('click', function() {
             if(trackedKitRefs.length === 0) return afficherAlerte("Attention", "Le lot est vide.");
@@ -327,7 +325,6 @@
             .then(res => res.json()).then(d => { if(d.result==="success") { document.getElementById('res-notes').textContent = d.notes; document.getElementById('zone-composition-kit').style.display='none'; afficherAlerte("Succès", "Composition du lot enregistrée avec succès !", true); } });
         });
 
-        // NOTES ET LOGIQUE COMMUNE
         document.getElementById('btn-save-note').addEventListener('click', function() {
             let text = document.getElementById('input-note').value.trim(); if(!text) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: referenceScannee, note: text, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
@@ -378,7 +375,7 @@
             const btn = document.getElementById('btn-valider-deplacer'); btn.textContent = "Mise à jour..."; btn.disabled = true;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: (modeActuel === "unique") ? "deplacer" : "deplacer_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), nouvelEmplacement: newVal, reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
                 if(data.result === "success") afficherSucces("🔄", "Déplacement réussi", (modeActuel === "unique") ? `Désormais dans : <b>${newVal}</b>` : `<b>${data.count} articles</b> déplacés.`); else afficherAlerte("Erreur", "L'opération a échoué.");
-                btn.textContent = "Valider"; btn.disabled = false;
+                btn.textContent = "Valider le déplacement"; btn.disabled = false;
             });
         });
 

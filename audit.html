@@ -6,25 +6,25 @@
     <title>Audit de Zone / Total</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
-    <script>if (!localStorage.getItem('app_token')) window.location.href = 'login.html';</script>
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
-        /* Header avec flèche retour intelligente */
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
         .zone-card { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 10px; }
-        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; margin-bottom: 5px; }
+        input, select { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; margin-bottom: 5px; }
+        option { background-color: #1A2B56; color: white; }
         .btn { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn:active { transform: scale(0.95); }
 
-        /* Interface Progression & Onglets */
         .progress-container { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; color: #60A5FA; }
         .progress-bar-bg { width: 100%; background: rgba(255,255,255,0.1); border-radius: 6px; height: 10px; overflow: hidden; }
@@ -43,7 +43,6 @@
         .rafale-items { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
         .rafale-item { background: rgba(255, 255, 255, 0.05); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; color: #93C5FD; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* Écrans de Rapports */
         .report-section { display: none; flex-direction: column; gap: 12px; }
         .badge-count { padding: 15px; border-radius: 10px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
         .bg-found { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981; }
@@ -51,7 +50,6 @@
         .bg-wrong { background: rgba(245, 158, 11, 0.2); color: #FDE047; border: 1px solid #F59E0B; }
         .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #D1D5DB; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; line-height: 1.4; }
 
-        /* Modales Mobiles */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
         .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; margin-top: 15px; }
@@ -74,8 +72,10 @@
         </div>
 
         <div class="zone-card" id="step-zone-input" style="display: none;">
-            <p style="font-size: 0.95rem; color: #D1D5DB;">Entrez l'emplacement exact à auditer :</p>
-            <input type="text" id="input-zone" placeholder="Ex: Réserve C">
+            <p style="font-size: 0.95rem; color: #D1D5DB;">Sélectionnez l'emplacement exact à auditer :</p>
+            <select id="input-zone" required>
+                <option value="">Chargement des zones...</option>
+            </select>
             <button class="btn" id="btn-demarrer-audit">📋 Démarrer le pointage</button>
             <button class="btn" id="btn-retour-choix" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Annuler</button>
         </div>
@@ -148,12 +148,13 @@
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+        const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         let typeAudit = "", zoneCible = "", baseLocale = [], attendusRefs = [], scannedRefs = [], scanner;
         let lastReportTrouves = [], lastReportManquants = [], lastReportEgares = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
 
-        // BIPS AUDIO FEEDBACKS SANS ACTION UTILISATEUR COMPLIQUÉE
+        // BIPS AUDIO FEEDBACKS
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playFeedback(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -167,12 +168,24 @@
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
         function normaliserTexte(txt) { return txt ? String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : ""; }
 
-        // NAVIGATION ONGLETS POUCE
         document.getElementById('tab-scan-btn').addEventListener('click', function() { this.classList.add('active'); document.getElementById('tab-outils-btn').classList.remove('active'); document.getElementById('tab-scan-content').style.display = 'flex'; document.getElementById('tab-outils-content').style.display = 'none'; });
         document.getElementById('tab-outils-btn').addEventListener('click', function() { this.classList.add('active'); document.getElementById('tab-scan-btn').classList.remove('active'); document.getElementById('tab-scan-content').style.display = 'none'; document.getElementById('tab-outils-content').style.display = 'flex'; });
 
-        // PERSISTENCE PAUSE / REPRISE
-        window.addEventListener('DOMContentLoaded', () => { if(localStorage.getItem('audit_en_cours')) { document.getElementById('custom-confirm').style.display = 'flex'; } });
+        // 🌟 CHARGEMENT DYNAMIQUE DES ZONES
+        window.addEventListener('DOMContentLoaded', () => { 
+            if(localStorage.getItem('audit_en_cours')) { document.getElementById('custom-confirm').style.display = 'flex'; }
+            
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", ...payloadBase }) })
+            .then(r => r.json()).then(d => {
+                if (d.result === "success") {
+                    d.data.sort((a, b) => a.localeCompare(b));
+                    const empSelect = document.getElementById('input-zone'); 
+                    empSelect.innerHTML = '<option value="">-- Choisir la zone --</option>';
+                    d.data.forEach(e => empSelect.innerHTML += `<option value="${e}">${e}</option>`);
+                }
+            });
+        });
+
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => { localStorage.removeItem('audit_en_cours'); document.getElementById('custom-confirm').style.display = 'none'; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => {
             document.getElementById('custom-confirm').style.display = 'none';
@@ -192,7 +205,7 @@
             document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'none';
             if(navigator.onLine) {
                 document.getElementById('alert-icon').textContent = "🔄"; afficherAlerte("Synchronisation", "Téléchargement du registre récent...", true);
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", ...payloadBase }) })
                 .then(r => r.json()).then(d => { document.getElementById('custom-alert').style.display = 'none'; if (d.result === "success") { localStorage.setItem('miroir_stock', JSON.stringify(d.data)); baseLocale = d.data; preparerNouvelAudit(); } else { fallbackLocal(); } }).catch(() => { document.getElementById('custom-alert').style.display = 'none'; fallbackLocal(); });
             } else { fallbackLocal(); }
         }
@@ -226,7 +239,6 @@
             document.getElementById('prog-fill').style.width = (percent > 100 ? 100 : percent) + '%';
         }
 
-        // COUPLAGE OUTILS DE FUSION ET DE SAUVEGARDE
         document.getElementById('btn-manual-add').addEventListener('click', function() { let val = document.getElementById('manual-ref-input').value.trim().toUpperCase(); if(val) { traiterScan(val); document.getElementById('manual-ref-input').value = ""; } });
         document.getElementById('btn-pause-audit').addEventListener('click', function() { localStorage.setItem('audit_en_cours', JSON.stringify({ typeAudit: typeAudit, zoneCible: zoneCible, scannedRefs: scannedRefs })); window.location.href = "index.html"; });
         document.getElementById('btn-export-session').addEventListener('click', function() { navigator.clipboard.writeText(scannedRefs.join(',')).then(() => { afficherAlerte("Copié !", "Vos scans ont été enregistrés dans votre presse-papiers."); }); });
@@ -238,7 +250,6 @@
             majInterfaceScan(); document.getElementById('prompt-input').value = "";
         });
 
-        // TRAITEMENT DU RAPPORT ET COMPILATION LOGISTIQUE
         document.getElementById('btn-cloturer-audit').addEventListener('click', function() {
             if(scanner) scanner.clear(); document.getElementById('audit-ui').style.display = 'none';
             localStorage.removeItem('audit_en_cours');
@@ -258,10 +269,9 @@
                 scannedRefs.forEach(ref => {
                     let match = baseLocale.find(a => String(a.reference).toUpperCase() === ref);
                     if(match) {
-                        // 🌟 Correctif 5 : Détection des objets "Sortis" scannés sur le terrain
                         if (match.estSorti) { lastReportEgares.push(`❌ ${match.nom} (${ref}) - Devrait être sorti (Erreur de Stock)`); }
                         else if(normaliserTexte(match.emplacement) !== zonePropre) { lastReportEgares.push(`🟡 ${match.nom} (Prévu à : ${match.emplacement})`); }
-                    } else { lastReportEgares.push(`⚪ Réf ${ref} (Inconnue en base de données)`); }
+                    } else { lastReportEgares.push(`⚪ Réf ${ref} (Inconnue en base)`); }
                 });
             } else {
                 let attendusPartout = baseLocale.filter(a => !a.estSorti);
@@ -273,7 +283,6 @@
                 scannedRefs.forEach(ref => {
                     let match = baseLocale.find(a => String(a.reference).toUpperCase() === ref);
                     if(!match) { lastReportEgares.push(`⚪ Réf ${ref} (Inconnue en base)`); }
-                    // 🌟 Correctif 5 : Gestion pour l'audit total
                     else if(match.estSorti) { lastReportEgares.push(`❌ ${match.nom} (${ref}) - Devrait être sorti (Erreur de Stock)`); }
                 });
             }
@@ -287,13 +296,11 @@
             
             document.getElementById('bloc-rapport').style.display = 'flex';
             
-            // Loguer l'audit en historique
             if(navigator.onLine) {
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: "AUDIT", note: `Exécution d'un ${zoneCible}. Résultat: Confirmés:${lastReportTrouves.length} | Manquants:${lastReportManquants.length} | Anomalies:${lastReportEgares.length}`, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) });
             }
         });
 
-        // 🌟 4. CORRECTIF IMPRESSION COMPLÈTE ET ÉPURÉE DU RAPPORT D'ANOMALIES ET PRÉSENCES
         document.getElementById('btn-imprimer-rapport').addEventListener('click', function() {
             let titrePrint = (typeAudit === 'total') ? "Rapport d'Audit Total Logistique" : `Rapport d'Audit de Zone : ${zoneCible}`;
             let listT = lastReportTrouves.length > 0 ? lastReportTrouves.map(x => `<li>${x}</li>`).join('') : "<li>Aucun objet validé sur place.</li>";

@@ -13,7 +13,6 @@
         body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
-        /* Header avec retour arrière et icône historique global */
         .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; width: 100%; justify-content: center; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
@@ -21,14 +20,12 @@
         .btn-hist-global:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
-        /* Barre de recherche et filtres */
         .search-bar { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px; color: white; font-size: 1rem; outline: none; }
         .search-bar::placeholder { color: #9CA3AF; }
         .filter-row { display: flex; gap: 8px; width: 100%; margin-bottom: 5px; }
         .btn-filter { flex: 1; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #60A5FA; padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-filter.active { background: #3B82F6; color: white; border-color: #60A5FA; }
 
-        /* Cartes d'objets (Liste) */
         .stock-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
         .stock-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; }
         .stock-card:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
@@ -43,7 +40,6 @@
         .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* Modales Mobiles Unifiées */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 92%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         .modal-title { font-size: 1.25rem; color: #60A5FA; margin-bottom: 12px; font-weight: bold; text-align: left; }
@@ -54,29 +50,22 @@
         .notes-area { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
         .btn-copy { background: transparent; border: none; color: #60A5FA; cursor: pointer; margin-left: 5px; vertical-align: middle; }
 
-        .hist-row { font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 0; color: #E5E7EB; text-align: left; }
+        .hist-row { font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 0; color: #E5E7EB; text-align: left; line-height: 1.3;}
         .hist-row:last-child { border-bottom: none; }
         
-        /* Selecteur personnalisé pour l'historique */
-        .select-tri { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 10px; color: #FFFFFF; font-size: 0.85rem; width: 100%; outline: none; margin-top: 5px; margin-bottom: 15px; }
-        .select-tri option { background-color: #1A2B56; color: white; }
-
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Flèche retour et icône d'historique global pour l'admin -->
         <div class="header">
             <button class="btn-retour" onclick="history.back()">⬅</button>
             <h1>Inventaire Général</h1>
             <button class="btn-hist-global" id="btn-global-hist" title="Historique Global" onclick="ouvrirHistoriqueGlobal()">🕒</button>
         </div>
         
-        <!-- Moteur de recherche live -->
         <input type="text" id="input-recherche" class="search-bar" placeholder="Rechercher nom, code, lieu, catégorie...">
         
-        <!-- Filtres -->
         <div class="filter-row">
             <button class="btn-filter active" id="tri-recent" onclick="changerTri('recent')">🕒 Récent</button>
             <button class="btn-filter" id="tri-nom" onclick="changerTri('nom')">🔤 Nom</button>
@@ -86,11 +75,9 @@
 
         <p id="msg-chargement" style="text-align:center; font-size:0.9rem; color:#60A5FA;">Synchronisation de la base... ⏳</p>
         
-        <!-- Conteneur de la liste -->
         <div class="stock-list" id="liste-stock"></div>
     </div>
 
-    <!-- MODALE FOUILLE / DESCRIPTIVE DE L'OBJET -->
     <div class="modal-overlay" id="modal-fiche">
         <div class="modal-content">
             <h3 class="modal-title" id="fiche-nom">Détails de l'article</h3>
@@ -98,11 +85,10 @@
             
             <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:6px; font-size:0.85rem; padding:10px;">🕒 Historique complet des mouvements</button>
             
-            <!-- Section Kit / Assemblage -->
             <div id="wrapper-kit" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px; margin-bottom:8px; display:none;">
                 <p style="font-size:0.8rem; color:#60A5FA; font-weight:bold; text-align:left; margin-bottom:4px;">📦 Assembler des articles dans ce Lot</p>
                 <div style="display:flex; gap:6px; margin-bottom:5px;">
-                    <input type="text" id="input-sub-ref" placeholder="Sous-référence..." style="padding:6px; font-size:0.85rem;">
+                    <input type="text" id="input-sub-ref" placeholder="Sous-référence..." style="padding:6px; font-size:0.85rem; width:100%; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.2); color:white;">
                     <button type="button" class="btn-primary" id="btn-add-sub" style="background:#10B981; padding:6px; width:auto; font-size:0.8rem;">Ajouter</button>
                 </div>
                 <div id="kit-preview-list" style="font-size:0.7rem; color:#93C5FD; text-align:left; font-family:monospace; margin-bottom:5px;"></div>
@@ -112,9 +98,8 @@
             <p style="text-align:left; font-size:0.8rem; font-weight:bold; color:#9CA3AF; margin-bottom:4px;">📝 Notes & Suivi d'incidents</p>
             <div class="notes-area" id="fiche-notes"></div>
             
-            <!-- Ajout rapide de note -->
             <div id="wrapper-note" style="display:flex; gap:6px; margin-bottom:10px;">
-                <input type="text" id="input-fiche-note" placeholder="Taper une remarque..." style="padding:8px; font-size:0.85rem;">
+                <input type="text" id="input-fiche-note" placeholder="Taper une remarque..." style="padding:8px; font-size:0.85rem; width:100%; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.2); color:white;">
                 <button class="btn-primary" id="btn-save-fiche-note" style="background:#10B981; padding:8px; width:auto; font-size:0.85rem;">Ajouter</button>
             </div>
 
@@ -123,29 +108,33 @@
         </div>
     </div>
 
-    <!-- 🌟 SOUS-NIVEAU DE MODALE : JOURNAL DE MOUVEMENTS CHRONOLOGIQUES (AVEC TRI) -->
     <div class="modal-overlay" id="modal-pop-hist">
-        <div class="modal-content" style="max-width:360px;">
-            <h3 class="modal-title" style="text-align:center;">🕒 Journal de bord</h3>
+        <div class="modal-content" style="max-width:380px; padding:15px;">
+            <h3 class="modal-title" style="text-align:center; font-size:1.1rem; margin-bottom:10px;">🕒 Journal de bord</h3>
             
-            <div style="text-align: left;">
-                <label for="select-tri-hist" style="font-size: 0.8rem; color: #60A5FA; font-weight: bold;">Trier l'historique par :</label>
-                <select id="select-tri-hist" class="select-tri" onchange="appliquerTriHistorique()">
-                    <option value="date-desc">📅 Date (Plus récent d'abord)</option>
-                    <option value="date-asc">📅 Date (Plus ancien d'abord)</option>
-                    <option value="nom">🔤 Nom de l'objet (A-Z)</option>
-                    <option value="action">⚙️ Type d'action</option>
-                    <option value="utilisateur">👤 Utilisateur (A-Z)</option>
-                    <option value="emplacement">📍 Emplacement</option>
+            <div style="background: rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.1);">
+                <input type="text" id="hist-search" placeholder="Rechercher objet, lieu, détail..." style="width:100%; padding:8px; font-size:0.85rem; margin-bottom:8px; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                
+                <select id="hist-sort-date" style="width:100%; padding:8px; font-size:0.85rem; margin-bottom:8px; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                    <option value="desc" style="background:#1A2B56;">📅 Trier: Plus récent d'abord</option>
+                    <option value="asc" style="background:#1A2B56;">📅 Trier: Plus ancien d'abord</option>
                 </select>
+                
+                <div style="display:flex; gap:6px;">
+                    <select id="hist-filter-user" style="flex:1; padding:8px; font-size:0.8rem; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                        <option value="" style="background:#1A2B56;">👤 Tous util.</option>
+                    </select>
+                    <select id="hist-filter-action" style="flex:1; padding:8px; font-size:0.8rem; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                        <option value="" style="background:#1A2B56;">⚙️ Toutes actions</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="modal-body" id="container-rows-hist" style="max-height:280px; margin-bottom:10px;"></div>
+            <div class="modal-body" id="container-rows-hist" style="max-height:220px; margin-bottom:10px; padding:5px; border-top:1px solid rgba(255,255,255,0.05);"></div>
             <button class="btn-primary" onclick="document.getElementById('modal-pop-hist').style.display='none'">Fermer</button>
         </div>
     </div>
 
-    <!-- ENCART ALERTE UNIFIÉ -->
     <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size:1.1rem; color:white; margin-bottom:5px;" id="alert-title">Attention</h3><p style="color:#D1D5DB; font-size:0.9rem;" id="alert-message"></p><button class="btn-primary" id="btn-alert-ok" style="margin-top:15px; padding:10px;">OK</button></div></div>
 
     <div class="app-version" id="version-display"></div>
@@ -160,9 +149,9 @@
         let triActuel = "recent"; 
         let refActive = ""; 
         let trackedSubRefs = [];
-        let historiqueActuel = []; // Stockage temporaire des données d'historique pour le tri en direct
+        let historiqueActuel = []; 
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
 
         function afficherAlerte(titre, message, isSuccess = false) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
@@ -173,7 +162,6 @@
 
         window.copierReference = function(ref, e) { if(e) e.stopPropagation(); navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); }); };
 
-        // INITIALISATION ET RÉCUPÉRATION INVENTAIRE
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('app_role') === 'admin') {
                 document.getElementById('btn-global-hist').style.display = 'block';
@@ -201,12 +189,9 @@
             }
         }
 
-        // 🌟 GESTION INTÉGRALE DE LA RECHERCHE ET DES TRIS DE L'INVENTAIRE
         document.getElementById('input-recherche').addEventListener('input', appliquerTriEtFiltre);
-        
         function changerTri(type) {
-            triActuel = type; 
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            triActuel = type; document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
             if(type==='recent') document.getElementById('tri-recent').classList.add('active');
             if(type==='nom') document.getElementById('tri-nom').classList.add('active');
             if(type==='cat') document.getElementById('tri-cat').classList.add('active');
@@ -221,35 +206,26 @@
 
             if(s) {
                 inventaireFiltre = listeDeBase.filter(x => String(x.nom).toLowerCase().includes(s) || String(x.reference).toLowerCase().includes(s) || String(x.emplacement).toLowerCase().includes(s) || String(x.categorie).toLowerCase().includes(s));
-            } else { 
-                inventaireFiltre = [...listeDeBase]; 
-            }
+            } else { inventaireFiltre = [...listeDeBase]; }
 
             if (triActuel === "recent") { inventaireFiltre.sort((a, b) => new Date(b.dateAjout || 0) - new Date(a.dateAjout || 0)); } 
             else if (triActuel === "nom") { inventaireFiltre.sort((a, b) => String(a.nom).localeCompare(String(b.nom))); } 
             else if (triActuel === "cat") { inventaireFiltre.sort((a, b) => { if(a.categorie === "Non classé") return 1; if(b.categorie === "Non classé") return -1; return String(a.categorie).localeCompare(String(b.categorie)); }); } 
             else if (triActuel === "lieu") { inventaireFiltre.sort((a, b) => String(a.emplacement).localeCompare(String(b.emplacement))); }
-            
             renderListe();
         }
 
         function renderListe() {
-            const container = document.getElementById('liste-stock'); 
-            container.innerHTML = "";
-            if(inventaireFiltre.length === 0) { 
-                container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article.</p>"; 
-                return; 
-            }
+            const container = document.getElementById('liste-stock'); container.innerHTML = "";
+            if(inventaireFiltre.length === 0) { container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article trouvé.</p>"; return; }
             inventaireFiltre.forEach(item => {
-                const card = document.createElement('div'); card.className = 'stock-card'; 
-                card.onclick = () => ouvrirFiche(item);
+                const card = document.createElement('div'); card.className = 'stock-card'; card.onclick = () => ouvrirFiche(item);
                 let outText = item.estSorti ? '<span class="status-badge-out">🔴 ARCHIVÉ (SORTI)</span>' : '';
                 card.innerHTML = `<div class="card-left"><div class="card-title">${item.nom}</div><div class="card-ref">${item.reference}</div></div><div class="card-right"><div class="card-loc">${item.emplacement || "N/A"}</div><div class="card-cat">${item.categorie}</div>${outText}</div>`;
                 container.appendChild(card);
             });
         }
 
-        // FICHE DESCRIPTIVE D'UN OBJET
         function ouvrirFiche(item) {
             refActive = item.reference; trackedSubRefs = []; document.getElementById('kit-preview-list').textContent = "";
             document.getElementById('fiche-nom').textContent = item.nom; document.getElementById('fiche-notes').textContent = item.notes || "Aucune note consignée.";
@@ -270,68 +246,90 @@
         }
         function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
 
-        // 🌟 GESTION DE L'HISTORIQUE (AVEC SYSTÈME DE TRI INTÉGRÉ)
-        function appliquerTriHistorique() {
-            const critere = document.getElementById('select-tri-hist').value;
+        // 🌟 GESTION DES FILTRES HISTORIQUE DYNAMIQUES
+        document.getElementById('hist-search').addEventListener('input', appliquerFiltresHistorique);
+        document.getElementById('hist-sort-date').addEventListener('change', appliquerFiltresHistorique);
+        document.getElementById('hist-filter-user').addEventListener('change', appliquerFiltresHistorique);
+        document.getElementById('hist-filter-action').addEventListener('change', appliquerFiltresHistorique);
+
+        function peuplerFiltresHistorique() {
+            let users = [...new Set(historiqueActuel.map(i => i.utilisateur))].filter(Boolean).sort();
+            let actions = [...new Set(historiqueActuel.map(i => i.action))].filter(Boolean).sort();
+            
+            const selUser = document.getElementById('hist-filter-user');
+            selUser.innerHTML = '<option value="" style="background:#1A2B56;">👤 Tous util.</option>';
+            users.forEach(u => selUser.innerHTML += `<option value="${u}" style="background:#1A2B56;">${u}</option>`);
+
+            const selAction = document.getElementById('hist-filter-action');
+            selAction.innerHTML = '<option value="" style="background:#1A2B56;">⚙️ Toutes actions</option>';
+            actions.forEach(a => selAction.innerHTML += `<option value="${a}" style="background:#1A2B56;">${a}</option>`);
+        }
+
+        function appliquerFiltresHistorique() {
             const rowBox = document.getElementById('container-rows-hist');
+            const term = document.getElementById('hist-search').value.toLowerCase().trim();
+            const orderDate = document.getElementById('hist-sort-date').value;
+            const filterUser = document.getElementById('hist-filter-user').value;
+            const filterAction = document.getElementById('hist-filter-action').value;
             
-            let dataTriee = [...historiqueActuel];
-            
-            dataTriee.sort((a, b) => {
-                if (critere === 'date-desc') return new Date(b.date) - new Date(a.date);
-                if (critere === 'date-asc') return new Date(a.date) - new Date(b.date);
-                if (critere === 'nom') return String(a.nom || '').localeCompare(String(b.nom || ''));
-                if (critere === 'action') return String(a.action || '').localeCompare(String(b.action || ''));
-                if (critere === 'utilisateur') return String(a.utilisateur || '').localeCompare(String(b.utilisateur || ''));
-                if (critere === 'emplacement') return String(a.emplacement || a.detail || '').localeCompare(String(b.emplacement || b.detail || ''));
-                return 0;
+            let dataFiltree = historiqueActuel.filter(item => {
+                let textMatch = !term || String(item.nom || '').toLowerCase().includes(term) || String(item.detail || '').toLowerCase().includes(term) || String(item.reference || '').toLowerCase().includes(term);
+                let userMatch = !filterUser || item.utilisateur === filterUser;
+                let actionMatch = !filterAction || item.action === filterAction;
+                return textMatch && userMatch && actionMatch;
+            });
+
+            dataFiltree.sort((a, b) => {
+                if (orderDate === 'desc') return new Date(b.date) - new Date(a.date);
+                return new Date(a.date) - new Date(b.date);
             });
             
-            if (dataTriee.length > 0) {
-                rowBox.innerHTML = dataTriee.map(l => {
+            if (dataFiltree.length > 0) {
+                rowBox.innerHTML = dataFiltree.map(l => {
                     let dObj = new Date(l.date); 
                     let str = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
                     let actionBadge = `<span style="color:#60A5FA; font-weight:bold;">[${l.action}]</span>`;
-                    return `<div class="hist-row"><b>${str}</b><br>${actionBadge} <b>${l.nom || 'Objet inconnu'}</b> par <i>${l.utilisateur}</i> <br><span style="color:#D1D5DB;">${l.detail}</span></div>`;
+                    return `<div class="hist-row"><b>${str}</b><br>${actionBadge} <b>${l.nom || 'Objet inconnu'}</b> par <i>${l.utilisateur}</i> <br><span style="color:#D1D5DB; font-size:0.8rem;">${l.detail}</span></div>`;
                 }).join('');
             } else {
-                rowBox.innerHTML = "<p style='text-align:center;'>Aucun historique trouvé.</p>";
+                rowBox.innerHTML = "<p style='text-align:center; color:#9CA3AF; margin-top:20px;'>Aucun historique correspondant.</p>";
             }
         }
 
-        // Ouverture de l'historique Global (Toute la base)
         function ouvrirHistoriqueGlobal() {
             const rowBox = document.getElementById('container-rows-hist'); 
             rowBox.innerHTML = "<p style='text-align:center;'>Chargement... ⏳</p>";
-            document.getElementById('select-tri-hist').value = "date-desc"; // Reset du selecteur sur Date récente
+            document.getElementById('hist-sort-date').value = "desc";
+            document.getElementById('hist-search').value = "";
             document.getElementById('modal-pop-hist').style.display = 'flex';
             
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_historique", ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if(d.result === "success") {
                     historiqueActuel = d.data;
-                    appliquerTriHistorique();
+                    peuplerFiltresHistorique();
+                    appliquerFiltresHistorique();
                 } else { rowBox.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>"; }
             }).catch(() => { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de réseau.</p>"; });
         }
 
-        // Ouverture de l'historique Individuel (Un seul objet)
         document.getElementById('btn-hist-indiv').addEventListener('click', function() {
             const rowBox = document.getElementById('container-rows-hist'); 
             rowBox.innerHTML = "<p style='text-align:center;'>Chargement... ⏳</p>";
-            document.getElementById('select-tri-hist').value = "date-desc"; // Reset du selecteur
+            document.getElementById('hist-sort-date').value = "desc"; 
+            document.getElementById('hist-search').value = "";
             document.getElementById('modal-pop-hist').style.display = 'flex';
             
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_item_history", reference: refActive, ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if(d.result === "success") {
                     historiqueActuel = d.data;
-                    appliquerTriHistorique();
+                    peuplerFiltresHistorique();
+                    appliquerFiltresHistorique();
                 } else { rowBox.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>"; }
             }).catch(() => { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de réseau.</p>"; });
         });
 
-        // 🌟 KITS ET BUNDLES
         document.getElementById('btn-add-sub').addEventListener('click', function() {
             let val = document.getElementById('input-sub-ref').value.trim().toUpperCase();
             if(val && !trackedSubRefs.includes(val)) { trackedSubRefs.push(val); document.getElementById('input-sub-ref').value = ""; document.getElementById('kit-preview-list').innerHTML = trackedSubRefs.map(r => `📦 ${r}`).join('<br>'); }
@@ -343,14 +341,12 @@
             .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('kit-preview-list').textContent = ""; trackedSubRefs = []; afficherAlerte("Succès", "Lot assemblé !", true); } });
         });
 
-        // 🌟 SUIVI DES INCIDENTS (NOTES)
         document.getElementById('btn-save-fiche-note').addEventListener('click', function() {
             let txt = document.getElementById('input-fiche-note').value.trim(); if(!txt) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: txt, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('input-fiche-note').value = ""; } });
         });
 
-        // 🌟 RÉIMPRESSION STRICTE QR
         document.getElementById('btn-print-fiche-qr').addEventListener('click', function() {
             const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
             const doc = iframe.contentWindow.document;

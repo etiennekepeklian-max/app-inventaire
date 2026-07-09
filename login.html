@@ -45,29 +45,57 @@
         </form>
     </div>
     
-    <div class="app-version" id="version-display">Version 0.9</div>
+    <div class="app-version" id="version-display">Version 0.1.1</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         
-        if (localStorage.getItem('app_version')) { document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version'); }
-        if (localStorage.getItem('app_token')) { window.location.href = 'index.html'; }
+        if (localStorage.getItem('app_version')) { 
+            document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version'); 
+        }
+        if (localStorage.getItem('app_token')) { 
+            window.location.href = 'index.html'; 
+        }
 
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-submit'); const errorBox = document.getElementById('error-msg');
+            const btn = document.getElementById('btn-submit'); 
+            const errorBox = document.getElementById('error-msg');
             btn.disabled = true; btn.textContent = "Connexion... ⏳"; errorBox.style.display = 'none';
 
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "login", login: document.getElementById('login').value.trim(), password: document.getElementById('password').value }) })
+            fetch(GOOGLE_SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: "login", 
+                    login: document.getElementById('login').value.trim(), 
+                    password: document.getElementById('password').value 
+                }) 
+            })
             .then(res => res.json()).then(data => {
                 if (data.result === "success") {
-                    localStorage.setItem('app_token', data.token); localStorage.setItem('app_login', data.login); localStorage.setItem('app_role', data.role);
+                    localStorage.setItem('app_token', data.token); 
+                    localStorage.setItem('app_login', data.login); 
+                    localStorage.setItem('app_role', data.role);
                     window.location.href = 'index.html';
-                } else { errorBox.textContent = data.message; errorBox.style.display = 'block'; btn.disabled = false; btn.textContent = "Se connecter"; }
-            }).catch(() => { errorBox.textContent = "Problème réseau. Vérifiez votre connexion."; errorBox.style.display = 'block'; btn.disabled = false; btn.textContent = "Se connecter"; });
+                } else { 
+                    errorBox.textContent = data.message; 
+                    errorBox.style.display = 'block'; 
+                    btn.disabled = false; 
+                    btn.textContent = "Se connecter"; 
+                }
+            }).catch(() => { 
+                errorBox.textContent = "Problème réseau. Vérifiez votre connexion."; 
+                errorBox.style.display = 'block'; 
+                btn.disabled = false; 
+                btn.textContent = "Se connecter"; 
+            });
         });
 
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); }); }
+        if ('serviceWorker' in navigator) { 
+            window.addEventListener('load', () => { 
+                navigator.serviceWorker.register('./sw.js').catch(() => {}); 
+            }); 
+        }
     </script>
 </body>
 </html>

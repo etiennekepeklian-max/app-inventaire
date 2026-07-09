@@ -74,7 +74,7 @@
         .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
         .btn-confirm-danger { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
 
-        /* Styles Diagnostics ajoutés */
+        /* Styles Diagnostics */
         .diag-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.05); }
 
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
@@ -82,10 +82,8 @@
 </head>
 <body>
     <div class="container">
-        <!-- Flèche retour intelligente -->
         <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Administration</h1></div>
         
-        <!-- Menu en Tuiles -->
         <div class="admin-nav">
             <div class="nav-tile active" onclick="switchSection('sect-dash', this)">📊 Statis.</div>
             <div class="nav-tile" onclick="switchSection('sect-struct', this)">🏷️ Données</div>
@@ -94,26 +92,22 @@
             <div class="nav-tile" onclick="switchSection('sect-diag', this)" style="grid-column: span 2;">🩺 Diagnostics</div>
         </div>
 
-        <!-- SECTION 1 : TABLEAU DE BORD LOGISTIQUE -->
         <div class="admin-section active" id="sect-dash">
             <div class="widget-row">
                 <div class="widget"><div class="widget-num" id="stat-actif">-</div><div class="widget-label">Actifs</div></div>
                 <div class="widget"><div class="widget-num" id="stat-sorti">-</div><div class="widget-label">Sortis</div></div>
             </div>
             <div class="widget-row">
-                <!-- 🌦️ Météo des Audits -->
                 <div class="widget" style="display:flex; align-items:center; justify-content:space-around; padding:10px;">
                     <div style="text-align:left;"><div class="widget-num" id="stat-meteo">- %</div><div class="widget-label">Fiabilité</div></div>
                     <div class="widget-meteo" id="stat-meteo-icon">☀️</div>
                 </div>
-                <!-- 🎯 Radar Objets Dormants -->
                 <div class="widget" style="border-color: rgba(245, 158, 11, 0.3);">
                     <div class="widget-num" id="stat-dormant" style="color:#F59E0B;">-</div>
                     <div class="widget-label">Dormants (+6m)</div>
                 </div>
             </div>
 
-            <!-- Graphiques intégrés -->
             <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
                 <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px;">📍 PALMARÈS DES EMPLACEMENTS</p>
                 <canvas id="chartEmp" height="180"></canvas>
@@ -127,7 +121,6 @@
                 <canvas id="chartCat" height="180"></canvas>
             </div>
 
-            <!-- Encarts d'activités et d'anomalies -->
             <div class="list-panel">
                 <h3>🚨 FIL D'ALERTE DES ANOMALIES</h3>
                 <div id="panel-anomalies"><p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune alerte récente.</p></div>
@@ -142,7 +135,6 @@
             </div>
         </div>
 
-        <!-- SECTION 2 : STRUCTURES DE BASE (Catégories et Emplacements) -->
         <div class="admin-section" id="sect-struct">
             <div class="form-group">
                 <label>📍 Ajouter un Emplacement Structuré</label>
@@ -163,11 +155,19 @@
             <div id="cat-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
         </div>
 
-        <!-- SECTION 3 : FLUX CSV (Importation mobile friendly et Export complet) -->
         <div class="admin-section" id="sect-csv">
             <div class="form-group">
                 <label>📥 Importation / Mise à jour en masse</label>
-                <p style="font-size:0.8rem; color:#D1D5DB; margin-bottom:5px;">L'importation est intelligente : si la référence existe déjà, la fiche se mettra à jour sans doublons (mode Upsert).</p>
+                
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.75rem; color: #D1D5DB;">
+                    <p style="color:#10B981; font-weight:bold; margin-bottom:5px;">⚠️ Ordre strict des 11 colonnes (séparateur point-virgule ;) :</p>
+                    <ol style="padding-left: 20px; font-family: monospace; color: #93C5FD; margin-bottom:0; line-height:1.4;">
+                        <li>Reference</li><li>Nom</li><li>Emplacement</li><li>Date_Ajout</li><li>Utilisateur</li>
+                        <li>Image_QR</li><li>Date_Sortie</li><li>Motif_Sortie</li><li>Utilisateur_Sortie</li><li>Categorie</li><li>Notes</li>
+                    </ol>
+                </div>
+                
+                <p style="font-size:0.8rem; color:#D1D5DB; margin-bottom:5px;">Si la référence existe, la fiche se mettra à jour sans doublons.</p>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" />
                 <label for="csv-file" class="file-upload-label">
                     <span id="file-name-display">📁 Toucher pour choisir un fichier .CSV</span>
@@ -179,11 +179,10 @@
 
             <div class="form-group">
                 <label>📤 Sauvegarde et Export complet</label>
-                <button class="btn-action btn-export" id="btn-export">📊 Télécharger l'inventaire complet (11 col. CSV)</button>
+                <button class="btn-action btn-export" id="btn-export">📊 Télécharger l'inventaire complet</button>
             </div>
         </div>
 
-        <!-- SECTION 4 : GESTION DE L'ÉQUIPE (Rôle Lecteur inclus) -->
         <div class="admin-section" id="sect-team">
             <form id="form-creer" style="display:flex; flex-direction:column; gap:12px;">
                 <h3 style="font-size: 0.95rem; color: #60A5FA;">➕ Créer un compte d'accès</h3>
@@ -220,7 +219,6 @@
             </form>
         </div>
 
-        <!-- SECTION 5 : DIAGNOSTICS (NOUVEAU) -->
         <div class="admin-section" id="sect-diag">
             <h3 style="color:#60A5FA;">🩺 Diagnostic de santé système</h3>
             <p style="font-size:0.8rem; color:#D1D5DB; margin-bottom:10px;">Cet outil vérifie que tous les modules de l'application (Serveur, Caméra, Mémoire) fonctionnent correctement.</p>
@@ -229,9 +227,8 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <div class="modal-overlay" id="custom-modal"><div class="modal-content"><div class="modal-icon" id="modal-icon">✅</div><h3 class="modal-title" id="modal-title">Succès</h3><p class="modal-message" id="modal-text">Action effectuée.</p><button class="btn-modal-ok" id="btn-fermer-modal">OK</button></div></div>
-    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><div class="modal-icon">⚠️</div><h3 class="modal-title">Confirmation</h3><p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel">Annuler</button><button class="btn-confirm-danger" id="btn-confirm-ok">Confirmer</button></div></div></div>
+    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><div class="modal-icon" id="modal-icon">⚠️</div><h3 class="modal-title">Confirmation</h3><p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel">Annuler</button><button class="btn-confirm-danger" id="btn-confirm-ok">Confirmer</button></div></div></div>
 
     <div class="app-version" id="version-display"></div>
 
@@ -239,7 +236,7 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
 
         function switchSection(sectionId, tileEl) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
@@ -265,7 +262,6 @@
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; actionConfirmationCallback = null; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; if(actionConfirmationCallback) actionConfirmationCallback(); });
 
-        // 🌟 CHARGEMENT DU DASHBOARD LOGISTIQUE COMPLET
         function chargerDashboard() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "get_dashboard" }) })
             .then(res => res.json()).then(data => {
@@ -277,44 +273,26 @@
                     document.getElementById('stat-dormant').textContent = d.deadStockCount;
                     document.getElementById('stat-meteo-icon').textContent = d.meteoScore >= 90 ? "☀️" : (d.meteoScore >= 75 ? "⛅" : "🌧️");
 
-                    // 1. Chart Répartition Catégories
                     new Chart(document.getElementById('chartCat'),{ type:'pie', data:{ labels:Object.keys(d.categories), datasets:[{data:Object.values(d.categories), backgroundColor:['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6']}] }, options:{plugins:{legend:{labels:{color:'white'}}}} });
-                    
-                    // 2. 📊 Chart Palmarès des Emplacements
                     new Chart(document.getElementById('chartEmp'),{ type:'bar', data:{ labels:Object.keys(d.emplacements), datasets:[{label:'Objets', data:Object.values(d.emplacements), backgroundColor:'#60A5FA'}] }, options:{scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'white'}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'white'}}},plugins:{legend:{display:false}}} });
-                    
-                    // 3. 📈 Chart Évolution Temporelle
                     new Chart(document.getElementById('chartEvol'),{ type:'line', data:{ labels:Object.keys(d.evolutionTemporelle), datasets:[{data:Object.values(d.evolutionTemporelle), borderColor:'#10B981', tension:0.2, fill:false}] }, options:{scales:{x:{ticks:{color:'white'}},y:{ticks:{color:'white'}}},plugins:{legend:{display:false}}} });
 
-                    // 4. 🚨 Fil d'Alerte des Anomalies
                     let panAnom = document.getElementById('panel-anomalies');
-                    if(d.anomaliesFil.length > 0) {
-                        panAnom.innerHTML = d.anomaliesFil.map(a => `<div class="panel-row"><span style="color:#FCA5A5;">⚠️ ${a.nom} (${a.reference})</span><span>${a.detail.split(':')[1] || a.detail}</span></div>`).join('');
-                    } else {
-                        panAnom.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune alerte récente.</p>`;
-                    }
+                    if(d.anomaliesFil.length > 0) { panAnom.innerHTML = d.anomaliesFil.map(a => `<div class="panel-row"><span style="color:#FCA5A5;">⚠️ ${a.nom} (${a.reference})</span><span>${a.detail.split(':')[1] || a.detail}</span></div>`).join(''); } 
+                    else { panAnom.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune alerte récente.</p>`; }
 
-                    // 5. 👥 Activité Équipe
                     let panEq = document.getElementById('panel-equipe');
                     let eqKeys = Object.keys(d.teamActivity);
-                    if(eqKeys.length > 0) {
-                        panEq.innerHTML = eqKeys.map(k => `<div class="panel-row"><span>👤 ${k}</span><span class="rafale-count" style="background:#10B981; padding:2px 8px; border-radius:4px;">${d.teamActivity[k]} actions</span></div>`).join('');
-                    } else {
-                        panEq.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune action enregistrée aujourd'hui.</p>`;
-                    }
+                    if(eqKeys.length > 0) { panEq.innerHTML = eqKeys.map(k => `<div class="panel-row"><span>👤 ${k}</span><span class="rafale-count" style="background:#10B981; padding:2px 8px; border-radius:4px;">${d.teamActivity[k]} actions</span></div>`).join(''); } 
+                    else { panEq.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune action enregistrée aujourd'hui.</p>`; }
 
-                    // 6. 📤 Flux Sorties Récentes
                     let panSorties = document.getElementById('panel-sorties');
-                    if(d.recentExits.length > 0) {
-                        panSorties.innerHTML = d.recentExits.map(s => `<div class="panel-row"><span>📦 ${s.nom}</span><span style="font-size:0.75rem; font-style:italic;">Motif: ${s.motif} (${s.utilisateur})</span></div>`).join('');
-                    } else {
-                        panSorties.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune sortie consignée.</p>`;
-                    }
+                    if(d.recentExits.length > 0) { panSorties.innerHTML = d.recentExits.map(s => `<div class="panel-row"><span>📦 ${s.nom}</span><span style="font-size:0.75rem; font-style:italic;">Motif: ${s.motif} (${s.utilisateur})</span></div>`).join(''); } 
+                    else { panSorties.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune sortie consignée.</p>`; }
                 }
             });
         }
 
-        // 🌟 GESTION DES CATÉGORIES ET EMPLACEMENTS
         function chargerCategories() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) }).then(r => r.json()).then(d => {
                 if(d.result === "success") {
@@ -347,7 +325,6 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_emplacement", nouvelEmplacement: emp, ...payloadBase }) }).then(r => r.json()).then(d => { if(d.result==="success"){ document.getElementById('new-emp').value=""; chargerEmplacements(); afficherPopup("Succès","Zone ajoutée."); } });
         });
 
-        // 🌟 GESTION UTILISATEURS
         function chargerUtilisateurs() {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "lister_utilisateurs" }) }).then(res => res.json()).then(data => {
                 if(data.result === "success") {
@@ -369,7 +346,6 @@
         document.getElementById('form-creer').addEventListener('submit', function(e) { e.preventDefault(); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "creer_utilisateur", newLogin: document.getElementById('creer-login').value.trim(), newPassword: document.getElementById('creer-mdp').value, newRole: document.getElementById('creer-role').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Compte créé !", `L'accès a bien été validé.`); document.getElementById('form-creer').reset(); chargerUtilisateurs(); } }); });
         document.getElementById('form-modifier').addEventListener('submit', function(e) { e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "modifier_utilisateur", targetLogin: document.getElementById('select-user').value, newRole: document.getElementById('modif-role').value, newPassword: document.getElementById('modif-mdp').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Succès", `Modifications enregistrées.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } btn.disabled = false; }); });
 
-        // 🌟 GESTION FLUX CSV
         document.getElementById('csv-file').addEventListener('change', function(e) {
             const display = document.getElementById('file-name-display');
             if(this.files && this.files.length > 0) { display.innerHTML = `<span style="color:#10B981;">📄 ${this.files[0].name}</span>`; } else { display.textContent = "📁 Toucher pour choisir un fichier .CSV"; }
@@ -411,48 +387,20 @@
                     data.data.forEach(r => { csvContent += `${clean(r.reference)};${clean(r.nom)};${clean(r.emplacement)};${clean(r.dateAjout)};${clean(r.utilisateur)};${clean(r.imageQR)};${clean(r.dateSortie)};${clean(r.motifSortie)};${clean(r.utilisateurSortie)};${clean(r.categorie)};${clean(r.notes)}\n`; });
                     const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "base_complete.csv"); document.body.appendChild(link); link.click();
                 }
-                btn.textContent = "📊 Télécharger l'inventaire complet (11 col. CSV)";
+                btn.textContent = "📊 Télécharger l'inventaire complet";
             });
         });
 
-        // 🌟 FONCTION DIAGNOSTICS (LA SEULE NOUVEAUTÉ)
         async function runDiagnostics() {
             const container = document.getElementById('diag-results');
             container.innerHTML = "Contrôle en cours... ⏳";
             let results = [];
-            
-            // 1. Ping Serveur
             let start = Date.now();
-            try {
-                await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body: JSON.stringify({...payloadBase, action:"get_dashboard"})});
-                results.push({name: "Connexion Serveur", status: "🟢 OK ("+(Date.now()-start)+"ms)"});
-            } catch(e) { results.push({name: "Connexion Serveur", status: "🔴 ÉCHEC"}); }
-
-            // 2. Permissions Caméra
-            try {
-                let stream = await navigator.mediaDevices.getUserMedia({video: true});
-                stream.getTracks().forEach(track => track.stop());
-                results.push({name: "Accès Caméra", status: "🟢 OK"});
-            } catch(e) { results.push({name: "Accès Caméra", status: "🔴 BLOQUÉ"}); }
-
-            // 3. LocalStorage
-            try {
-                localStorage.setItem('test', 'ok'); localStorage.removeItem('test');
-                results.push({name: "Mémoire (LocalStorage)", status: "🟢 OK"});
-            } catch(e) { results.push({name: "Mémoire (LocalStorage)", status: "🔴 PLEIN/BLOQUÉ"}); }
-
+            try { await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body: JSON.stringify({...payloadBase, action:"get_dashboard"})}); results.push({name: "Connexion Serveur", status: "🟢 OK ("+(Date.now()-start)+"ms)"}); } catch(e) { results.push({name: "Connexion Serveur", status: "🔴 ÉCHEC"}); }
+            try { let stream = await navigator.mediaDevices.getUserMedia({video: true}); stream.getTracks().forEach(track => track.stop()); results.push({name: "Accès Caméra", status: "🟢 OK"}); } catch(e) { results.push({name: "Accès Caméra", status: "🔴 BLOQUÉ"}); }
+            try { localStorage.setItem('test', 'ok'); localStorage.removeItem('test'); results.push({name: "Mémoire (LocalStorage)", status: "🟢 OK"}); } catch(e) { results.push({name: "Mémoire (LocalStorage)", status: "🔴 PLEIN/BLOQUÉ"}); }
             container.innerHTML = results.map(r => `<div class="diag-item"><span>${r.name}</span><span style="font-weight:bold;">${r.status}</span></div>`).join('');
         }
-
-        window.addEventListener('DOMContentLoaded', () => { 
-            chargerUtilisateurs(); 
-            chargerDashboard(); 
-            chargerCategories(); 
-            chargerEmplacements(); 
-        });
-    </script>
-    <script>
-        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>

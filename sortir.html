@@ -3,126 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sortir un article</title>
+    <title>Sortir / Archiver un Objet</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script>
+        if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { 
+            window.location.href = 'login.html'; 
+        }
+        if (localStorage.getItem('app_role') === 'lecteur') {
+            window.location.href = 'index.html';
+        }
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; position: relative; padding-bottom: 30px; }
-        .container { width: 90%; max-width: 450px; margin-top: 20px; margin-bottom: 30px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
-        /* Header avec flèche retour arrière intelligente */
-        .header { display: flex; align-items: center; margin-bottom: 20px; position: relative; }
+        .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
-        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; gap: 5px; }
-        label { margin-bottom: 3px; font-size: 0.9rem; color: #D1D5DB; font-weight: bold; }
-        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
+        .form-card { background: rgba(0, 0, 0, 0.2); border-radius: 14px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        
+        .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .row-inline { display: flex; gap: 8px; align-items: flex-end; }
+        .row-inline input { flex: 1; }
+        
+        label { font-size: 0.85rem; color: #D1D5DB; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; transition: border-color 0.2s; }
         input:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
-        
-        .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: transform 0.2s; width: 100%; }
-        .btn-action:active { background-color: #2563EB; transform: scale(0.95); }
-        
-        .btn-supprimer { background-color: #EF4444; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s; width: 100%; }
-        .btn-supprimer:active { background-color: #DC2626; transform: scale(0.95); }
-        
-        .input-with-btn { display: flex; gap: 10px; }
-        .btn-scan { background-color: #10B981; border: none; border-radius: 8px; padding: 0 15px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-scan:active { background-color: #059669; transform: scale(0.9); }
-        
-        #reader-container { display: none; margin-bottom: 20px; background: white; padding: 10px; border-radius: 12px; overflow: hidden; }
-        #reader { width: 100%; }
-        #etape-sortie { display: none; flex-direction: column; }
-        
-        .info-box { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .info-box p { margin-bottom: 8px; font-size: 0.95rem; display: flex; justify-content: space-between; }
-        .info-box span { color: #60A5FA; font-weight: bold; font-size: 1.05rem; }
-        
-        #result-box { display: none; flex-direction: column; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); }
-        .icon-success { font-size: 3rem; margin-bottom: 10px; }
-        
-        .btn-nouveau { background-color: transparent; border: 1px solid #D1D5DB; padding: 12px; border-radius: 8px; color: #D1D5DB; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 20px; transition: transform 0.2s; }
-        .btn-nouveau:active { transform: scale(0.95); }
-        
-        /* Modales mobiles unifiées */
+
+        .btn-scan-input { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: white; padding: 12px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 50px; height: 48px; transition: background 0.2s; }
+        .btn-scan-input:active { background: rgba(255, 255, 255, 0.25); }
+
+        .btn-action { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-action:disabled { background-color: #6B7280; cursor: not-allowed; box-shadow: none; }
+
+        #scanner-box { display: none; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; }
+
+        .preview-card { display: none; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 12px; border-radius: 8px; font-size: 0.9rem; line-height: 1.4; }
+        .preview-card span { font-weight: bold; color: #60A5FA; }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
+        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
         .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
         .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; }
         
         .modal-buttons { display: flex; gap: 15px; }
-        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-        .btn-cancel:active { transform: scale(0.95); }
-        .btn-confirm { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .btn-confirm:active { transform: scale(0.95); }
-        
-        .alert-icon { font-size: 3.5rem; margin-bottom: 10px; }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
+        .btn-confirm-danger { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
 
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Sortir un article</h1></div>
-        
-        <div id="reader-container">
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Sortir / Archiver</h1></div>
+
+        <div id="scanner-box">
             <div id="reader"></div>
-            <button type="button" class="btn-nouveau" onclick="arreterScanner()" style="color: #333; border-color: #333; background: #FFF;">Annuler le scan</button>
+            <button type="button" class="btn-action" onclick="fermerScannerCam()" style="background:transparent; border:1px solid #EF4444; color:#FCA5A5; margin-top:10px; padding:10px;">❌ Annuler le scan</button>
         </div>
-        
-        <div id="etape-recherche">
+
+        <form id="form-sortir" class="form-card">
             <div class="form-group">
-                <label for="reference">Référence de l'article</label>
-                <div class="input-with-btn">
-                    <input type="text" id="reference" placeholder="Ex: PER-4521" required>
-                    <button type="button" class="btn-scan" id="btn-ouvrir-scanner">📷</button>
+                <label for="input-ref">Référence de l'article</label>
+                <div class="row-inline">
+                    <input type="text" id="input-ref" placeholder="Scanner ou taper le code..." required>
+                    <button type="button" class="btn-scan-input" onclick="ouvrirScannerCam()" title="Ouvrir l'appareil photo">📷</button>
                 </div>
             </div>
-            <button type="button" id="btn-chercher" class="btn-action">🔍 Chercher l'objet</button>
-        </div>
-        
-        <div id="etape-sortie">
-            <div class="info-box">
-                <p>Objet : <span id="info-nom">-</span></p>
-                <p>Emplacement actuel : <span id="info-emp-actuel">-</span></p>
+
+            <button type="button" class="btn-action" id="btn-verifier-ref" style="background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-size:0.9rem; padding:10px;">🔍 Vérifier l'article</button>
+
+            <div id="preview-objet" class="preview-card">
+                <p>📦 Objet identifié : <span id="preview-nom">...</span></p>
+                <p style="font-size: 0.8rem; color:#9CA3AF; margin-top:5px; font-style:italic;">Prêt pour la sortie définitive.</p>
             </div>
+
             <div class="form-group">
-                <label for="motif-sortie">Motif de la sortie</label>
-                <input type="text" id="motif-sortie" placeholder="Ex: Chantier DUPONT, Fin de vie..." required>
+                <label for="input-motif">Motif de la sortie</label>
+                <input type="text" id="input-motif" placeholder="Ex: Vendu, Cassé, Rendu..." required>
             </div>
-            <button type="button" id="btn-ouvrir-modal" class="btn-supprimer">📤 Archiver et Sortir</button>
-        </div>
-        
-        <div id="result-box">
-            <div class="icon-success">📦</div>
-            <h3>Article sorti !</h3>
-            <p style="font-size: 0.95rem; color: #D1D5DB; margin-top: 10px;" id="texte-resultat"></p>
-            <button id="btn-nouveau" class="btn-nouveau">🔄 Sortir un autre article</button>
-        </div>
+
+            <button type="button" class="btn-action" id="btn-pre-submit" style="background-color: #EF4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);" disabled>📤 Archiver et Sortir</button>
+        </form>
     </div>
 
     <div class="modal-overlay" id="modal-confirmation">
         <div class="modal-content">
-            <h3 class="modal-title">⚠️ Confirmation</h3>
-            <p class="modal-message">Sortir l'article <b id="modal-nom-article" style="color: #60A5FA;"></b> pour le motif : <br><i id="modal-motif-rappel" style="color: white;"></i> ?</p>
+            <h3 class="modal-title">⚠️ Confirmation Finale</h3>
+            <p class="modal-message">Vous êtes sur le point de sortir :<br><b id="modal-nom-article" style="color: #60A5FA;"></b><br><br>Pour le motif :<br><i id="modal-motif-rappel" style="color: white; font-size: 1.05rem;"></i></p>
             <div class="modal-buttons">
                 <button type="button" class="btn-cancel" id="btn-annuler-sortie">Annuler</button>
-                <button type="button" class="btn-confirm" id="btn-confirmer-sortie">Confirmer</button>
+                <button type="button" class="btn-confirm-danger" id="btn-confirmer-sortie">Confirmer</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="custom-alert">
         <div class="modal-content">
-            <div class="alert-icon" id="alert-icon">⚠️</div>
+            <div class="modal-icon" id="alert-icon">⚠️</div>
             <h3 class="modal-title" id="alert-title">Attention</h3>
-            <p class="alert-message" id="alert-message">Message d'erreur.</p>
+            <p class="modal-message" id="alert-message"></p>
             <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
         </div>
     </div>
@@ -132,16 +122,9 @@
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
-        
-        const etapeRecherche = document.getElementById('etape-recherche'); 
-        const etapeSortie = document.getElementById('etape-sortie'); 
-        const resultBox = document.getElementById('result-box'); 
-        const inputReference = document.getElementById('reference'); 
-        const inputMotif = document.getElementById('motif-sortie'); 
-        const modal = document.getElementById('modal-confirmation');
-        let html5QrcodeScanner;
+        let html5QrcodeScanner = null;
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
 
         function afficherAlerte(titre, message, isSuccess = false) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
@@ -151,68 +134,117 @@
         }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
-        document.getElementById('btn-ouvrir-scanner').addEventListener('click', function() { 
-            document.getElementById('reader-container').style.display = 'block'; 
-            etapeRecherche.style.display = 'none'; 
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 250, height: 250} }, false); 
-            html5QrcodeScanner.render(onScanSuccess, onScanFailure); 
-        });
+        // 🌟 RECHERCHE DE SÉCURITÉ / VÉRIFICATION DE LA RÉFÉRENCE SAISIE
+        document.getElementById('btn-verifier-ref').addEventListener('click', executerVerificationRef);
         
-        function onScanSuccess(decodedText, decodedResult) { arreterScanner(); inputReference.value = decodedText.trim().toUpperCase(); lancerRecherche(); } 
-        function onScanFailure(error) {} 
-        function arreterScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); document.getElementById('reader-container').style.display = 'none'; etapeRecherche.style.display = 'block'; }
-        
-        document.getElementById('btn-chercher').addEventListener('click', lancerRecherche);
-        
-        function lancerRecherche() {
-            const reference = inputReference.value.trim().toUpperCase(); 
-            if(!reference) { afficherAlerte("Attention", "Veuillez saisir ou scanner une référence valide."); return; }
-            const btnChercher = document.getElementById('btn-chercher'); btnChercher.textContent = "Recherche... ⏳"; btnChercher.disabled = true;
-            
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", reference: reference, ...payloadBase }) })
+        function executerVerificationRef() {
+            const ref = document.getElementById('input-ref').value.trim().toUpperCase();
+            if(!ref) return afficherAlerte("Attention", "Veuillez d'abord saisir ou scanner une référence.", false);
+
+            const btnVerif = document.getElementById('btn-verifier-ref');
+            btnVerif.textContent = "Recherche en cours... ⏳";
+
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", reference: ref, ...payloadBase }) })
             .then(res => res.json()).then(data => {
-                if (data.result === "EXPIRED") { window.location.href = "login.html"; return; }
-                if(data.result === "success") { 
-                    document.getElementById('info-nom').textContent = data.nom; 
-                    document.getElementById('info-emp-actuel').textContent = data.emplacement; 
-                    document.getElementById('modal-nom-article').textContent = data.nom; 
-                    etapeRecherche.style.display = 'none'; 
-                    etapeSortie.style.display = 'flex'; 
-                } else { 
-                    afficherAlerte("Erreur", data.message); 
-                }
-                btnChercher.textContent = "🔍 Chercher l'objet"; btnChercher.disabled = false;
-            }).catch(() => { afficherAlerte("Erreur", "Connexion au serveur impossible."); btnChercher.textContent = "🔍 Chercher l'objet"; btnChercher.disabled = false; });
-        }
-        
-        document.getElementById('btn-ouvrir-modal').addEventListener('click', function() { 
-            const motif = inputMotif.value.trim(); 
-            if(!motif) { afficherAlerte("Attention", "Saisissez un motif de sortie pour valider l'archivage."); inputMotif.focus(); return; } 
-            document.getElementById('modal-motif-rappel').textContent = motif; 
-            modal.style.display = 'flex'; 
-        });
-        
-        document.getElementById('btn-annuler-sortie').addEventListener('click', function() { modal.style.display = 'none'; });
-        
-        document.getElementById('btn-confirmer-sortie').addEventListener('click', function() {
-            const btnConfirmer = document.getElementById('btn-confirmer-sortie'); btnConfirmer.textContent = "Traitement... ⏳"; btnConfirmer.disabled = true;
-            
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "sortir", reference: inputReference.value.trim().toUpperCase(), motif: inputMotif.value.trim(), ...payloadBase }) })
-            .then(res => res.json()).then(data => {
-                if (data.result === "EXPIRED") { window.location.href = "login.html"; return; }
-                if(data.result === "success") { 
-                    modal.style.display = 'none'; 
-                    document.getElementById('texte-resultat').innerHTML = `L'article <b>${document.getElementById('info-nom').textContent}</b> a été archivé définitivement.`; 
-                    etapeSortie.style.display = 'none'; 
-                    resultBox.style.display = 'flex'; 
+                btnVerif.textContent = "🔍 Vérifier l'article";
+                if(data.result === "success") {
+                    if (data.estSorti) {
+                        afficherAlerte("Déjà Archivé", "Cet objet est déjà enregistré comme SORTI dans la base de données.", false);
+                        remiseAZeroVerification();
+                    } else {
+                        document.getElementById('preview-nom').textContent = data.nom;
+                        document.getElementById('preview-objet').style.display = 'block';
+                        document.getElementById('btn-pre-submit').disabled = false;
+                    }
                 } else {
-                    afficherAlerte("Erreur", "L'archivage a échoué.");
+                    afficherAlerte("Introuvable", "Cette référence n'existe pas dans la base de données.", false);
+                    remiseAZeroVerification();
                 }
-                btnConfirmer.textContent = "Confirmer"; btnConfirmer.disabled = false;
-            }).catch(() => { afficherAlerte("Erreur réseau", "Impossible d'archiver l'objet."); btnConfirmer.textContent = "Confirmer"; btnConfirmer.disabled = false; });
+            }).catch(() => {
+                btnVerif.textContent = "🔍 Vérifier l'article";
+                afficherAlerte("Erreur réseau", "Impossible de joindre le serveur principal.", false);
+                remiseAZeroVerification();
+            });
+        }
+
+        function remiseAZeroVerification() {
+            document.getElementById('preview-objet').style.display = 'none';
+            document.getElementById('btn-pre-submit').disabled = true;
+        }
+
+        document.getElementById('input-ref').addEventListener('input', remiseAZeroVerification);
+
+        // 🌟 APPAREIL PHOTO / LECTEUR DE LOGICIEL QR
+        function ouvrirScannerCam() {
+            document.getElementById('form-sortir').style.display = 'none';
+            document.getElementById('scanner-box').style.display = 'block';
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 }, false);
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+
+        function onScanSuccess(decodedText) {
+            document.getElementById('input-ref').value = decodedText.trim().toUpperCase();
+            fermerScannerCam();
+            if (navigator.vibrate) navigator.vibrate(100);
+            executerVerificationRef(); // Auto-déclenche la vérification
+        }
+
+        function onScanFailure(error) {}
+
+        function fermerScannerCam() {
+            if (html5QrcodeScanner) { html5QrcodeScanner.clear(); }
+            document.getElementById('scanner-box').style.display = 'none';
+            document.getElementById('form-sortir').style.display = 'flex';
+        }
+
+        // 🌟 SOUMISSION AVEC MODALE DE CONFIRMATION
+        document.getElementById('btn-pre-submit').addEventListener('click', function() {
+            const motif = document.getElementById('input-motif').value.trim();
+            if(!motif) return afficherAlerte("Attention", "Vous devez impérativement indiquer un motif pour la sortie.");
+            
+            document.getElementById('modal-motif-rappel').textContent = motif;
+            document.getElementById('modal-nom-article').textContent = document.getElementById('preview-nom').textContent;
+            document.getElementById('modal-confirmation').style.display = 'flex';
         });
-        
-        document.getElementById('btn-nouveau').addEventListener('click', function() { resultBox.style.display = 'none'; etapeRecherche.style.display = 'block'; inputReference.value = ""; inputMotif.value = ""; });
+
+        document.getElementById('btn-annuler-sortie').addEventListener('click', function() { 
+            document.getElementById('modal-confirmation').style.display = 'none'; 
+        });
+
+        document.getElementById('btn-confirmer-sortie').addEventListener('click', function() {
+            document.getElementById('modal-confirmation').style.display = 'none';
+            const btnSubmit = document.getElementById('btn-pre-submit');
+            const ref = document.getElementById('input-ref').value.trim().toUpperCase();
+            const motif = document.getElementById('input-motif').value.trim();
+
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "Archivage en cours... ⏳";
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "sortir",
+                    reference: ref,
+                    motif: motif,
+                    ...payloadBase
+                })
+            }).then(res => res.json()).then(data => {
+                if(data.result === "success") {
+                    afficherAlerte("Succès de l'opération", `L'objet a bien été sorti et archivé.`, true);
+                    document.getElementById('form-sortir').reset();
+                    remiseAZeroVerification();
+                    btnSubmit.textContent = "📤 Archiver et Sortir";
+                } else {
+                    afficherAlerte("Échec", data.message, false);
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "📤 Archiver et Sortir";
+                }
+            }).catch(() => {
+                afficherAlerte("Erreur réseau", "La sortie n'a pas pu être enregistrée sur le serveur.", false);
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "📤 Archiver et Sortir";
+            });
+        });
     </script>
     <script>
         let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });

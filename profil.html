@@ -85,7 +85,7 @@
         </div>
     </div>
 
-    <div class="app-version" id="version-display"></div>
+    <div class="app-version" id="version-display">Version 0.1.1</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
@@ -93,7 +93,10 @@
         document.getElementById('display-login').textContent = localStorage.getItem('app_login');
         let roleName = localStorage.getItem('app_role') === 'admin' ? "Administrateur" : (localStorage.getItem('app_role') === 'lecteur' ? "Lecteur Uniquement" : "Standard");
         document.getElementById('display-role').textContent = roleName;
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+        
+        if (localStorage.getItem('app_version')) {
+            document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version');
+        }
 
         function afficherAlerte(titre, message, isSuccess = true, callback = null) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
