@@ -10,11 +10,14 @@
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        
+        /* Header avec flèche retour arrière intelligente */
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
         
         .mode-selector { display: flex; gap: 10px; background: rgba(0, 0, 0, 0.2); padding: 5px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
@@ -32,18 +35,15 @@
         .btn-primary:active { transform: scale(0.98); background-color: #2563EB; }
         
         .search-box-text { width: 100%; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
+        input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
         input:focus { border-color: #60A5FA; }
 
         .results-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
         .result-row { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
         .result-row:active { background: rgba(255,255,255,0.15); }
-        .result-row span:first-child { font-weight: bold; }
-        .result-row span:last-child { font-size: 0.85rem; color: #60A5FA; font-family: monospace; display: flex; align-items: center; }
 
         .actions-scanner { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         .btn-terminer-rafale { background: linear-gradient(135deg, #10B981, #059669); border: none; padding: 18px; border-radius: 12px; color: white; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; width: 100%; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); cursor: pointer; }
-        .btn-terminer-rafale:active { transform: scale(0.95); }
 
         .btn-large-danger { background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.15rem; cursor: pointer; width: 100%; margin-top: 15px; }
         .btn-large-danger:active { background-color: rgba(239, 68, 68, 0.15); transform: scale(0.95); }
@@ -64,40 +64,41 @@
 
         .choix-actions { display: flex; gap: 10px; margin-top: 10px; }
         .btn-choix { flex: 1; border: none; padding: 15px 10px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: transform 0.2s; }
-        .btn-choix-deplacer { background-color: #F59E0B; } .btn-choix-deplacer:active { transform: scale(0.95); }
-        .btn-choix-sortir { background-color: #EF4444; } .btn-choix-sortir:active { transform: scale(0.95); }
+        .btn-choix-deplacer { background-color: #F59E0B; }
+        .btn-choix-sortir { background-color: #EF4444; }
 
         .form-action { display: none; flex-direction: column; background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
         label { margin-bottom: 8px; font-size: 0.9rem; color: #D1D5DB; }
         
         .btn-valider-deplacer, .btn-valider-sortir { border: none; padding: 14px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .btn-valider-deplacer { background-color: #F59E0B; } .btn-valider-deplacer:active { transform: scale(0.95); }
-        .btn-valider-sortir { background-color: #EF4444; } .btn-valider-sortir:active { transform: scale(0.95); }
+        .btn-valider-deplacer { background-color: #F59E0B; }
+        .btn-valider-sortir { background-color: #EF4444; }
 
         #result-box { display: none; flex-direction: column; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); width: 100%; }
         .icon-success { font-size: 3.5rem; margin-bottom: 10px; }
 
-        /* MODALES UNIFIÉES */
+        /* Modales mobiles unifiées */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
         .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
-        .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 15px; line-height: 1.4; text-align: left; max-height: 220px; overflow-y: auto; }
         
-        .modal-buttons { display: flex; gap: 15px; margin-top: 20px;}
-        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-        .btn-cancel:active { transform: scale(0.95); }
-        .btn-confirm { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .btn-confirm:active { background: #DC2626; transform: scale(0.95); }
-        
+        .modal-buttons { display: flex; gap: 15px; margin-top: 15px;}
+        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
+        .btn-confirm { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
         .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
-        .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
+
+        .hist-row { font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 6px 0; color: #E5E7EB; }
+        .hist-row:last-child { border-bottom: none; }
+
+        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Rechercher & Scanner</h1></div>
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Rechercher & Scanner</h1></div>
 
         <div class="mode-selector" id="mode-selector">
             <button class="btn-mode active" id="btn-mode-unique">Scan / Recherche</button>
@@ -135,11 +136,24 @@
                 <h2 id="info-nom">Fiche Objet</h2>
                 <div id="zone-details-roles"></div>
                 
+                <button class="btn-primary" id="btn-voir-historique-objet" style="background:#8B5CF6; padding:10px; font-size:0.9rem; margin-top:10px; margin-bottom:5px;">🕒 Historique de cet objet</button>
+
+                <div style="background: rgba(255,255,255,0.03); padding:10px; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.08);">
+                    <h4 style="font-size:0.85rem; color:#60A5FA; margin-bottom:5px;">📦 Mode Lot / Kit (Bundle)</h4>
+                    <button class="btn-primary" id="btn-mode-kit" style="background:#0284C7; padding:8px; font-size:0.85rem;">🛠️ Assembler des objets dans ce Kit</button>
+                    <div id="zone-composition-kit" style="display:none; flex-direction:column; gap:8px; margin-top:8px;">
+                        <input type="text" id="input-sub-ref" placeholder="Scanner/Taper sous-référence...">
+                        <button type="button" class="btn-primary" id="btn-add-sub-ref" style="background:#10B981; padding:8px; font-size:0.8rem;">Ajouter au kit</button>
+                        <div id="kit-tracked-list" style="font-size:0.75rem; color:#93C5FD; font-family:monospace; margin-top:2px;"></div>
+                        <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:10px; font-size:0.9rem; font-weight:bold; margin-top:4px;">💾 Enregistrer la composition du lot</button>
+                    </div>
+                </div>
+                
                 <h4 style="font-size:0.9rem; margin-top:15px; color:#9CA3AF;">📝 Notes & Incidents</h4>
                 <div class="notes-area" id="res-notes"></div>
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="input-note" placeholder="Ajouter une remarque..." style="flex:3; padding:8px;">
-                    <button class="btn-primary" id="btn-save-note" style="flex:1; background:#8B5CF6; padding:8px; font-size:0.9rem;">Valider</button>
+                    <button class="btn-primary" id="btn-save-note" style="flex:1; background:#10B981; padding:8px; font-size:0.9rem;">Valider</button>
                 </div>
             </div>
             
@@ -170,7 +184,7 @@
     <div class="modal-overlay" id="modal-confirmation">
         <div class="modal-content">
             <h3 class="modal-title">⚠️ Confirmation</h3>
-            <p class="modal-message" style="margin-bottom: 20px;">Sortir <b id="modal-nom-article" style="color: #60A5FA;"></b> pour le motif :<br><i id="modal-motif-rappel" style="color: white; font-size: 1.05rem;"></i> ?</p>
+            <p class="modal-message">Sortir <b id="modal-nom-article" style="color: #60A5FA;"></b> pour le motif :<br><i id="modal-motif-rappel" style="color: white; font-size: 1.05rem;"></i> ?</p>
             <div class="modal-buttons">
                 <button type="button" class="btn-cancel" id="btn-annuler-sortie">Annuler</button>
                 <button type="button" class="btn-confirm" id="btn-confirmer-sortie">Confirmer</button>
@@ -182,26 +196,40 @@
         <div class="modal-content">
             <div class="modal-icon" id="alert-icon">⚠️</div>
             <h3 class="modal-title" id="alert-title">Attention</h3>
-            <p class="modal-message" id="alert-message">Message d'erreur.</p>
+            <p class="modal-message" id="alert-message" style="text-align:center;"></p>
             <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-item-history">
+        <div class="modal-content" style="max-width:380px;">
+            <div style="font-size:2rem; margin-bottom:5px;">🕒</div>
+            <h3 class="modal-title" style="text-align:center;">Registre des mouvements</h3>
+            <div class="modal-message" id="history-rows-container">Chargement...</div>
+            <button class="btn-modal-ok" onclick="document.getElementById('modal-item-history').style.display='none'">Fermer</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="custom-prompt">
         <div class="modal-content">
-            <h3 class="modal-title">Réintégrer l'objet</h3>
-            <p class="modal-message" style="margin-bottom:10px;">Emplacement de retour en stock :</p>
-            <input type="text" id="prompt-input" value="Réserve" style="margin-bottom:20px;">
+            <h3 class="modal-title">Réintégration active</h3>
+            <p class="modal-message" style="text-align:center; margin-bottom:5px;">Saisissez la zone de destination :</p>
+            <input type="text" id="prompt-input" value="Réserve A">
             <div class="modal-buttons">
                 <button class="btn-cancel" id="btn-prompt-cancel">Annuler</button>
-                <button class="btn-confirm" id="btn-prompt-ok" style="background:#10B981;">Valider</button>
+                <button class="btn-confirm" id="btn-prompt-ok" style="background:#10B981;">Confirmer</button>
             </div>
         </div>
     </div>
 
+    <div class="app-version" id="version-display"></div>
+
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         let modeActuel = "unique"; let referenceScannee = ""; let listeRafale = []; let html5QrcodeScanner;
+        let trackedKitRefs = [];
+
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
 
         const SVG_COPY = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>`;
 
@@ -209,10 +237,9 @@
             if(event) event.stopPropagation();
             navigator.clipboard.writeText(texte).then(() => {
                 if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); }
-            }).catch(err => console.error("Erreur de copie", err));
+            });
         };
 
-        // GESTION ALERTE CUSTOM
         function afficherAlerte(titre, message, isSuccess = false) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
             document.getElementById('alert-title').textContent = titre;
@@ -232,73 +259,85 @@
         btnModeRafale.addEventListener('click', () => { modeActuel = "rafale"; btnModeUnique.classList.remove('active'); btnModeRafale.classList.add('active'); searchBoxText.style.display="none"; zoneResultats.innerHTML=""; });
 
         document.getElementById('btn-declencher-recherche').addEventListener('click', function() {
-            const terme = document.getElementById('saisie-recherche').value.trim();
-            if(!terme) return afficherAlerte("Attention", "Veuillez écrire un terme pour lancer la recherche.");
+            const terme = document.getElementById('saisie-recherche').value.trim(); if(!terme) return afficherAlerte("Attention", "Écrivez un nom ou un code.");
             msgRecherche.style.display = 'block'; zoneResultats.innerHTML = "";
-            
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: terme }) })
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: terme }) })
             .then(res => res.json()).then(data => {
                 msgRecherche.style.display = 'none';
                 if(data.result === "success" && data.data && data.data.length > 0) {
                     data.data.forEach(item => {
                         const row = document.createElement('div'); row.className = 'result-row';
                         row.innerHTML = `<span>${item.nom}</span><span>${item.reference} <button class="btn-copy" onclick="copierTexte('${item.reference}', event)">${SVG_COPY}</button></span>`;
-                        row.addEventListener('click', () => ouvrirFicheObjet(item));
-                        zoneResultats.appendChild(row);
+                        row.addEventListener('click', () => ouvrirFicheObjet(item)); zoneResultats.appendChild(row);
                     });
                 } else { zoneResultats.innerHTML = "<p style='font-size:0.85rem;color:#FFA8A8;text-align:center;'>Aucune correspondance active.</p>"; }
-            }).catch(e => { msgRecherche.style.display = 'none'; afficherAlerte("Erreur réseau", "Impossible de joindre la base de données."); });
+            }).catch(e => { msgRecherche.style.display = 'none'; afficherAlerte("Erreur", "Impossible de joindre le serveur."); });
         });
 
         function ouvrirFicheObjet(item) {
-            referenceScannee = item.reference; const zoneDetails = document.getElementById('zone-details-roles');
-            document.getElementById('info-nom').textContent = item.nom;
-            document.getElementById('res-notes').textContent = item.notes || "Aucune note consignée.";
+            referenceScannee = item.reference; trackedKitRefs = []; document.getElementById('kit-tracked-list').textContent = "";
+            document.getElementById('zone-composition-kit').style.display = 'none';
+            const zoneDetails = document.getElementById('zone-details-roles');
+            document.getElementById('info-nom').textContent = item.nom; document.getElementById('res-notes').textContent = item.notes || "Aucune note consignée.";
             blocScanner.style.display = 'none'; modeSelector.style.display = 'none';
-            
             const refRow = `<p>Référence : <span class="valeur">${item.reference} <button class="btn-copy" onclick="copierTexte('${item.reference}', event)">${SVG_COPY}</button></span></p>`;
+            
+            // 🌟 5. DETECTION ANOMALIE SI L'OBJET EST SORTI
+            if (item.estSorti) {
+                afficherAlerte("⚠️ Alerte Anomalie", "Cet objet est enregistré comme étant SORTI de l'inventaire !");
+            }
 
             if (localStorage.getItem('app_role') === 'admin') {
                 let dateFormatee = item.dateAjout ? new Date(item.dateAjout).toLocaleDateString('fr-FR') : "Inconnue";
                 let dateSortieFormatee = item.dateSortie ? "le " + new Date(item.dateSortie).toLocaleDateString('fr-FR') : "En stock actif";
-                zoneDetails.innerHTML = refRow + `
-                    <p>Catégorie : <span class="valeur">${item.categorie}</span></p>
-                    <p>Emplacement : <span class="valeur">${item.emplacement}</span></p>
-                    <p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p>
-                    <p>Créé par : <span class="valeur">${item.utilisateur}</span></p>
-                    <p>Statut sortie : <span class="valeur">${dateSortieFormatee}</span></p>
-                    <p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p>
-                    <p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>
-                    <button class="btn-primary" style="margin-top:15px;padding:12px;font-size:0.9rem;background:#8B5CF6;" onclick="window.location.href='inventaire.html?ref=${item.reference}'">🕒 Suivre l'historique complet</button>
-                `;
-            } else {
-                zoneDetails.innerHTML = refRow + `<p>Nom de l'objet : <span class="valeur">${item.nom}</span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>`;
-            }
-
-            if (item.estSorti) {
-                document.getElementById('actions-actives').style.display = 'none'; document.getElementById('btn-reintegrer').style.display = 'block';
-            } else {
-                document.getElementById('actions-actives').style.display = 'flex'; document.getElementById('btn-reintegrer').style.display = 'none';
-            }
+                zoneDetails.innerHTML = refRow + `<p>Catégorie : <span class="valeur">${item.categorie}</span></p><p>Emplacement : <span class="valeur">${item.emplacement}</span></p><p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Statut sortie : <span class="valeur">${dateSortieFormatee}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>`;
+            } else { zoneDetails.innerHTML = refRow + `<p>Nom de l'objet : <span class="valeur">${item.nom}</span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>`; }
+            if (item.estSorti) { document.getElementById('actions-actives').style.display = 'none'; document.getElementById('btn-reintegrer').style.display = 'block'; } else { document.getElementById('actions-actives').style.display = 'flex'; document.getElementById('btn-reintegrer').style.display = 'none'; }
             infoCardRafale.style.display = 'none'; infoCardUnique.style.display = 'block'; blocInfos.style.display = 'flex';
         }
 
+        // 🌟 3. POP-UP DÉTAILLÉ DE L'HISTORIQUE INDIVIDUEL DE L'OBJET
+        document.getElementById('btn-voir-historique-objet').addEventListener('click', function() {
+            const container = document.getElementById('history-rows-container'); container.innerHTML = "Chargement... ⏳";
+            document.getElementById('modal-item-history').style.display = 'flex';
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_item_history", reference: referenceScannee, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => {
+                if(d.result === "success" && d.data.length > 0) {
+                    container.innerHTML = d.data.map(log => {
+                        let dObj = new Date(log.date); let dStr = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+                        return `<div class="hist-row"><b>${dStr}</b> [${log.action}] par <i>${log.utilisateur}</i> : <br>${log.detail}</div>`;
+                    }).join('');
+                } else { container.textContent = "Aucun historique consigné pour cet objet."; }
+            }).catch(() => { container.textContent = "Erreur de chargement."; });
+        });
+
+        // 🌟 1. INTERFACE ASSEMBLEUR DE KITS & LOTS
+        document.getElementById('btn-mode-kit').addEventListener('click', () => { document.getElementById('zone-composition-kit').style.display = 'flex'; });
+        document.getElementById('btn-add-sub-ref').addEventListener('click', function() {
+            let sub = document.getElementById('input-sub-ref').value.trim().toUpperCase();
+            if(sub && !trackedKitRefs.includes(sub)) {
+                trackedKitRefs.push(sub); document.getElementById('input-sub-ref').value = "";
+                document.getElementById('kit-tracked-list').innerHTML = trackedKitRefs.map(r => `📦 ${r}`).join('<br>');
+            }
+        });
+        document.getElementById('btn-save-kit').addEventListener('click', function() {
+            if(trackedKitRefs.length === 0) return afficherAlerte("Attention", "Le lot est vide.");
+            let noteComp = `[Composition Lot/Kit]: Contient ${trackedKitRefs.length} articles (${trackedKitRefs.join(', ')})`;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: referenceScannee, note: noteComp, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => { if(d.result==="success") { document.getElementById('res-notes').textContent = d.notes; document.getElementById('zone-composition-kit').style.display='none'; afficherAlerte("Succès", "Composition du lot enregistrée avec succès !", true); } });
+        });
+
+        // NOTES ET LOGIQUE COMMUNE
         document.getElementById('btn-save-note').addEventListener('click', function() {
             let text = document.getElementById('input-note').value.trim(); if(!text) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: referenceScannee, note: text, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(res => res.json()).then(d => { if(d.result==="success") { document.getElementById('res-notes').textContent = d.notes; document.getElementById('input-note').value=""; } });
         });
 
-        // 🌟 NOUVEAU PROMPT POUR LA RÉINTÉGRATION
-        document.getElementById('btn-reintegrer').addEventListener('click', function() {
-            if(!navigator.onLine) return afficherAlerte("Hors ligne", "Action impossible hors connexion.");
-            document.getElementById('custom-prompt').style.display = 'flex';
-        });
+        document.getElementById('btn-reintegrer').addEventListener('click', function() { document.getElementById('custom-prompt').style.display = 'flex'; });
         document.getElementById('btn-prompt-cancel').addEventListener('click', () => { document.getElementById('custom-prompt').style.display = 'none'; });
         document.getElementById('btn-prompt-ok').addEventListener('click', () => {
-            let loc = document.getElementById('prompt-input').value.trim();
-            if(!loc) return;
-            document.getElementById('custom-prompt').style.display = 'none';
+            let loc = document.getElementById('prompt-input').value.trim(); if(!loc) return; document.getElementById('custom-prompt').style.display = 'none';
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "reintegrer_stock", reference: referenceScannee, emplacement: loc, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(res => res.json()).then(d => { if(d.result==="success") window.location.reload(); });
         });
@@ -306,14 +345,14 @@
         btnDemarrerScan.addEventListener('click', function() { 
             btnDemarrerScan.style.display = 'none'; modeSelector.style.display = 'none'; searchBoxText.style.display = "none"; readerContainer.style.display = 'block'; 
             if(modeActuel === "rafale") { listeRafale = []; rafaleItems.innerHTML = ""; rafaleCount.textContent = "0"; blocRafaleListe.style.display = 'flex'; document.getElementById('btn-terminer-rafale').style.display = 'block'; }
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false); html5QrcodeScanner.render(onScanSuccess, onScanFailure); 
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 250, height: 250} }, false); html5QrcodeScanner.render(onScanSuccess, onScanFailure); 
         });
 
         function onScanSuccess(decodedText, decodedResult) { 
             const ref = decodedText.trim().toUpperCase();
             if (modeActuel === "unique") {
                 arreterScanner(); referenceScannee = ref; msgRecherche.style.display = 'block';
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: ref }) }).then(res => res.json()).then(data => {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: ref }) }).then(res => res.json()).then(data => {
                     msgRecherche.style.display = 'none'; if(data.result === "success" && data.data && data.data.length > 0) ouvrirFicheObjet(data.data[0]); else { afficherAlerte("Erreur", "Référence introuvable."); btnDemarrerScan.style.display = 'block'; modeSelector.style.display = 'flex'; }
                 });
             } else if (modeActuel === "rafale") {
@@ -323,12 +362,10 @@
                 }
             }
         } 
-        function onScanFailure(error) {} 
-        function arreterScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); readerContainer.style.display = 'none'; modeSelector.style.display = 'flex'; btnDemarrerScan.style.display = 'block'; if(modeActuel==="unique") searchBoxText.style.display="flex"; }
+        function onScanFailure(error) {} function arreterScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); readerContainer.style.display = 'none'; modeSelector.style.display = 'flex'; btnDemarrerScan.style.display = 'block'; if(modeActuel==="unique") searchBoxText.style.display="flex"; }
 
         document.getElementById('btn-terminer-rafale').addEventListener('click', function() {
-            if(listeRafale.length === 0) return afficherAlerte("Attention", "Aucun scan mémorisé."); 
-            if (html5QrcodeScanner) html5QrcodeScanner.clear();
+            if(listeRafale.length === 0) return afficherAlerte("Attention", "Aucun scan enregistré."); if (html5QrcodeScanner) html5QrcodeScanner.clear();
             blocScanner.style.display = 'none'; infoCardUnique.style.display = 'none'; document.getElementById('info-rafale-count').textContent = listeRafale.length; document.getElementById('modal-nom-article').textContent = `Le lot de ${listeRafale.length} articles`; infoCardRafale.style.display = 'block'; blocInfos.style.display = 'flex';
         });
 
@@ -337,31 +374,26 @@
         document.getElementById('btn-annuler-action').addEventListener('click', function() { window.location.reload(); });
 
         document.getElementById('btn-valider-deplacer').addEventListener('click', function() {
-            if(!navigator.onLine) return afficherAlerte("Hors-ligne", "Action impossible hors ligne.");
-            const newVal = document.getElementById('nouvel-emplacement').value.trim(); 
-            if(!newVal) return afficherAlerte("Attention", "Saisissez un emplacement.");
+            const newVal = document.getElementById('nouvel-emplacement').value.trim(); if(!newVal) return afficherAlerte("Attention", "Saisissez une zone.");
             const btn = document.getElementById('btn-valider-deplacer'); btn.textContent = "Mise à jour..."; btn.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: (modeActuel === "unique") ? "deplacer" : "deplacer_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), nouvelEmplacement: newVal, reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
-                if(data.result === "success") afficherSucces("🔄", "Déplacement réussi", (modeActuel === "unique") ? `Désormais dans : <b>${newVal}</b>` : `<b>${data.count} articles</b> déplacés.`); else afficherAlerte("Erreur", "Problème lors du déplacement.");
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: (modeActuel === "unique") ? "deplacer" : "deplacer_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), nouvelEmplacement: newVal, reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
+                if(data.result === "success") afficherSucces("🔄", "Déplacement réussi", (modeActuel === "unique") ? `Désormais dans : <b>${newVal}</b>` : `<b>${data.count} articles</b> déplacés.`); else afficherAlerte("Erreur", "L'opération a échoué.");
                 btn.textContent = "Valider"; btn.disabled = false;
             });
         });
 
         document.getElementById('btn-ouvrir-modal').addEventListener('click', function() { 
-            const motif = document.getElementById('motif-sortie').value.trim(); 
-            if(!motif) return afficherAlerte("Attention", "Saisissez un motif pour valider la sortie."); 
-            let mr = document.getElementById('modal-motif-rappel'); if(mr) mr.textContent = motif;
-            let mna = document.getElementById('modal-nom-article'); if(mna) mna.textContent = (modeActuel === "unique") ? document.getElementById('info-nom').textContent : `Le lot de ${listeRafale.length} articles`;
+            const motif = document.getElementById('motif-sortie').value.trim(); if(!motif) return afficherAlerte("Attention", "Indiquez un motif de sortie."); 
+            document.getElementById('modal-motif-rappel').textContent = motif;
+            document.getElementById('modal-nom-article').textContent = (modeActuel === "unique") ? document.getElementById('info-nom').textContent : `Le lot de ${listeRafale.length} articles`;
             document.getElementById('modal-confirmation').style.display = 'flex'; 
         });
 
         document.getElementById('btn-annuler-sortie').addEventListener('click', function() { document.getElementById('modal-confirmation').style.display = 'none'; });
-        
         document.getElementById('btn-confirmer-sortie').addEventListener('click', function() {
             const btn = document.getElementById('btn-confirmer-sortie'); btn.disabled = true;
-            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: (modeActuel === "unique") ? "sortir" : "sortir_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), motif: document.getElementById('motif-sortie').value.trim(), reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
-                document.getElementById('modal-confirmation').style.display = 'none'; 
-                if(data.result === "success") afficherSucces("📦", "Sortie réussie", (modeActuel === "unique") ? "L'article a été archivé." : `<b>${data.count} articles</b> archivés.`); else afficherAlerte("Erreur", "La sortie a échoué.");
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: (modeActuel === "unique") ? "sortir" : "sortir_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), motif: document.getElementById('motif-sortie').value.trim(), reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
+                document.getElementById('modal-confirmation').style.display = 'none'; if(data.result === "success") afficherSucces("📦", "Sortie réussie", (modeActuel === "unique") ? "L'article a été archivé." : `<b>${data.count} articles</b> archivés.`); else afficherAlerte("Erreur", "L'opération a échoué.");
                 btn.disabled = false;
             });
         });
@@ -369,13 +401,8 @@
         function afficherSucces(icone, titre, texte) { blocInfos.style.display = 'none'; document.getElementById('result-icon').textContent = icone; document.getElementById('result-titre').textContent = titre; document.getElementById('result-texte').innerHTML = texte; resultBox.style.display = 'flex'; }
         document.getElementById('btn-nouveau-scan').addEventListener('click', function() { window.location.reload(); });
     </script>
-    
     <script>
-        let timeoutId;
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
-            else { clearTimeout(timeoutId); }
-        });
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>

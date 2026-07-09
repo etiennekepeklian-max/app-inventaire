@@ -9,19 +9,22 @@
     <script>if (!localStorage.getItem('app_token')) window.location.href = 'login.html';</script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
-        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .header { display: flex; align-items: center; margin-bottom: 10px; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; margin-right: 15px; }
-        h1 { font-size: 1.5rem; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
+        
+        /* Header avec flèche retour intelligente */
+        .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour:active { transform: scale(0.85); }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
         .zone-card { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 10px; }
         input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; margin-bottom: 5px; }
         .btn { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn:active { transform: scale(0.95); }
 
-        /* 🌟 NOUVEAU STYLE : ONGLETS ET BARRE DE PROGRESSION */
+        /* Interface Progression & Onglets */
         .progress-container { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .progress-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; color: #60A5FA; }
         .progress-bar-bg { width: 100%; background: rgba(255,255,255,0.1); border-radius: 6px; height: 10px; overflow: hidden; }
@@ -40,28 +43,29 @@
         .rafale-items { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
         .rafale-item { background: rgba(255, 255, 255, 0.05); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; color: #93C5FD; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
 
+        /* Écrans de Rapports */
         .report-section { display: none; flex-direction: column; gap: 12px; }
         .badge-count { padding: 15px; border-radius: 10px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
         .bg-found { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981; }
         .bg-missing { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid #EF4444; }
         .bg-wrong { background: rgba(245, 158, 11, 0.2); color: #FDE047; border: 1px solid #F59E0B; }
-        .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #D1D5DB; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
+        .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #D1D5DB; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; line-height: 1.4; }
 
+        /* Modales Mobiles */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; margin-top: 15px; }
-        .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
+        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; margin-top: 15px; }
         
         .modal-buttons { display: flex; gap: 15px; margin-top: 15px;}
-        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-        .btn-cancel:active { transform: scale(0.95); }
-        .btn-confirm-danger { background: #10B981; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .btn-confirm-danger:active { transform: scale(0.95); }
+        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
+        .btn-confirm-danger { background: #10B981; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
+
+        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Faire un Audit</h1></div>
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Faire un Audit</h1></div>
         
         <div class="zone-card" id="step-choix">
             <h2 style="font-size: 1.1rem; color: #60A5FA; margin-bottom: 10px; text-align: center;">Type d'audit à réaliser</h2>
@@ -77,15 +81,9 @@
         </div>
 
         <div id="audit-ui" style="display: none; flex-direction: column; width: 100%;">
-            
             <div class="progress-container">
-                <div class="progress-header">
-                    <span id="prog-title">Audit en cours</span>
-                    <span id="prog-text">0 / 0 attendus</span>
-                </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="prog-fill"></div>
-                </div>
+                <div class="progress-header"><span id="prog-title">Audit en cours</span><span id="prog-text">0 / 0 attendus</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill"></div></div>
             </div>
 
             <div class="tabs-nav">
@@ -103,20 +101,18 @@
 
             <div id="tab-outils-content" style="display: none; flex-direction: column; gap: 15px;">
                 <div class="zone-card">
-                    <h3 style="font-size: 1rem; color: #60A5FA;">⌨️ Saisie Manuelle (QR illisible)</h3>
+                    <h3 style="font-size: 1rem; color: #60A5FA;">⌨️ Saisie Manuelle (Étiquette endommagée)</h3>
                     <input type="text" id="manual-ref-input" placeholder="Taper la référence exacte...">
                     <button class="btn" id="btn-manual-add">Ajouter au pointage</button>
                 </div>
-                
                 <div class="zone-card">
                     <h3 style="font-size: 1rem; color: #60A5FA;">🤝 Fusion Collaborative</h3>
                     <button class="btn" id="btn-export-session" style="background: #8B5CF6; margin-bottom: 5px;">📤 Exporter mes scans (Copier)</button>
                     <button class="btn" id="btn-import-session" style="background: #8B5CF6;">📥 Importer des scans (Coller)</button>
                 </div>
-
                 <div class="zone-card">
-                    <h3 style="font-size: 1rem; color: #F59E0B;">⏸️ Pause & Reprise</h3>
-                    <button class="btn" id="btn-pause-audit" style="background: #F59E0B;">Sauvegarder et quitter</button>
+                    <h3 style="font-size: 1rem; color: #F59E0B;">⏸️ Pause & Sauvegarde</h3>
+                    <button class="btn" id="btn-pause-audit" style="background: #F59E0B;">Sauvegarder et suspendre</button>
                 </div>
             </div>
 
@@ -127,17 +123,15 @@
             <h2 style="font-size: 1.2rem; color: #60A5FA;" id="titre-rapport">Résultat de l'Audit</h2>
             
             <div class="badge-count bg-found">
-                <div>🟢 Confirmés sur place : <span id="count-trouve" style="float:right;">0</span></div>
+                <div>🟢 Objets Confirmés sur place : <span id="count-trouve" style="float:right;">0</span></div>
                 <div class="item-list" id="list-trouves"></div>
             </div>
-            
             <div class="badge-count bg-missing">
-                <div id="label-manquants">🔴 Manquants (Alerte) : <span id="count-manquant" style="float:right;">0</span></div>
+                <div id="label-manquants">🔴 Objets Manquants (Alertes) : <span id="count-manquant" style="float:right;">0</span></div>
                 <div class="item-list" id="list-manquants"></div>
             </div>
-            
             <div class="badge-count bg-wrong">
-                <div id="label-egares">🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">0</span></div>
+                <div id="label-egares">🟡 Objets Égarés / Anomalies : <span id="count-egare" style="float:right;">0</span></div>
                 <div class="item-list" id="list-egares"></div>
             </div>
             
@@ -146,310 +140,205 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="custom-alert">
-        <div class="modal-content">
-            <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
-            <h3 style="font-size: 1.2rem; color: white; margin-bottom: 10px;" id="alert-title">Attention</h3>
-            <p style="color: #D1D5DB; font-size: 0.95rem; line-height: 1.4;" id="alert-message">Message.</p>
-            <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
-        </div>
-    </div>
+    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size: 1.2rem; color: white; margin-bottom: 10px;" id="alert-title">Attention</h3><p style="color: #D1D5DB; font-size: 0.95rem; line-height: 1.4;" id="alert-message">Message.</p><button class="btn-modal-ok" id="btn-alert-ok">OK</button></div></div>
+    <div class="modal-overlay" id="custom-prompt"><div class="modal-content"><h3 class="modal-title">Coller les données</h3><p class="modal-message" style="margin-bottom:10px;">Fusionnez les scans d'un collaborateur :</p><textarea id="prompt-input" rows="4" style="margin-bottom:20px; border-radius:8px; padding:10px; width:100%; font-size:0.8rem; background:rgba(255,255,255,0.1); color:white; border:1px solid #ccc;"></textarea><div class="modal-buttons"><button class="btn-cancel" id="btn-prompt-cancel">Annuler</button><button class="btn-confirm-danger" id="btn-prompt-ok">Fusionner</button></div></div></div>
+    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><h3 class="modal-title">Reprise d'Audit</h3><p class="modal-message" style="margin-bottom:20px;">Un audit précédent a été mis en pause. Souhaitez-vous le reprendre ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel">Non, purger</button><button class="btn-confirm-danger" id="btn-confirm-ok">Oui, reprendre</button></div></div></div>
 
-    <div class="modal-overlay" id="custom-prompt">
-        <div class="modal-content">
-            <h3 class="modal-title">Coller les données</h3>
-            <p class="modal-message" style="margin-bottom:10px;">Collez les scans exportés par votre collègue :</p>
-            <textarea id="prompt-input" rows="4" style="margin-bottom:20px; border-radius:8px; padding:10px; width:100%; font-size:0.8rem;"></textarea>
-            <div class="modal-buttons">
-                <button class="btn-cancel" id="btn-prompt-cancel">Annuler</button>
-                <button class="btn-confirm-danger" id="btn-prompt-ok">Fusionner</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="custom-confirm">
-        <div class="modal-content">
-            <h3 class="modal-title">Reprise d'Audit</h3>
-            <p class="modal-message" style="margin-bottom:20px;">Un audit précédent a été mis en pause. Voulez-vous le reprendre ?</p>
-            <div class="modal-buttons">
-                <button class="btn-cancel" id="btn-confirm-cancel">Non, effacer</button>
-                <button class="btn-confirm-danger" id="btn-confirm-ok">Oui, reprendre</button>
-            </div>
-        </div>
-    </div>
+    <div class="app-version" id="version-display"></div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
-        
-        let typeAudit = ""; 
-        let zoneCible = ""; 
-        let baseLocale = []; 
-        let attendusRefs = []; 
-        let scannedRefs = []; 
-        let scanner;
-        
-        let lastReportTrouves = [];
-        let lastReportManquants = []; 
-        let lastReportEgares = [];
+        let typeAudit = "", zoneCible = "", baseLocale = [], attendusRefs = [], scannedRefs = [], scanner;
+        let lastReportTrouves = [], lastReportManquants = [], lastReportEgares = [];
 
-        // --- GÉNÉRATEUR AUDIO (Feedback Bips) ---
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+
+        // BIPS AUDIO FEEDBACKS SANS ACTION UTILISATEUR COMPLIQUÉE
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playFeedback(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            
-            if (type === 'ok') {
-                osc.type = 'sine'; osc.frequency.value = 1000;
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-                if(navigator.vibrate) navigator.vibrate(100);
-            } else if (type === 'error') {
-                osc.type = 'sawtooth'; osc.frequency.value = 150;
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-                if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-            } else if (type === 'dup') {
-                osc.type = 'square'; osc.frequency.value = 600;
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime + 0.2);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            }
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'ok') { osc.type = 'sine'; osc.frequency.value = 1000; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); if(navigator.vibrate) navigator.vibrate(100); } 
+            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.value = 160; gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); if(navigator.vibrate) navigator.vibrate([200, 100, 200]); } 
+            else if (type === 'dup') { osc.type = 'square'; osc.frequency.value = 550; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.setValueAtTime(0, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.1, audioCtx.currentTime + 0.15); osc.start(); osc.stop(audioCtx.currentTime + 0.25); }
         }
 
-        // --- MODALES CUSTOM ---
-        function afficherAlerte(titre, message, boutonCache = false) {
-            document.getElementById('alert-title').textContent = titre; 
-            document.getElementById('alert-message').textContent = message; 
-            document.getElementById('btn-alert-ok').style.display = boutonCache ? 'none' : 'block';
-            document.getElementById('custom-alert').style.display = 'flex';
-        }
+        function afficherAlerte(titre, message, boutonCache = false) { document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('btn-alert-ok').style.display = boutonCache ? 'none' : 'block'; document.getElementById('custom-alert').style.display = 'flex'; }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+        function normaliserTexte(txt) { return txt ? String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : ""; }
 
-        function normaliserTexte(txt) { if (!txt) return ""; return String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
+        // NAVIGATION ONGLETS POUCE
+        document.getElementById('tab-scan-btn').addEventListener('click', function() { this.classList.add('active'); document.getElementById('tab-outils-btn').classList.remove('active'); document.getElementById('tab-scan-content').style.display = 'flex'; document.getElementById('tab-outils-content').style.display = 'none'; });
+        document.getElementById('tab-outils-btn').addEventListener('click', function() { this.classList.add('active'); document.getElementById('tab-scan-btn').classList.remove('active'); document.getElementById('tab-scan-content').style.display = 'none'; document.getElementById('tab-outils-content').style.display = 'flex'; });
 
-        // --- ONGLETS ---
-        document.getElementById('tab-scan-btn').addEventListener('click', function() {
-            this.classList.add('active'); document.getElementById('tab-outils-btn').classList.remove('active');
-            document.getElementById('tab-scan-content').style.display = 'flex'; document.getElementById('tab-outils-content').style.display = 'none';
-        });
-        document.getElementById('tab-outils-btn').addEventListener('click', function() {
-            this.classList.add('active'); document.getElementById('tab-scan-btn').classList.remove('active');
-            document.getElementById('tab-scan-content').style.display = 'none'; document.getElementById('tab-outils-content').style.display = 'flex';
-        });
-
-        // --- GESTION DU DÉMARRAGE ET SAUVEGARDE ---
-        window.addEventListener('DOMContentLoaded', () => {
-            if(localStorage.getItem('audit_en_cours')) {
-                document.getElementById('custom-confirm').style.display = 'flex';
-            }
-        });
-
-        document.getElementById('btn-confirm-cancel').addEventListener('click', () => {
-            localStorage.removeItem('audit_en_cours');
-            document.getElementById('custom-confirm').style.display = 'none';
-        });
-
+        // PERSISTENCE PAUSE / REPRISE
+        window.addEventListener('DOMContentLoaded', () => { if(localStorage.getItem('audit_en_cours')) { document.getElementById('custom-confirm').style.display = 'flex'; } });
+        document.getElementById('btn-confirm-cancel').addEventListener('click', () => { localStorage.removeItem('audit_en_cours'); document.getElementById('custom-confirm').style.display = 'none'; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => {
             document.getElementById('custom-confirm').style.display = 'none';
             let saved = JSON.parse(localStorage.getItem('audit_en_cours'));
-            typeAudit = saved.typeAudit;
-            zoneCible = saved.zoneCible;
-            scannedRefs = saved.scannedRefs;
-            baseLocale = JSON.parse(localStorage.getItem('miroir_stock'));
-            
-            document.getElementById('step-choix').style.display = 'none';
-            document.getElementById('step-zone-input').style.display = 'none';
-            calculerAttendus();
-            ouvrirScannerAudit();
-            majInterfaceScan();
+            typeAudit = saved.typeAudit; zoneCible = saved.zoneCible; scannedRefs = saved.scannedRefs; baseLocale = JSON.parse(localStorage.getItem('miroir_stock'));
+            document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'none';
+            calculerAttendus(); ouvrirScannerAudit(); majInterfaceScan();
+            scannedRefs.forEach(ref => { const item = document.createElement('div'); item.className = 'rafale-item'; item.innerHTML = `<span>${ref}</span> <span style="color:#10B981;">✔️</span>`; document.getElementById('rafale-items').prepend(item); });
         });
 
         document.getElementById('btn-choix-zone').addEventListener('click', () => { document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'flex'; });
         document.getElementById('btn-retour-choix').addEventListener('click', () => { document.getElementById('step-zone-input').style.display = 'none'; document.getElementById('step-choix').style.display = 'flex'; document.getElementById('input-zone').value = ""; });
-
         document.getElementById('btn-choix-total').addEventListener('click', () => { typeAudit = "total"; zoneCible = "Audit Total"; lancerProcessusScanner(); });
-        document.getElementById('btn-demarrer-audit').addEventListener('click', function() { typeAudit = "zone"; zoneCible = document.getElementById('input-zone').value; if(!zoneCible.trim()) return afficherAlerte("Attention", "Veuillez spécifier le nom de la zone."); lancerProcessusScanner(); });
+        document.getElementById('btn-demarrer-audit').addEventListener('click', function() { typeAudit = "zone"; zoneCible = document.getElementById('input-zone').value; if(!zoneCible.trim()) return afficherAlerte("Attention", "Veuillez spécifier la zone."); lancerProcessusScanner(); });
 
         function lancerProcessusScanner() {
-            document.getElementById('step-choix').style.display = 'none';
-            document.getElementById('step-zone-input').style.display = 'none';
-            
+            document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'none';
             if(navigator.onLine) {
-                document.getElementById('alert-icon').textContent = "🔄";
-                afficherAlerte("Synchronisation", "Téléchargement de l'inventaire récent...", true);
-                
+                document.getElementById('alert-icon').textContent = "🔄"; afficherAlerte("Synchronisation", "Téléchargement du registre récent...", true);
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
-                .then(r => r.json()).then(d => {
-                    document.getElementById('custom-alert').style.display = 'none';
-                    if (d.result === "success") { localStorage.setItem('miroir_stock', JSON.stringify(d.data)); baseLocale = d.data; preparerNouvelAudit(); } else { fallbackLocal(); }
-                }).catch(() => { document.getElementById('custom-alert').style.display = 'none'; fallbackLocal(); });
+                .then(r => r.json()).then(d => { document.getElementById('custom-alert').style.display = 'none'; if (d.result === "success") { localStorage.setItem('miroir_stock', JSON.stringify(d.data)); baseLocale = d.data; preparerNouvelAudit(); } else { fallbackLocal(); } }).catch(() => { document.getElementById('custom-alert').style.display = 'none'; fallbackLocal(); });
             } else { fallbackLocal(); }
         }
+        function fallbackLocal() { document.getElementById('alert-icon').textContent = "⚠️"; if(localStorage.getItem('miroir_stock')) { baseLocale = JSON.parse(localStorage.getItem('miroir_stock')); preparerNouvelAudit(); } else { afficherAlerte("Hors ligne", "Base locale inaccessible."); } }
 
-        function fallbackLocal() {
-            document.getElementById('alert-icon').textContent = "⚠️";
-            if(localStorage.getItem('miroir_stock')) { baseLocale = JSON.parse(localStorage.getItem('miroir_stock')); preparerNouvelAudit(); } else { afficherAlerte("Hors ligne", "Base de données introuvable. Veuillez vous connecter."); }
-        }
-
-        function preparerNouvelAudit() {
-            scannedRefs = [];
-            calculerAttendus();
-            ouvrirScannerAudit();
-            majInterfaceScan();
-        }
-
+        function preparerNouvelAudit() { scannedRefs = []; calculerAttendus(); ouvrirScannerAudit(); majInterfaceScan(); }
         function calculerAttendus() {
             attendusRefs = [];
             if(typeAudit === "zone") {
-                let zc = normaliserTexte(zoneCible);
-                baseLocale.forEach(a => { if(normaliserTexte(a.emplacement) === zc && !a.estSorti) attendusRefs.push(String(a.reference).trim().toUpperCase()); });
-            } else {
-                baseLocale.forEach(a => { if(!a.estSorti) attendusRefs.push(String(a.reference).trim().toUpperCase()); });
-            }
+                let zc = normaliserTexte(zoneCible); baseLocale.forEach(a => { if(normaliserTexte(a.emplacement) === zc && !a.estSorti) attendusRefs.push(String(a.reference).trim().toUpperCase()); });
+            } else { baseLocale.forEach(a => { if(!a.estSorti) attendusRefs.push(String(a.reference).trim().toUpperCase()); }); }
         }
 
-        // --- SCAN & TRAITEMENT ---
-        function ouvrirScannerAudit() {
-            document.getElementById('audit-ui').style.display = 'flex';
-            scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-            scanner.render((text) => { traiterScan(String(text).trim().toUpperCase()); });
-        }
+        function ouvrirScannerAudit() { document.getElementById('audit-ui').style.display = 'flex'; scanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 }, false); scanner.render(r => { traiterScan(String(r).trim().toUpperCase()); }); }
 
         function traiterScan(ref) {
-            if(scannedRefs.includes(ref)) {
-                playFeedback('dup');
-            } else {
-                scannedRefs.push(ref);
-                if(attendusRefs.includes(ref)) playFeedback('ok'); else playFeedback('error');
-                
+            if(scannedRefs.includes(ref)) { playFeedback('dup'); } else {
+                scannedRefs.push(ref); if(attendusRefs.includes(ref)) playFeedback('ok'); else playFeedback('error');
                 const item = document.createElement('div'); item.className = 'rafale-item';
                 let isOk = attendusRefs.includes(ref) ? '<span style="color:#10B981;">✔️</span>' : '<span style="color:#F59E0B;">⚠️</span>';
-                item.innerHTML = `<span>${ref}</span> ${isOk}`;
-                document.getElementById('rafale-items').prepend(item);
-                
+                item.innerHTML = `<span>${ref}</span> ${isOk}`; document.getElementById('rafale-items').prepend(item);
                 majInterfaceScan();
             }
         }
 
         function majInterfaceScan() {
             document.getElementById('rafale-count').textContent = scannedRefs.length;
-            document.getElementById('prog-title').textContent = (typeAudit === 'total') ? "Audit Total" : `Audit : ${zoneCible}`;
-            document.getElementById('prog-text').textContent = `${scannedRefs.length} / ${attendusRefs.length} scans`;
-            
+            document.getElementById('prog-title').textContent = (typeAudit === 'total') ? "Audit Total" : `Zone : ${zoneCible}`;
+            document.getElementById('prog-text').textContent = `${scannedRefs.length} / ${attendusRefs.length} pointés`;
             let percent = attendusRefs.length > 0 ? (scannedRefs.length / attendusRefs.length) * 100 : 100;
-            if(percent > 100) percent = 100;
-            document.getElementById('prog-fill').style.width = percent + '%';
+            document.getElementById('prog-fill').style.width = (percent > 100 ? 100 : percent) + '%';
         }
 
-        // --- OUTILS AVANCÉS ---
-        document.getElementById('btn-manual-add').addEventListener('click', function() {
-            let val = document.getElementById('manual-ref-input').value.trim().toUpperCase();
-            if(val) { traiterScan(val); document.getElementById('manual-ref-input').value = ""; }
-        });
-
-        document.getElementById('btn-pause-audit').addEventListener('click', function() {
-            let data = { typeAudit: typeAudit, zoneCible: zoneCible, scannedRefs: scannedRefs };
-            localStorage.setItem('audit_en_cours', JSON.stringify(data));
-            window.location.href = "index.html";
-        });
-
-        document.getElementById('btn-export-session').addEventListener('click', function() {
-            let str = scannedRefs.join(',');
-            navigator.clipboard.writeText(str).then(() => { afficherAlerte("Copié !", "Vos scans ont été copiés. Vous pouvez les envoyer à un collègue."); });
-        });
-
+        // COUPLAGE OUTILS DE FUSION ET DE SAUVEGARDE
+        document.getElementById('btn-manual-add').addEventListener('click', function() { let val = document.getElementById('manual-ref-input').value.trim().toUpperCase(); if(val) { traiterScan(val); document.getElementById('manual-ref-input').value = ""; } });
+        document.getElementById('btn-pause-audit').addEventListener('click', function() { localStorage.setItem('audit_en_cours', JSON.stringify({ typeAudit: typeAudit, zoneCible: zoneCible, scannedRefs: scannedRefs })); window.location.href = "index.html"; });
+        document.getElementById('btn-export-session').addEventListener('click', function() { navigator.clipboard.writeText(scannedRefs.join(',')).then(() => { afficherAlerte("Copié !", "Vos scans ont été enregistrés dans votre presse-papiers."); }); });
         document.getElementById('btn-import-session').addEventListener('click', function() { document.getElementById('custom-prompt').style.display = 'flex'; });
         document.getElementById('btn-prompt-cancel').addEventListener('click', () => { document.getElementById('custom-prompt').style.display = 'none'; });
         document.getElementById('btn-prompt-ok').addEventListener('click', () => {
-            document.getElementById('custom-prompt').style.display = 'none';
-            let txt = document.getElementById('prompt-input').value;
-            if(!txt) return;
-            let refs = txt.split(',');
-            let count = 0;
-            refs.forEach(r => { let refClean = r.trim().toUpperCase(); if(refClean && !scannedRefs.includes(refClean)) { scannedRefs.push(refClean); count++; } });
-            majInterfaceScan();
-            afficherAlerte("Fusion réussie", `${count} nouvelles références ajoutées au pointage.`);
-            document.getElementById('prompt-input').value = "";
+            document.getElementById('custom-prompt').style.display = 'none'; let txt = document.getElementById('prompt-input').value; if(!txt) return;
+            txt.split(',').forEach(r => { let rc = r.trim().toUpperCase(); if(rc && !scannedRefs.includes(rc)) { scannedRefs.push(rc); } });
+            majInterfaceScan(); document.getElementById('prompt-input').value = "";
         });
 
-        // --- CLÔTURE & RAPPORT ---
+        // TRAITEMENT DU RAPPORT ET COMPILATION LOGISTIQUE
         document.getElementById('btn-cloturer-audit').addEventListener('click', function() {
-            if(scanner) scanner.clear(); 
-            document.getElementById('audit-ui').style.display = 'none';
-            localStorage.removeItem('audit_en_cours'); // On purge la sauvegarde
+            if(scanner) scanner.clear(); document.getElementById('audit-ui').style.display = 'none';
+            localStorage.removeItem('audit_en_cours');
+            document.getElementById('titre-rapport').textContent = (typeAudit === "total") ? "Registre de l'Audit Total" : `Registre pour "${zoneCible}"`;
             
-            document.getElementById('titre-rapport').textContent = (typeAudit === "total") ? "Résultat de l'Audit Total" : `Résultat pour "${zoneCible}"`;
-            
-            lastReportTrouves = []; lastReportManquants = []; lastReportEgares = []; 
+            lastReportTrouves = []; lastReportManquants = []; lastReportEgares = [];
             
             if (typeAudit === "zone") {
-                let zoneCiblePropre = normaliserTexte(zoneCible);
-                let attendusIci = baseLocale.filter(a => normaliserTexte(a.emplacement) === zoneCiblePropre && !a.estSorti);
-
-                attendusIci.forEach(a => { 
-                    let dbRef = String(a.reference).trim().toUpperCase();
-                    if(scannedRefs.includes(dbRef)) lastReportTrouves.push(`${a.nom} (${a.reference})`); 
-                    else lastReportManquants.push(`${a.nom} (${a.reference})`); 
+                let zonePropre = normaliserTexte(zoneCible);
+                let attendusIci = baseLocale.filter(a => normaliserTexte(a.emplacement) === zonePropre && !a.estSorti);
+                
+                attendusIci.forEach(a => {
+                    if(scannedRefs.includes(String(a.reference).toUpperCase())) lastReportTrouves.push(`🟢 ${a.nom} (${a.reference})`);
+                    else lastReportManquants.push(`🔴 ${a.nom} (${a.reference})`);
                 });
 
                 scannedRefs.forEach(ref => {
-                    let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
-                    if(match) { if(normaliserTexte(match.emplacement) !== zoneCiblePropre) { lastReportEgares.push(`${match.nom} (Prévu: ${match.emplacement})`); }
-                    } else { lastReportEgares.push(`Réf ${ref} (Inconnue en base)`); }
+                    let match = baseLocale.find(a => String(a.reference).toUpperCase() === ref);
+                    if(match) {
+                        // 🌟 Correctif 5 : Détection des objets "Sortis" scannés sur le terrain
+                        if (match.estSorti) { lastReportEgares.push(`❌ ${match.nom} (${ref}) - Devrait être sorti (Erreur de Stock)`); }
+                        else if(normaliserTexte(match.emplacement) !== zonePropre) { lastReportEgares.push(`🟡 ${match.nom} (Prévu à : ${match.emplacement})`); }
+                    } else { lastReportEgares.push(`⚪ Réf ${ref} (Inconnue en base de données)`); }
                 });
-                document.getElementById('label-egares').innerHTML = `🟡 Égarés (Mal rangés) : <span id="count-egare" style="float:right;">${lastReportEgares.length}</span>`;
-
             } else {
                 let attendusPartout = baseLocale.filter(a => !a.estSorti);
                 attendusPartout.forEach(a => {
-                    let dbRef = String(a.reference).trim().toUpperCase();
-                    if(scannedRefs.includes(dbRef)) lastReportTrouves.push(`${a.nom} (${a.reference}) - Lieu: ${a.emplacement}`);
-                    else lastReportManquants.push(`${a.nom} (${a.reference}) - Prévu: ${a.emplacement}`);
+                    if(scannedRefs.includes(String(a.reference).toUpperCase())) lastReportTrouves.push(`🟢 ${a.nom} (${a.reference}) - Lieu: ${a.emplacement}`);
+                    else lastReportManquants.push(`🔴 ${a.nom} (${a.reference}) - Lieu prévu: ${a.emplacement}`);
                 });
 
                 scannedRefs.forEach(ref => {
-                    let match = baseLocale.find(a => String(a.reference).trim().toUpperCase() === ref);
-                    if(!match) { lastReportEgares.push(`Réf ${ref} (Inconnue en base)`); } 
-                    else if (match.estSorti) { lastReportEgares.push(`${match.nom} (${ref}) - Normalement "Sorti"`); }
+                    let match = baseLocale.find(a => String(a.reference).toUpperCase() === ref);
+                    if(!match) { lastReportEgares.push(`⚪ Réf ${ref} (Inconnue en base)`); }
+                    // 🌟 Correctif 5 : Gestion pour l'audit total
+                    else if(match.estSorti) { lastReportEgares.push(`❌ ${match.nom} (${ref}) - Devrait être sorti (Erreur de Stock)`); }
                 });
-                document.getElementById('label-egares').innerHTML = `🟡 Inconnus ou Sortis : <span id="count-egare" style="float:right;">${lastReportEgares.length}</span>`;
             }
 
             document.getElementById('count-trouve').textContent = lastReportTrouves.length;
-            document.getElementById('list-trouves').innerHTML = lastReportTrouves.join('<br>') || "Aucun.";
-            
+            document.getElementById('list-trouves').innerHTML = lastReportTrouves.join('<br>') || "Aucun objet vérifié.";
             document.getElementById('count-manquant').textContent = lastReportManquants.length;
-            document.getElementById('list-manquants').innerHTML = lastReportManquants.join('<br>') || "Aucun objet manquant.";
-            
+            document.getElementById('list-manquants').innerHTML = lastReportManquants.join('<br>') || "Aucun manquant constaté.";
             document.getElementById('count-egare').textContent = lastReportEgares.length;
-            document.getElementById('list-egares').innerHTML = lastReportEgares.join('<br>') || "Aucune anomalie.";
+            document.getElementById('list-egares').innerHTML = lastReportEgares.join('<br>') || "Aucune anomalie d'emplacement.";
             
             document.getElementById('bloc-rapport').style.display = 'flex';
+            
+            // Loguer l'audit en historique
+            if(navigator.onLine) {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: "AUDIT", note: `Exécution d'un ${zoneCible}. Résultat: Confirmés:${lastReportTrouves.length} | Manquants:${lastReportManquants.length} | Anomalies:${lastReportEgares.length}`, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) });
+            }
         });
 
-        // --- IMPRESSION DU RAPPORT COMPLÈT ---
+        // 🌟 4. CORRECTIF IMPRESSION COMPLÈTE ET ÉPURÉE DU RAPPORT D'ANOMALIES ET PRÉSENCES
         document.getElementById('btn-imprimer-rapport').addEventListener('click', function() {
-            let titreHtml = (typeAudit === 'total') ? "Rapport d'Audit Total de l'Inventaire" : `Rapport d'Audit : ${zoneCible}`;
-            let titreEgaresHtml = (typeAudit === 'total') ? "Inconnus ou déclarés 'Sortis'" : "Égarés (Mal rangés)";
-            
-            let listTrouvesHtml = lastReportTrouves.length > 0 ? lastReportTrouves.map(t => `<li>${t}</li>`).join('') : "<li>Aucun.</li>";
-            let listManquantsHtml = lastReportManquants.length > 0 ? lastReportManquants.map(m => `<li>${m}</li>`).join('') : "<li>Aucun objet manquant. Parfait !</li>";
-            let listEgaresHtml = lastReportEgares.length > 0 ? lastReportEgares.map(e => `<li>${e}</li>`).join('') : "<li>Aucune anomalie constatée.</li>";
+            let titrePrint = (typeAudit === 'total') ? "Rapport d'Audit Total Logistique" : `Rapport d'Audit de Zone : ${zoneCible}`;
+            let listT = lastReportTrouves.length > 0 ? lastReportTrouves.map(x => `<li>${x}</li>`).join('') : "<li>Aucun objet validé sur place.</li>";
+            let listM = lastReportManquants.length > 0 ? lastReportManquants.map(x => `<li>${x}</li>`).join('') : "<li>Aucune anomalie (Aucun objet manquant).</li>";
+            let listE = lastReportEgares.length > 0 ? lastReportEgares.map(x => `<li>${x}</li>`).join('') : "<li>Aucun écart d'emplacement ou statut constaté.</li>";
 
             const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
             const doc = iframe.contentWindow.document;
-            
-            doc.write(`<html><head><title>Rapport d'Audit</title><style>body { font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.4; } h1 { color: #1A2B56; border-bottom: 2px solid #1A2B56; padding-bottom: 10px; font-size: 1.5rem; } h2 { margin-top: 25px; font-size: 1.2rem; } .text-green { color: #10B981; } .text-red { color: #DC2626; } .text-orange { color: #D97706; } ul { margin-top: 10px; background: #f9f9f9; padding: 15px 30px; border-radius: 8px; border: 1px solid #eee; } li { margin-bottom: 8px; font-size: 1rem; } .footer { margin-top: 40px; font-size: 0.9rem; color: #666; font-style: italic; }</style></head><body><h1>${titreHtml}</h1><p><b>Date :</b> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p><h2 class="text-red">🔴 Objets Manquants (${lastReportManquants.length})</h2><ul>${listManquantsHtml}</ul><h2 class="text-orange">🟡 Objets ${titreEgaresHtml} (${lastReportEgares.length})</h2><ul>${listEgaresHtml}</ul><h2 class="text-green">🟢 Objets Confirmés (${lastReportTrouves.length})</h2><ul>${listTrouvesHtml}</ul><p class="footer">Rapport généré automatiquement par l'application Gestion de Stock.</p><script>window.onload = function() { window.print(); }<\/script></body></html>`);
+            doc.write(`
+                <html>
+                <head>
+                    <title>Impression Rapport d'Audit</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 25px; color: #333; line-height: 1.5; }
+                        h1 { color: #1A2B56; border-bottom: 3px solid #1A2B56; padding-bottom: 8px; font-size: 1.6rem; margin-bottom: 5px; }
+                        .meta { font-size: 0.9rem; color: #555; margin-bottom: 20px; }
+                        h2 { font-size: 1.2rem; margin-top: 20px; margin-bottom: 8px; }
+                        .red { color: #DC2626; } .orange { color: #D97706; } .green { color: #10B981; }
+                        ul { background: #F9F9F9; padding: 12px 25px; border-radius: 6px; border: 1px solid #EAEAEA; list-style-type: none; }
+                        li { margin-bottom: 6px; font-size: 0.95rem; font-family: monospace; }
+                        .footer { margin-top: 35px; font-size: 0.8rem; color: #777; border-top: 1px solid #CCC; padding-top: 8px; font-style: italic; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${titrePrint}</h1>
+                    <div class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')} par l'opérateur <b>${localStorage.getItem('app_login')}</b></div>
+                    
+                    <h2 class="red">🔴 Liste des objets manquants (${lastReportManquants.length})</h2>
+                    <ul>${listM}</ul>
+                    
+                    <h2 class="orange">🟡 Écarts, Inconnus et Erreurs de statut (${lastReportEgares.length})</h2>
+                    <ul>${listE}</ul>
+                    
+                    <h2 class="green">🟢 Liste des objets confirmés présents (${lastReportTrouves.length})</h2>
+                    <ul>${listT}</ul>
+                    
+                    <div class="footer">Document officiel extrait de l'application de Gestion de Stock.</div>
+                    <script>window.onload = function() { window.print(); }<\/script>
+                </body>
+                </html>
+            `);
             doc.close(); setTimeout(() => { document.body.removeChild(iframe); }, 3000);
         });
 
-        function effacerSauvegardeEtRecharger() {
-            localStorage.removeItem('audit_en_cours');
-            window.location.reload();
-        }
+        function effacerSauvegardeEtRecharger() { localStorage.removeItem('audit_en_cours'); window.location.reload(); }
     </script>
     <script>
         let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });

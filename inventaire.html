@@ -3,236 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inventaire complet</title>
+    <title>Inventaire Général</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
-        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; width: 100%; }
-        .btn-header { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
-        .btn-header:active { transform: scale(0.85); }
-        h1 { font-size: 1.5rem; letter-spacing: 1px; flex-grow: 1; text-align: center; margin: 0 10px; }
-        .search-container { position: sticky; top: 10px; z-index: 10; background-color: rgba(5, 10, 31, 0.9); padding: 10px 0; border-radius: 12px; margin-bottom: 10px; }
-        .search-bar { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 14px 14px 14px 40px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23D1D5DB" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>'); background-repeat: no-repeat; background-position: 12px center; }
-        .search-bar:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
-        .compteur { font-size: 0.9rem; color: #D1D5DB; text-align: right; margin-bottom: 10px; font-weight: 600; }
-        .status-message { text-align: center; margin-top: 40px; color: #60A5FA; font-weight: bold; font-size: 1.1rem; }
-        #vue-inventaire { display: flex; flex-direction: column; width: 100%; }
-        #vue-historique { display: none; flex-direction: column; width: 100%; }
-        #vue-details { display: none; flex-direction: column; width: 100%; gap: 15px; }
-        .filtres-pilules { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 15px; -ms-overflow-style: none; scrollbar-width: none; }
-        .filtres-pilules::-webkit-scrollbar { display: none; }
-        .btn-pilule { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #D1D5DB; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; white-space: nowrap; cursor: pointer; transition: all 0.2s ease; }
-        .btn-pilule.active { background-color: #3B82F6; color: #FFFFFF; border-color: #60A5FA; font-weight: bold; transform: scale(0.95); }
-        .btn-copy { background: transparent; border: none; color: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; padding: 2px; border-radius: 4px; transition: background 0.2s; }
-        .btn-copy:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
-        .liste-cards { display: flex; flex-direction: column; gap: 12px; }
-        .item-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: background 0.2s; }
-        .item-card:active { background: rgba(255, 255, 255, 0.05); }
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-        .item-nom { font-size: 1.1rem; font-weight: bold; color: #FFFFFF; line-height: 1.2; word-break: break-word; }
-        .badges-container { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
-        .item-ref { background-color: rgba(59, 130, 246, 0.2); color: #93C5FD; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; }
-        .item-cat { background-color: rgba(139, 92, 246, 0.2); color: #C4B5FD; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(139, 92, 246, 0.3); display: flex; align-items: center; }
-        .item-emplacement { font-size: 0.95rem; color: #D1D5DB; }
-        .item-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: #9CA3AF; margin-top: 5px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; }
-        .hist-card { background: rgba(0, 0, 0, 0.2); border-left: 4px solid #60A5FA; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 5px; }
-        .hist-ajout { border-left-color: #10B981; } .hist-deplacement { border-left-color: #F59E0B; } .hist-sortie { border-left-color: #EF4444; } .hist-modification { border-left-color: #8B5CF6; }
-        .hist-date { font-size: 0.75rem; color: #9CA3AF; }
-        .hist-title { font-size: 1rem; font-weight: bold; color: #FFFFFF; display: flex; justify-content: space-between; align-items: center; }
-        .hist-detail { font-size: 0.9rem; color: #D1D5DB; }
-        .hist-user { font-size: 0.8rem; font-style: italic; color: #9CA3AF; text-align: right; }
-        .empty-state { text-align: center; margin-top: 40px; color: #9CA3AF; display: none; }
-        .info-card { background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%; }
-        .info-card h2 { font-size: 1.3rem; margin-bottom: 12px; color: #60A5FA; word-break: break-word; }
-        .info-card p { font-size: 0.95rem; margin-bottom: 8px; color: #D1D5DB; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .info-card span.valeur { color: #FFFFFF; font-weight: bold; display: flex; align-items: center; text-align: right; }
-        .notes-area { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #D1D5DB; max-height: 100px; overflow-y: auto; margin-top: 5px; margin-bottom: 15px; white-space: pre-wrap; }
-        .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
-        .btn-primary:active { transform: scale(0.98); background-color: #2563EB; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
+        /* Header avec retour arrière intelligent */
+        .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour:active { transform: scale(0.85); }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+
+        /* Barre de recherche et filtres */
+        .search-bar { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px; color: white; font-size: 1rem; outline: none; }
+        .search-bar::placeholder { color: #9CA3AF; }
+        .filter-row { display: flex; gap: 8px; width: 100%; margin-bottom: 5px; }
+        .btn-filter { flex: 1; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #60A5FA; padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-filter.active { background: #3B82F6; color: white; border-color: #60A5FA; }
+
+        /* Cartes d'objets (Liste) */
+        .stock-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
+        .stock-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; }
+        .stock-card:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+        .card-left { display: flex; flex-direction: column; gap: 4px; }
+        .card-title { font-size: 1rem; font-weight: bold; color: #FFFFFF; }
+        .card-ref { font-size: 0.8rem; font-family: monospace; color: #93C5FD; }
+        .card-right { text-align: right; display: flex; flex-direction: column; gap: 4px; }
+        .card-loc { font-size: 0.85rem; color: #F59E0B; font-weight: 600; }
+        .card-cat { font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #D1D5DB; display: inline-block; width: max-content; align-self: flex-end; }
+        .status-badge-out { font-size: 0.75rem; color: #FCA5A5; font-weight: bold; }
+
+        .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* Modales Mobiles Unifiées */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; margin-top: 15px;}
-        .btn-modal-ok:active { transform: scale(0.95); background-color: #2563EB; }
+        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 92%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+        .modal-title { font-size: 1.25rem; color: #60A5FA; margin-bottom: 12px; font-weight: bold; text-align: left; }
+        .modal-body { text-align: left; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: #D1D5DB; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
+        .modal-body p { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
+        .modal-body span.valeur { color: white; font-weight: bold; }
+        
+        .notes-area { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
+        .btn-copy { background: transparent; border: none; color: #60A5FA; cursor: pointer; margin-left: 5px; vertical-align: middle; }
+
+        .hist-row { font-size: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 5px 0; color: #E5E7EB; text-align: left; }
+        .hist-row:last-child { border-bottom: none; }
+
+        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-header">⬅</a><h1 id="titre-page">Inventaire</h1><button id="btn-toggle-vue" class="btn-header">🕒</button></div>
-        <div id="vue-inventaire">
-            <div class="filtres-pilules" id="tri-inventaire">
-                <button class="btn-pilule" data-sort="nom">🔤 Nom</button>
-                <button class="btn-pilule" data-sort="categorie">🏷️ Catégorie</button>
-                <button class="btn-pilule" data-sort="emplacement">📍 Emplacement</button>
-                <button class="btn-pilule active" data-sort="date">📅 Date d'ajout</button>
-            </div>
-            <div class="search-container"><input type="text" id="search-bar" class="search-bar" placeholder="Rechercher..."></div>
-            <div class="compteur" id="compteur-texte">Chargement...</div>
-            <div id="loader-inv" class="status-message">Récupération... ⏳</div>
-            <div id="liste-inventaire" class="liste-cards"></div>
-            <div class="empty-state" id="empty-inv"><p>Aucun article trouvé.</p></div>
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Inventaire Général</h1></div>
+        
+        <input type="text" id="input-recherche" class="search-bar" placeholder="Rechercher nom, code, lieu, catégorie...">
+        
+        <div class="filter-row">
+            <button class="btn-filter active" id="tri-recent" onclick="changerTri('recent')">🕒 Récent</button>
+            <button class="btn-filter" id="tri-nom" onclick="changerTri('nom')">🔤 Nom</button>
+            <button class="btn-filter" id="tri-cat" onclick="changerTri('cat')">🏷️ Catégorie</button>
+            <button class="btn-filter" id="tri-lieu" onclick="changerTri('lieu')">📍 Lieu</button>
         </div>
-        <div id="vue-details">
-            <button class="btn-primary" id="btn-retour-liste" style="background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); margin-bottom: 10px;">⬅ Retour à la liste</button>
-            <div class="info-card"><h2 id="detail-nom">Fiche Objet</h2><div id="detail-contenu"></div></div>
-        </div>
-        <div id="vue-historique">
-            <div class="filtres-pilules" id="filtre-historique">
-                <button class="btn-pilule active" data-filter="Tous">Tous</button>
-                <button class="btn-pilule" data-filter="Ajout">Ajouts</button>
-                <button class="btn-pilule" data-filter="Déplacement">Déplacements</button>
-                <button class="btn-pilule" data-filter="Sortie">Sorties</button>
+
+        <p id="msg-chargement" style="text-align:center; font-size:0.9rem; color:#60A5FA;">Synchronisation de la base... ⏳</p>
+        
+        <div class="stock-list" id="liste-stock"></div>
+    </div>
+
+    <div class="modal-overlay" id="modal-fiche">
+        <div class="modal-content">
+            <h3 class="modal-title" id="fiche-nom">Détails de l'article</h3>
+            <div class="modal-body" id="fiche-corps"></div>
+            
+            <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:6px; font-size:0.85rem; padding:10px;">🕒 Historique complet des mouvements</button>
+            
+            <div id="wrapper-kit" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px; margin-bottom:8px; display:none;">
+                <p style="font-size:0.8rem; color:#60A5FA; font-weight:bold; text-align:left; margin-bottom:4px;">📦 Assembler des articles dans ce Lot</p>
+                <div style="display:flex; gap:6px; margin-bottom:5px;">
+                    <input type="text" id="input-sub-ref" placeholder="Sous-référence..." style="padding:6px; font-size:0.85rem;">
+                    <button type="button" class="btn-primary" id="btn-add-sub" style="background:#10B981; padding:6px; width:auto; font-size:0.8rem;">Ajouter</button>
+                </div>
+                <div id="kit-preview-list" style="font-size:0.7rem; color:#93C5FD; text-align:left; font-family:monospace; margin-bottom:5px;"></div>
+                <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:8px; font-size:0.8rem;">💾 Valider la composition du lot</button>
             </div>
-            <div id="loader-hist" class="status-message">Chargement... ⏳</div>
-            <div id="liste-historique" class="liste-cards"></div>
-            <div class="empty-state" id="empty-hist"><p>Aucune action trouvée.</p></div>
+
+            <p style="text-align:left; font-size:0.8rem; font-weight:bold; color:#9CA3AF; margin-bottom:4px;">📝 Notes & Suivi d'incidents</p>
+            <div class="notes-area" id="fiche-notes"></div>
+            
+            <div id="wrapper-note" style="display:flex; gap:6px; margin-bottom:10px;">
+                <input type="text" id="input-fiche-note" placeholder="Taper une remarque..." style="padding:8px; font-size:0.85rem;">
+                <button class="btn-primary" id="btn-save-fiche-note" style="background:#10B981; padding:8px; width:auto; font-size:0.85rem;">Ajouter</button>
+            </div>
+
+            <button class="btn-primary" id="btn-print-fiche-qr" style="background:#10B981; margin-bottom:6px;">🖨️ Réimprimer l'étiquette QR</button>
+            <button class="btn-primary" onclick="fermerFiche()" style="background:transparent; border:1px solid #D1D5DB;">Fermer la fiche</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="custom-alert">
-        <div class="modal-content">
-            <div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div>
-            <h3 style="font-size: 1.2rem; color: white; margin-bottom: 10px;" id="alert-title">Erreur</h3>
-            <p style="color: #D1D5DB; font-size: 0.95rem; margin-bottom: 10px; line-height: 1.4;" id="alert-message">Erreur réseau.</p>
-            <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
+    <div class="modal-overlay" id="modal-pop-hist">
+        <div class="modal-content" style="max-width:340px;">
+            <h3 class="modal-title" style="text-align:center;">🕒 Journal de bord</h3>
+            <div class="modal-body" id="container-rows-hist" style="max-height:220px; margin-bottom:10px;"></div>
+            <button class="btn-primary" onclick="document.getElementById('modal-pop-hist').style.display='none'">Fermer</button>
         </div>
     </div>
+
+    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size:1.1rem; color:white; margin-bottom:5px;" id="alert-title">Attention</h3><p style="color:#D1D5DB; font-size:0.9rem;" id="alert-message"></p><button class="btn-primary" id="btn-alert-ok" style="margin-top:15px; padding:10px;">OK</button></div></div>
+
+    <div class="app-version" id="version-display"></div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
-        if (localStorage.getItem('app_role') !== 'admin') document.getElementById('btn-toggle-vue').style.display = 'none';
-        const SVG_COPY = `<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>`;
+        const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
+        const SVG_COPY = `<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="display:inline-block; vertical-align:middle;"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>`;
         
-        window.copierTexte = function(texte, event) { if(event) event.stopPropagation(); navigator.clipboard.writeText(texte).then(() => { if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); } }); };
-        
-        function afficherAlerte(titre, message) { document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('custom-alert').style.display = 'flex'; }
+        let inventaireComplet = []; let inventaireFiltre = []; let triActuel = "recent"; let refActive = ""; let trackedSubRefs = [];
+
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+
+        function afficherAlerte(titre, message, isSuccess = false) {
+            document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
+            document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message;
+            document.getElementById('custom-alert').style.display = 'flex';
+        }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
-        // 🌟 FONCTION GLOBALE POUR IMPRIMER LE QR DEPUIS LA FICHE
-        window.imprimerQRCode = function(refEncoded, nomEncoded) {
-            const ref = decodeURIComponent(refEncoded);
-            const nom = decodeURIComponent(nomEncoded);
-            const imgUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(ref);
-            
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-            const doc = iframe.contentWindow.document;
-            doc.write(`
-                <html>
-                <head>
-                    <title>Impression QR Code</title>
-                    <style>
-                        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
-                        h2 { margin: 0; font-size: 1.6rem; margin-bottom: 5px; }
-                        p { margin: 0; font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
-                        img { width: 200px; height: 200px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>${nom}</h2>
-                    <p>${ref}</p>
-                    <img src="${imgUrl}" onload="window.print();" />
-                </body>
-                </html>
-            `);
-            doc.close();
-            setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+        window.copierReference = function(ref, e) {
+            if(e) e.stopPropagation();
+            navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); });
         };
 
-        const vueInventaire = document.getElementById('vue-inventaire'); const vueHistorique = document.getElementById('vue-historique'); const btnToggleVue = document.getElementById('btn-toggle-vue'); const titrePage = document.getElementById('titre-page'); const loaderInv = document.getElementById('loader-inv'); const listeInventaire = document.getElementById('liste-inventaire'); const compteurTexte = document.getElementById('compteur-texte'); const searchBar = document.getElementById('search-bar'); const emptyInv = document.getElementById('empty-inv'); const loaderHist = document.getElementById('loader-hist'); const listeHistorique = document.getElementById('liste-historique'); const emptyHist = document.getElementById('empty-hist'); const vueDetails = document.getElementById('vue-details');
-        
-        let vueActuelle = "inventaire"; let historiquesData = []; let articlesData = []; let currentFilterHist = "Tous"; 
-        let currentSortInv = "date"; 
-        let sortAsc = false; 
-        
-        window.addEventListener('DOMContentLoaded', function() { const urlParams = new URLSearchParams(window.location.search); const refCible = urlParams.get('ref'); if (refCible) { vueInventaire.style.display = 'none'; vueHistorique.style.display = 'flex'; titrePage.textContent = "Suivi " + refCible; btnToggleVue.textContent = "📦"; vueActuelle = "historique"; chargerHistoriqueFiltre(refCible); } else { chargerInventaire(); } });
-        btnToggleVue.addEventListener('click', function() { if (vueActuelle === "inventaire") { vueInventaire.style.display = 'none'; vueDetails.style.display = 'none'; vueHistorique.style.display = 'flex'; titrePage.textContent = "Historique"; btnToggleVue.textContent = "📦"; vueActuelle = "historique"; chargerHistoriqueFiltre(null); } else { window.location.search = ""; } });
-        
-        function chargerInventaire() { loaderInv.style.display = 'block'; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) }).then(res => res.json()).then(data => { if (data.result === "success") { loaderInv.style.display = 'none'; articlesData = data.data; trierEtAfficherInventaire(); } }).catch(e => { loaderInv.style.display = 'none'; afficherAlerte("Erreur réseau", "Impossible de charger l'inventaire en ligne."); }); }
-        
-        document.querySelectorAll('#tri-inventaire .btn-pilule').forEach(btn => { btn.addEventListener('click', function() { const critere = this.getAttribute('data-sort'); if (currentSortInv === critere) sortAsc = !sortAsc; else { currentSortInv = critere; sortAsc = true; } document.querySelectorAll('#tri-inventaire .btn-pilule').forEach(b => b.classList.remove('active')); this.classList.add('active'); trierEtAfficherInventaire(); }); });
-        searchBar.addEventListener('input', trierEtAfficherInventaire);
-        
-        function trierEtAfficherInventaire() { 
-            const terme = searchBar.value.toLowerCase().trim(); 
-            let listFiltree = articlesData.filter(a => { 
-                const nomSafe = String(a.nom || "").toLowerCase(); const refSafe = String(a.reference || "").toLowerCase(); const empSafe = String(a.emplacement || "").toLowerCase(); const catSafe = String(a.categorie || "").toLowerCase(); 
-                return nomSafe.includes(terme) || refSafe.includes(terme) || empSafe.includes(terme) || catSafe.includes(terme); 
-            }); 
-            
-            listFiltree.sort((a, b) => { 
-                let valA = a[currentSortInv] || ""; let valB = b[currentSortInv] || ""; 
-                if (currentSortInv === 'date') { 
-                    valA = new Date(a.date).getTime() || 0; 
-                    valB = new Date(b.date).getTime() || 0; 
-                } else { 
-                    valA = valA.toString().toLowerCase(); 
-                    valB = valB.toString().toLowerCase(); 
-                } 
-                if (valA < valB) return sortAsc ? -1 : 1; 
-                if (valA > valB) return sortAsc ? 1 : -1; 
-                return 0; 
-            }); 
-            
-            afficherArticles(listFiltree); 
-        }
-        
-        function afficherArticles(articles) { listeInventaire.innerHTML = ""; if (articles.length === 0) { compteurTexte.textContent = "0 trouvé"; emptyInv.style.display = 'block'; return; } compteurTexte.textContent = `${articles.length} article(s)`; emptyInv.style.display = 'none'; articles.forEach(article => { const card = document.createElement('div'); card.className = 'item-card'; let dStr = article.date ? "le " + new Date(article.date).toLocaleDateString('fr-FR') : ""; card.innerHTML = `<div class="item-header"><span class="item-nom">${article.nom}</span><div class="badges-container"><span class="item-cat">🎨 ${article.categorie || "Non classé"}</span><span class="item-ref">${article.reference} <button class="btn-copy" onclick="copierTexte('${article.reference}', event)">${SVG_COPY}</button></span></div></div><div class="item-emplacement">📍 ${article.emplacement}</div><div class="item-footer"><span>Par : ${article.utilisateur}</span><span>${dStr}</span></div>`; card.addEventListener('click', (e) => { if (e.target.closest('.btn-copy')) return; ouvrirFicheObjet(article.reference, article); }); listeInventaire.appendChild(card); }); }
-        
-        document.getElementById('btn-retour-liste').addEventListener('click', function() { vueDetails.style.display = 'none'; vueInventaire.style.display = 'flex'; });
-        function ouvrirFicheObjet(ref, articleLocal) { vueInventaire.style.display = 'none'; vueDetails.style.display = 'flex'; document.getElementById('detail-nom').textContent = articleLocal.nom; document.getElementById('detail-contenu').innerHTML = "<p style='text-align:center; color:#60A5FA; margin-top:20px;'>Récupération des détails... ⏳</p>"; window.scrollTo(0,0); if (navigator.onLine) { fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), reference: ref }) }).then(res => res.json()).then(item => { if (item.result === "success") renderFicheHtml(ref, item); else renderFicheHtml(ref, articleLocal); }).catch(() => renderFicheHtml(ref, articleLocal)); } else { renderFicheHtml(ref, articleLocal); } }
-        
-        function renderFicheHtml(ref, item) { 
-            const detailContenu = document.getElementById('detail-contenu'); 
-            const refRow = `<p>Référence : <span class="valeur">${ref} <button class="btn-copy" onclick="copierTexte('${ref}', event)">${SVG_COPY}</button></span></p>`; 
-            
-            // On encode pour éviter que des guillemets dans le nom cassent le onClick
-            const safeRef = encodeURIComponent(ref);
-            const safeNom = encodeURIComponent(item.nom || "");
-            
-            if (localStorage.getItem('app_role') === 'admin') { 
-                let dateFormatee = item.dateAjout || item.date ? new Date(item.dateAjout || item.date).toLocaleDateString('fr-FR') : "Inconnue"; 
-                let dateSortieFormatee = item.estSorti ? "le " + (item.dateSortie ? new Date(item.dateSortie).toLocaleDateString('fr-FR') : "Inconnue") : "En stock actif"; 
-                let statutColor = item.estSorti ? "#EF4444" : "#FFFFFF"; 
-                let notesHtml = `<h4 style="font-size:0.9rem; margin-top:15px; color:#9CA3AF;">📝 Notes & Incidents</h4><div class="notes-area">${item.notes || "Aucune note consignée."}</div>`; 
-                
-                detailContenu.innerHTML = refRow + `
-                    <p>Catégorie : <span class="valeur">${item.categorie || "Non classé"}</span></p>
-                    <p>Emplacement : <span class="valeur">${item.emplacement}</span></p>
-                    <p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p>
-                    <p>Créé par : <span class="valeur">${item.utilisateur || "Inconnu"}</span></p>
-                    <p>Statut sortie : <span class="valeur" style="color:${statutColor};">${dateSortieFormatee}</span></p>
-                    <p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p>
-                    <p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>
-                    ${notesHtml}
-                    <button class="btn-primary" style="margin-top:10px;padding:12px;font-size:1rem;background:#10B981;" onclick="imprimerQRCode('${safeRef}', '${safeNom}')">🖨️ Imprimer l'étiquette QR</button>
-                    <button class="btn-primary" style="margin-top:10px;padding:12px;font-size:1rem;background:#8B5CF6;" onclick="window.location.search='?ref=${ref}'">🕒 Suivre l'historique complet</button>`; 
-            } else { 
-                detailContenu.innerHTML = refRow + `
-                    <p>Nom de l'objet : <span class="valeur">${item.nom}</span></p>
-                    <p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>
-                    <button class="btn-primary" style="margin-top:15px;padding:12px;font-size:1rem;background:#10B981;" onclick="imprimerQRCode('${safeRef}', '${safeNom}')">🖨️ Imprimer l'étiquette QR</button>
-                `; 
-            } 
-        }
-        
-        function chargerHistoriqueFiltre(filtreRef) { loaderHist.style.display = 'block'; listeHistorique.innerHTML = ""; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_historique", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) }).then(res => res.json()).then(data => { if (data.result === "success") { loaderHist.style.display = 'none'; historiquesData = data.data; if(filtreRef) { document.getElementById('filtre-historique').style.display = 'none'; historiquesData = historiquesData.filter(log => log.reference === filtreRef); } afficherLogs(); } }); }
-        document.querySelectorAll('#filtre-historique .btn-pilule').forEach(btn => { btn.addEventListener('click', function() { document.querySelectorAll('#filtre-historique .btn-pilule').forEach(b => b.classList.remove('active')); this.classList.add('active'); currentFilterHist = this.getAttribute('data-filter'); afficherLogs(); }); });
-        function afficherLogs() { listeHistorique.innerHTML = ""; let logsFiltres = historiquesData; if (currentFilterHist !== "Tous") logsFiltres = historiquesData.filter(log => log.action === currentFilterHist); if (logsFiltres.length === 0) { emptyHist.style.display = 'block'; return; } emptyHist.style.display = 'none'; logsFiltres.forEach(log => { const card = document.createElement('div'); card.className = 'hist-card'; if (log.action === "Ajout") card.classList.add("hist-ajout"); else if (log.action === "Déplacement") card.classList.add("hist-deplacement"); else if (log.action === "Sortie") card.classList.add("hist-sortie"); else card.classList.add("hist-modification"); const dObj = new Date(log.date); const dStr = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}); card.innerHTML = `<div class="hist-date">${dStr}</div><div class="hist-title"><span>${log.action} : ${log.nom}</span><span style="font-size:0.85rem;color:#93C5FD; display:flex; align-items:center;">${log.reference} <button class="btn-copy" onclick="copierTexte('${log.reference}', event)">${SVG_COPY}</button></span></div><div class="hist-detail">${log.detail}</div><div class="hist-user">par ${log.utilisateur}</div>`; listeHistorique.appendChild(card); }); }
-    </script>
-    
-    <script>
-        let timeoutId;
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
-            else { clearTimeout(timeoutId); }
+        // CHARGEMENT INITIAL DU STOCK
+        window.addEventListener('DOMContentLoaded', () => {
+            if(navigator.onLine) {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", ...payloadBase }) })
+                .then(r => r.json()).then(d => {
+                    document.getElementById('msg-chargement').style.display = 'none';
+                    if (d.result === "success") { inventaireComplet = d.data; localStorage.setItem('miroir_stock', JSON.stringify(d.data)); appliquerTriEtFiltre(); } else { chargerFailsafeLocal(); }
+                }).catch(() => { chargerFailsafeLocal(); });
+            } else { chargerFailsafeLocal(); }
         });
+
+        function chargerFailsafeLocal() {
+            document.getElementById('msg-chargement').style.display = 'none';
+            if(localStorage.getItem('miroir_stock')) { inventaireComplet = JSON.parse(localStorage.getItem('miroir_stock')); appliquerTriEtFiltre(); } else { document.getElementById('liste-stock').innerHTML = "<p style='text-align:center;color:#FCA5A5;'>Base locale indisponible. Connectez-vous au réseau.</p>"; }
+        }
+
+        // MOTEUR DE RECHERCHE ET CONFIG TRIS
+        document.getElementById('input-recherche').addEventListener('input', appliquerTriEtFiltre);
+        function changerTri(type) {
+            triActuel = type; document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            if(type==='recent') document.getElementById('tri-recent').classList.add('active');
+            if(type==='nom') document.getElementById('tri-nom').classList.add('active');
+            if(type==='cat') document.getElementById('tri-cat').classList.add('active');
+            if(type==='lieu') document.getElementById('tri-lieu').classList.add('active');
+            appliquerTriEtFiltre();
+        }
+
+        function appliquerTriEtFiltre() {
+            let s = document.getElementById('input-recherche').value.trim().toLowerCase();
+            let role = localStorage.getItem('app_role');
+
+            // Filtrage : Les utilisateurs standards ne voient pas les objets "Sortis"
+            let listeDeBase = inventaireComplet;
+            if(role !== 'admin') { listeDeBase = inventaireComplet.filter(x => !x.estSorti); }
+
+            if(s) {
+                inventaireFiltre = listeDeBase.filter(x => String(x.nom).toLowerCase().includes(s) || String(x.reference).toLowerCase().includes(s) || String(x.emplacement).toLowerCase().includes(s) || String(x.categorie).toLowerCase().includes(s));
+            } else { inventaireFiltre = [...listeDeBase]; }
+
+            // Application du Tri sélectionné
+            if (triActuel === "recent") {
+                inventaireFiltre.sort((a, b) => new Date(b.dateAjout || 0) - new Date(a.dateAjout || 0));
+            } else if (triActuel === "nom") {
+                inventaireFiltre.sort((a, b) => String(a.nom).localeCompare(String(b.nom)));
+            } else if (triActuel === "cat") {
+                inventaireFiltre.sort((a, b) => { if(a.categorie === "Non classé") return 1; if(b.categorie === "Non classé") return -1; return String(a.categorie).localeCompare(String(b.categorie)); });
+            } else if (triActuel === "lieu") {
+                inventaireFiltre.sort((a, b) => String(a.emplacement).localeCompare(String(b.emplacement)));
+            }
+            renderListe();
+        }
+
+        function renderListe() {
+            const container = document.getElementById('liste-stock'); container.innerHTML = "";
+            if(inventaireFiltre.length === 0) { container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article trouvé.</p>"; return; }
+            
+            inventaireFiltre.forEach(item => {
+                const card = document.createElement('div'); card.className = 'stock-card';
+                card.onclick = () => ouvrirFiche(item);
+                let outText = item.estSorti ? '<span class="status-badge-out">🔴 ARCHIVÉ (SORTI)</span>' : '';
+                card.innerHTML = `
+                    <div class="card-left"><div class="card-title">${item.nom}</div><div class="card-ref">${item.reference}</div></div>
+                    <div class="card-right"><div class="card-loc">${item.emplacement || "N/A"}</div><div class="card-cat">${item.categorie}</div>${outText}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 🌟 OUVERTURE DE LA FICHE DESCRIPTIVE COMMUNE AU CLIC
+        function ouvrirFiche(item) {
+            refActive = item.reference; trackedSubRefs = []; document.getElementById('kit-preview-list').textContent = "";
+            document.getElementById('fiche-nom').textContent = item.nom; document.getElementById('fiche-notes').textContent = item.notes || "Aucune note consignée.";
+            
+            let dForm = item.dateAjout ? new Date(item.dateAjout).toLocaleDateString('fr-FR') : "Inconnue";
+            let c = document.getElementById('fiche-corps');
+            let baseRows = `<p>Référence : <span class="valeur">${item.reference} <button class="btn-copy" onclick="copierReference('${item.reference}', event)">${SVG_COPY}</button></span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p><p>Catégorie : <span class="valeur">${item.categorie}</span></p>`;
+            
+            if(localStorage.getItem('app_role') === 'admin') {
+                let dOutForm = item.dateSortie ? "le " + new Date(item.dateSortie).toLocaleDateString('fr-FR') : "En stock actif";
+                c.innerHTML = baseRows + `<p>Date de création : <span class="valeur">${dForm}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Registre Sortie : <span class="valeur">${dOutForm}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "N/A"}</span></p>`;
+            } else { c.innerHTML = baseRows; }
+
+            // Sécurité droits "Lecteur" : On masque l'écriture si nécessaire
+            let role = localStorage.getItem('app_role');
+            if(role === 'lecteur') {
+                document.getElementById('wrapper-kit').style.display = 'none'; document.getElementById('wrapper-note').style.display = 'none';
+            } else {
+                document.getElementById('wrapper-kit').style.display = 'block'; document.getElementById('wrapper-note').style.display = 'flex';
+            }
+
+            document.getElementById('modal-fiche').style.display = 'flex';
+        }
+        function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
+
+        // 🌟 INTERFACE HISTORIQUE INDIVIDUEL DE L'OBJET
+        document.getElementById('btn-dash-hist' || 'btn-hist-indiv').addEventListener('click', function() {
+            const rowBox = document.getElementById('container-rows-hist'); rowBox.textContent = "Chargement... ⏳";
+            document.getElementById('modal-pop-hist').style.display = 'flex';
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_item_history", reference: refActive, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => {
+                if(d.result === "success" && d.data.length > 0) {
+                    rowBox.innerHTML = d.data.map(l => {
+                        let dObj = new Date(l.date); let str = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+                        return `<div class="hist-row"><b>${str}</b> [${l.action}] par <i>${l.utilisateur}</i> : <br>${l.detail}</div>`;
+                    }).join('');
+                } else { rowBox.textContent = "Aucun historique trouvé pour cet article."; }
+            }).catch(() => { rowBox.textContent = "Erreur réseau."; });
+        });
+
+        // 🌟 INTERFACE ASSEMBLAGE DE KITS / BUNDLES
+        document.getElementById('btn-add-sub').addEventListener('click', function() {
+            let val = document.getElementById('input-sub-ref').value.trim().toUpperCase();
+            if(val && !trackedSubRefs.includes(val)) {
+                trackedSubRefs.push(val); document.getElementById('input-sub-ref').value = "";
+                document.getElementById('kit-preview-list').innerHTML = trackedSubRefs.map(r => `📦 ${r}`).join('<br>');
+            }
+        });
+        document.getElementById('btn-save-kit').addEventListener('click', function() {
+            if(trackedSubRefs.length === 0) return;
+            let packText = `[Composition Lot/Kit]: Contient ${trackedSubRefs.length} articles (${trackedSubRefs.join(', ')})`;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: packText, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('kit-preview-list').textContent = ""; trackedSubRefs = []; afficherAlerte("Succès", "Lot assemblé !", true); } });
+        });
+
+        // RAJOUT DES REMARQUES DEPUIS LA FICHE
+        document.getElementById('btn-save-fiche-note').addEventListener('click', function() {
+            let txt = document.getElementById('input-fiche-note').value.trim(); if(!txt) return;
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: txt, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+            .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('input-fiche-note').value = ""; } });
+        });
+
+        // CORRECTIF REIMPRESSION EPUREE DU QR
+        document.getElementById('btn-print-fiche-qr').addEventListener('click', function() {
+            const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document;
+            doc.write(`<html><head><style>body { text-align: center; padding-top: 20px; } img.logo { width: 60px; margin-bottom: 8px; } div.box { border: 1px solid #ccc; padding: 15px; width: 170px; margin: 0 auto; border-radius: 6px; }</style></head><body><div class="box"><img class="logo" src="icon-192.png"/><br><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(refActive)}" onload="window.print();"/></div></body></html>`);
+            doc.close(); setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+        });
+    </script>
+    <script>
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>

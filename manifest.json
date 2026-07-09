@@ -1,9 +1,9 @@
 {
-  "name": "Gestion Inventaire",
-  "short_name": "Inventaire",
-  "start_url": "login.html",
+  "name": "Gestion de Stock",
+  "short_name": "Stock",
+  "start_url": "./login.html",
   "display": "standalone",
-  "background_color": "#050A1F",
+  "background_color": "#1A2B56",
   "theme_color": "#1A2B56",
   "icons": [
     {
@@ -12,9 +12,9 @@
       "type": "image/png"
     },
     {
-      "src": "icon-512.jpg",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }

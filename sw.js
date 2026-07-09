@@ -1,67 +1,51 @@
-const CACHE_NAME = 'gestion-stock-art-v4'; // V4
-
-const ASSETS = [
-  './',
+const CACHE_NAME = 'stock-cache-v0.9';
+const urlsToCache = [
   './index.html',
   './login.html',
+  './scanner.html',
   './ajouter.html',
   './inventaire.html',
-  './scanner.html',
+  './deplacer.html',
+  './sortir.html',
   './audit.html',
+  './admin.html',
   './profil.html',
   './aide.html',
-  './admin.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  'https://unpkg.com/html5-qrcode',
   'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
+  'https://unpkg.com/html5-qrcode'
 ];
 
-self.addEventListener('install', (e) => {
-  self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[PWA] Fichiers sauvegardés en mémoire.');
-      return cache.addAll(ASSETS);
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
     })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('[PWA] Suppression de l\'ancien cache : ' + key);
-            return caches.delete(key);
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', (e) => {
-  if (e.request.method === 'POST') {
-    return;
-  }
-  e.respondWith(
-    fetch(e.request)
-    .then((response) => {
-      if (response && response.status === 200 && response.type === 'basic') {
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => { cache.put(e.request, responseClone); });
-      }
-      return response;
-    })
-    .catch(() => {
-      // ignoreSearch: true pour que inventaire.html?ref=123 fonctionne hors ligne
-      return caches.match(e.request, { ignoreSearch: true }).then((cachedResponse) => {
-        if (cachedResponse) return cachedResponse;
-      });
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
     })
   );
 });

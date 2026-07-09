@@ -36,7 +36,6 @@
         .btn-logout { background-color: transparent; border: 1px solid rgba(248, 113, 113, 0.5); color: #FCA5A5; margin-top: 15px; margin-bottom: 20px; cursor: pointer; grid-column: span 2; padding: 15px; font-weight: bold; border-radius: 14px; font-size: 1rem; transition: all 0.2s; }
         .btn-logout:active { background-color: rgba(248, 113, 113, 0.15); transform: scale(0.95); }
         
-        /* 🌟 NOUVEAU : AFFICHAGE DE LA VERSION */
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
@@ -66,26 +65,33 @@
         </nav>
     </div>
 
-    <div class="app-version">Version 0.8</div>
+    <div class="app-version" id="version-display"></div>
 
     <script>
+        // 🌟 DÉFINITION DE LA VERSION MAITRE
+        const APP_VERSION_MAITRE = "0.9";
+        localStorage.setItem('app_version', APP_VERSION_MAITRE);
+        document.getElementById('version-display').textContent = "Version " + APP_VERSION_MAITRE;
+
         if (localStorage.getItem('app_role') === 'admin') {
             document.getElementById('admin-divider').style.display = 'flex';
             document.getElementById('menu-admin').style.display = 'flex';
             document.getElementById('menu-bdd').style.display = 'flex';
         }
+        
         document.getElementById('btn-logout').addEventListener('click', function() {
             let promessesNettoyage = [];
             if ('caches' in window) promessesNettoyage.push(caches.keys().then(names => Promise.all(names.map(name => caches.delete(name)))));
             if ('serviceWorker' in navigator) promessesNettoyage.push(navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(registrations.map(r => r.unregister()))));
             Promise.all(promessesNettoyage).finally(() => { localStorage.clear(); window.location.href = "login.html"; });
         });
+        
         function updateNetworkStatus() {
             const badge = document.getElementById('status-badge');
             if (navigator.onLine) {
                 badge.textContent = "🟢 En ligne"; badge.className = "network-status status-online";
                 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
                 .then(r => r.json()).then(d => { if(d.result === "success") localStorage.setItem('miroir_stock', JSON.stringify(d.data)); });
             } else {
                 badge.textContent = "🔴 Hors-ligne"; badge.className = "network-status status-offline";

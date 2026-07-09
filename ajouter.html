@@ -8,12 +8,15 @@
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        
+        /* Header avec flèche retour arrière intelligente */
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; transition: transform 0.2s; }
+        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
@@ -24,6 +27,15 @@
         input:focus, select:focus, textarea:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
         option { background-color: #1A2B56; color: white; }
         
+        /* Champ référence avec bouton scan intégré */
+        .input-with-btn { display: flex; gap: 10px; }
+        .btn-scan { background-color: #10B981; border: none; border-radius: 8px; padding: 0 15px; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-scan:active { background-color: #059669; transform: scale(0.9); }
+        
+        /* Conteneur caméra de secours */
+        #reader-container { display: none; margin-bottom: 10px; background: white; padding: 10px; border-radius: 12px; overflow: hidden; width: 100%; }
+        #reader { width: 100%; }
+
         .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; width: 100%; }
         .btn-primary:active { transform: scale(0.95); background-color: #2563EB; }
         .btn-primary:disabled { background-color: #9CA3AF; transform: scale(1); cursor: not-allowed; }
@@ -34,17 +46,23 @@
         .qr-preview img { width: 100%; height: 100%; }
         .hint { font-size: 0.8rem; color: #9CA3AF; margin-top: -3px; }
 
-        /* MODALE D'ALERTE */
+        /* Modale d'alerte custom */
         .alert-icon { font-size: 3.5rem; margin-bottom: 10px; }
         .alert-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
         .alert-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
         .btn-alert-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
-        .btn-alert-ok:active { transform: scale(0.95); background-color: #2563EB; }
+
+        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><a href="index.html" class="btn-retour">⬅</a><h1>Ajouter / Corriger</h1></div>
+        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Ajouter / Corriger</h1></div>
+
+        <div id="reader-container">
+            <div id="reader"></div>
+            <button type="button" class="btn-primary" onclick="arreterScanner()" style="background:#EF4444; margin-top:10px; padding:10px; font-size:0.9rem;">Fermer la caméra</button>
+        </div>
 
         <form id="form-ajouter" class="form-action">
             <div class="form-group">
@@ -52,8 +70,11 @@
                 <input type="text" id="nom" placeholder="Ex: Vase Ming" required>
             </div>
             <div class="form-group">
-                <label for="reference">Référence (Code unique)</label>
-                <input type="text" id="reference" placeholder="Se remplit automatiquement" required>
+                <label for="reference">Référence (QR ou Code-barres EAN)</label>
+                <div class="input-with-btn">
+                    <input type="text" id="reference" placeholder="Génération auto ou scan commercial" required>
+                    <button type="button" class="btn-scan" id="btn-ouvrir-scanner" title="Scanner un code existant">📷</button>
+                </div>
                 <div class="hint">Si la référence existe déjà, la fiche sera écrasée (correction).</div>
             </div>
             <div class="form-group">
@@ -62,7 +83,7 @@
             </div>
             <div class="form-group">
                 <label for="emplacement">Emplacement initial</label>
-                <input type="text" id="emplacement" placeholder="Ex: Réserve A" required>
+                <select id="emplacement" required><option value="">Chargement des zones...</option></select>
             </div>
             <div class="form-group">
                 <label for="note">Note / Commentaire (Optionnel)</label>
@@ -87,16 +108,20 @@
         <div class="modal-content">
             <div class="alert-icon" id="alert-icon">⚠️</div>
             <h3 class="alert-title" id="alert-title">Attention</h3>
-            <p class="alert-message" id="alert-message">Message d'erreur ici.</p>
+            <p class="alert-message" id="alert-message">Message d'erreur.</p>
             <button class="btn-alert-ok" id="btn-alert-ok">OK</button>
         </div>
     </div>
 
+    <div class="app-version" id="version-display"></div>
+
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
+        let html5QrcodeScanner;
 
-        // FONCTION POPUP CUSTOM
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9');
+
         function afficherAlerte(titre, message, isSuccess = false) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
             document.getElementById('alert-title').textContent = titre;
@@ -105,8 +130,22 @@
         }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
-        // CHARGEMENT ET TRI DES CATÉGORIES
+        // --- DÉMARRAGE DU SCANNER COMMERCIAL DE RÉFÉRENCE ---
+        document.getElementById('btn-ouvrir-scanner').addEventListener('click', function() {
+            document.getElementById('reader-container').style.display = 'block';
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 250, height: 250} }, false);
+            html5QrcodeScanner.render((text) => {
+                arreterScanner();
+                document.getElementById('reference').value = String(text).trim().toUpperCase();
+                isAutoRef = false; // Désactive la génération automatique puisque scanné
+            }, () => {});
+        });
+
+        function arreterScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); document.getElementById('reader-container').style.display = 'none'; }
+
+        // CHARGEMENT ALPHABÉTIQUE DES CATÉGORIES ET DES EMPLACEMENTS
         window.addEventListener('DOMContentLoaded', () => {
+            // 1. Catégories
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if (d.result === "success") {
@@ -120,6 +159,22 @@
                 cats.sort((a, b) => { if(a === "Non classé") return 1; if(b === "Non classé") return -1; return a.localeCompare(b); });
                 const catSelect = document.getElementById('categorie'); catSelect.innerHTML = "";
                 cats.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+            });
+
+            // 2. Emplacements Structurés
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", ...payloadBase }) })
+            .then(r => r.json()).then(d => {
+                if (d.result === "success") {
+                    d.data.sort((a, b) => a.localeCompare(b));
+                    const empSelect = document.getElementById('emplacement'); empSelect.innerHTML = '<option value="">-- Choisir une zone --</option>';
+                    d.data.forEach(e => empSelect.innerHTML += `<option value="${e}">${e}</option>`);
+                    localStorage.setItem('app_emplacements', JSON.stringify(d.data));
+                }
+            }).catch(() => {
+                let emps = JSON.parse(localStorage.getItem('app_emplacements') || '["Réserve A", "Réserve B"]');
+                emps.sort((a, b) => a.localeCompare(b));
+                const empSelect = document.getElementById('emplacement'); empSelect.innerHTML = '<option value="">-- Choisir une zone --</option>';
+                emps.forEach(e => empSelect.innerHTML += `<option value="${e}">${e}</option>`);
             });
         });
 
@@ -142,12 +197,12 @@
         document.getElementById('form-ajouter').addEventListener('submit', function(e) {
             e.preventDefault();
             const refSaisie = refInput.value.trim().toUpperCase();
-            if(!refSaisie) return afficherAlerte("Attention", "Veuillez saisir une référence valide.");
+            if(!refSaisie) return afficherAlerte("Attention", "Veuillez renseigner une référence.");
             const btn = document.getElementById('btn-valider');
             btn.textContent = "Enregistrement... ⏳"; btn.disabled = true;
 
             fetch(GOOGLE_SCRIPT_URL, { 
-                method: 'POST', body: JSON.stringify({ action: "ajouter", reference: refSaisie, nom: nomInput.value.trim(), categorie: document.getElementById('categorie').value, emplacement: document.getElementById('emplacement').value.trim(), note: document.getElementById('note').value.trim(), ...payloadBase }) 
+                method: 'POST', body: JSON.stringify({ action: "ajouter", reference: refSaisie, nom: nomInput.value.trim(), categorie: document.getElementById('categorie').value, emplacement: document.getElementById('emplacement').value, note: document.getElementById('note').value.trim(), ...payloadBase }) 
             })
             .then(res => res.json()).then(data => {
                 if(data.result === "success") {
@@ -165,20 +220,35 @@
             document.getElementById('btn-valider').disabled = false;
         });
 
+        // 🌟 1. CORRECTIF IMPRESSION ÉPURÉE : Uniquement logo icon-192.png et QR code
         document.getElementById('btn-imprimer').addEventListener('click', function() {
-            const imgUrl = document.getElementById('qr-image').src; const refImpression = refInput.value.trim().toUpperCase(); const nomImpression = nomInput.value.trim();
+            const imgUrl = document.getElementById('qr-image').src;
             const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
             const doc = iframe.contentWindow.document;
-            doc.write(`<html><head><title>Impression QR Code</title><style>body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; } h2 { margin: 0; font-size: 1.6rem; margin-bottom: 5px; } p { margin: 0; font-size: 1.2rem; font-weight: bold; color: #333; margin-bottom: 15px; } img { width: 200px; height: 200px; }</style></head><body><h2>${nomImpression}</h2><p>${refImpression}</p><img src="${imgUrl}" onload="window.print();" /></body></html>`);
+            doc.write(`
+                <html>
+                <head>
+                    <title>Impression QR Code</title>
+                    <style>
+                        body { text-align: center; font-family: Arial, sans-serif; margin-top: 30px; }
+                        img.logo { width: 60px; height: auto; margin-bottom: 10px; }
+                        div.container-qr { display: block; border: 1px solid #ccc; padding: 15px; width: 180px; margin: 0 auto; border-radius: 8px; }
+                        img.qr { width: 150px; height: 150px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container-qr">
+                        <img class="logo" src="icon-192.png" alt="App Logo" /><br>
+                        <img class="qr" src="${imgUrl}" onload="window.print();" />
+                    </div>
+                </body>
+                </html>
+            `);
             doc.close(); setTimeout(() => { document.body.removeChild(iframe); }, 3000);
         });
     </script>
     <script>
-        let timeoutId;
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
-            else { clearTimeout(timeoutId); }
-        });
+        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
     </script>
 </body>
 </html>
