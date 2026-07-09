@@ -12,7 +12,7 @@
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; }
+        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; padding-top: 10px; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; width: 100%; position: absolute; top: 0; left: 0; }
         .btn-circle { width: 45px; height: 45px; background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; text-decoration: none; color: #FFFFFF; transition: transform 0.2s, background-color 0.2s; z-index: 10; }
@@ -33,8 +33,11 @@
         .btn-audit { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.3)); border-color: rgba(52, 211, 153, 0.4); }
         .admin-divider { grid-column: span 2; text-align: center; font-size: 0.75rem; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
         .admin-divider::before, .admin-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
-        .btn-logout { background-color: transparent; border: 1px solid rgba(248, 113, 113, 0.5); color: #FCA5A5; margin-top: 15px; cursor: pointer; grid-column: span 2; padding: 15px; font-weight: bold; border-radius: 14px; font-size: 1rem; transition: all 0.2s; }
+        .btn-logout { background-color: transparent; border: 1px solid rgba(248, 113, 113, 0.5); color: #FCA5A5; margin-top: 15px; margin-bottom: 20px; cursor: pointer; grid-column: span 2; padding: 15px; font-weight: bold; border-radius: 14px; font-size: 1rem; transition: all 0.2s; }
         .btn-logout:active { background-color: rgba(248, 113, 113, 0.15); transform: scale(0.95); }
+        
+        /* 🌟 NOUVEAU : AFFICHAGE DE LA VERSION */
+        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -50,11 +53,11 @@
         </div>
         <nav class="menu-grid">
             <a href="scanner.html" class="btn-grid btn-wide btn-highlight"><span class="btn-icon">🔍</span> Rechercher & Scanner</a>
-            <a href="ajouter.html" class="btn-grid"><span class="btn-icon">➕</span> Ajouter</a>
+            <a href="ajouter.html" class="btn-grid"><span class="btn-icon">➕</span> Ajouter / Corriger</a>
             <a href="inventaire.html" class="btn-grid"><span class="btn-icon">📋</span> Inventaire</a>
             <a href="deplacer.html" class="btn-grid"><span class="btn-icon">🔄</span> Déplacer</a>
             <a href="sortir.html" class="btn-grid"><span class="btn-icon">📤</span> Sortir</a>
-            <a href="audit.html" class="btn-grid btn-wide btn-audit"><span class="btn-icon">📦</span> Audit de Zone</a>
+            <a href="audit.html" class="btn-grid btn-wide btn-audit"><span class="btn-icon">📦</span> Faire un Audit</a>
 
             <div id="admin-divider" class="admin-divider" style="display: none;">Espace Administrateur</div>
             <a href="admin.html" class="btn-grid" id="menu-admin" style="display: none; background-color: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);"><span class="btn-icon">⚙️</span> Administration</a>
@@ -62,6 +65,8 @@
             <button id="btn-logout" class="btn-logout">🔓 Déconnexion</button>
         </nav>
     </div>
+
+    <div class="app-version">Version 0.8</div>
 
     <script>
         if (localStorage.getItem('app_role') === 'admin') {
@@ -92,7 +97,6 @@
             window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
         }
     </script>
-    
     <script>
         let timeoutId;
         document.addEventListener("visibilitychange", function() {

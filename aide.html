@@ -38,7 +38,6 @@
             💡 <b>Astuce :</b> Cliquez sur le petit logo à droite d'une référence pour la copier instantanément !
         </p>
 
-        <!-- 1. Recherche : Le plus fréquent -->
         <details open>
             <summary>🔍 Rechercher et Scanner</summary>
             <p>Ouvrez la fiche complète d'un objet en flashant son QR Code ou en tapant une partie de son nom/référence.</p>
@@ -50,7 +49,6 @@
             </ul>
         </details>
 
-        <!-- 2. Ajout : Très fréquent -->
         <details>
             <summary>➕ Ajouter / Corriger un objet</summary>
             <p>Ce module permet d'enregistrer de nouveaux objets dans l'inventaire.</p>
@@ -63,7 +61,6 @@
             </ul>
         </details>
 
-        <!-- 3. Déplacer -->
         <details>
             <summary>🔄 Déplacer un article</summary>
             <p>Pour modifier l'emplacement d'un objet existant.</p>
@@ -73,7 +70,6 @@
             </ul>
         </details>
 
-        <!-- 4. Sortir -->
         <details>
             <summary>📤 Sortir un article</summary>
             <p>Pour archiver un objet qui quitte le stock (Vente, Restauration, Destruction...).</p>
@@ -82,7 +78,6 @@
             </ul>
         </details>
 
-        <!-- 5. Inventaire -->
         <details>
             <summary>📋 Inventaire et Historique</summary>
             <p>Consultez la base de données complète, triée <span class="highlight">par défaut du plus récent au plus ancien</span>.</p>
@@ -94,7 +89,6 @@
             </ul>
         </details>
 
-        <!-- 6. Rafale -->
         <details>
             <summary>🚀 Le Mode Rafale (Scan multiple)</summary>
             <p>Disponible dans la zone "Rechercher et Scanner", ce mode permet de traiter des lots d'objets.</p>
@@ -104,31 +98,29 @@
             </ul>
         </details>
 
-        <!-- 7. Audit -->
         <details>
             <summary>📦 Faire un Audit</summary>
-            <p>Outil de pointage puissant pour vérifier qu'aucun objet ne manque. Synchronisé en temps réel avec la base de données.</p>
+            <p>Outil de pointage puissant pour vérifier votre stock. Synchronisé en temps réel avec la base de données.</p>
             <ul>
-                <li><b>Audit de zone :</b> Spécifiez le nom d'une réserve et scannez ce qui s'y trouve.</li>
-                <li><b>Audit Total :</b> Scannez tous les objets de l'entreprise sans vous soucier des pièces.</li>
-                <li><b>Le Rapport :</b> L'application calcule ce qui est validé (🟢), ce qu'il manque par rapport à la base (🔴), et les objets inconnus ou mal rangés (🟡).</li>
-                <li>🖨️ Vous pouvez <b>Imprimer le rapport d'anomalies</b> à la fin pour le traiter plus tard.</li>
+                <li><b>Audit de zone :</b> Spécifiez une réserve et scannez ce qui s'y trouve.</li>
+                <li><b>Audit Total :</b> Scannez tous les objets de l'entreprise sans distinction de pièces.</li>
+                <li>🛠️ <b>Outils d'audit :</b> Si un QR est illisible, utilisez la <b>Saisie Manuelle</b>. Vous pouvez aussi <b>Mettre en pause</b> votre audit pour le reprendre plus tard, ou utiliser la <b>Fusion Collaborative</b> pour assembler vos scans avec ceux d'un collègue.</li>
+                <li><b>Le Rapport :</b> L'application calcule les objets confirmés (🟢), manquants (🔴), et inconnus ou mal rangés (🟡).</li>
+                <li>🖨️ Vous pouvez <b>Imprimer le rapport détaillé</b> à la fin de l'audit pour conserver une trace des anomalies et des présences.</li>
             </ul>
         </details>
 
-        <!-- 8. Admin -->
         <details>
             <summary>⚙️ L'Administration (Réservé Admin)</summary>
             <p>Espace de gestion réservé aux responsables de l'application :</p>
             <ul>
                 <li>🏷️ <b>Gérer les catégories :</b> Ajoutez de nouvelles catégories ou supprimez-en avec la croix rouge.</li>
-                <li>📥 <b>Import de fichier CSV :</b> Chargez un fichier pour importer jusqu'à 500 objets. L'outil est <span class="highlight">intelligent</span> : si une référence du fichier existe déjà dans l'application, elle sera simplement mise à jour au lieu d'être créée en double (Upsert).</li>
-                <li>📤 <b>Export CSV :</b> Téléchargez l'inventaire formaté en 11 colonnes, structuré exactement comme la base de données Google.</li>
+                <li>📥 <b>Import de fichier CSV :</b> Chargez un fichier pour importer jusqu'à 500 objets. L'outil est <span class="highlight">intelligent</span> : si une référence du fichier existe déjà dans l'application, elle sera mise à jour au lieu d'être créée en double.</li>
+                <li>📤 <b>Export CSV :</b> Téléchargez l'inventaire formaté en 11 colonnes, structuré exactement comme la base de données.</li>
                 <li>👥 <b>L'équipe :</b> Créez de nouveaux accès, modifiez les mots de passe, ou supprimez définitivement des comptes.</li>
             </ul>
         </details>
 
-        <!-- 9. Profil -->
         <details>
             <summary>👤 Mon Profil & Sécurité</summary>
             <p>Accessible via l'icône Profil sur la page d'accueil :</p>
@@ -140,7 +132,6 @@
         </details>
     </div>
     
-    <!-- 🔒 SÉCURITÉ : DÉCONNEXION APRÈS 30s EN ARRIÈRE-PLAN -->
     <script>
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
