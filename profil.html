@@ -31,10 +31,12 @@
         input { background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
         input:focus { border-color: #60A5FA; }
 
-        .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; }
+        .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary:active { transform: scale(0.95); background-color: #2563EB; }
-        .btn-danger { background-color: transparent; border: 1px solid #EF4444; color: #FCA5A5; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; }
+        .btn-danger { background-color: transparent; border: 1px solid #EF4444; color: #FCA5A5; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-danger:active { background-color: rgba(239,68,68,0.1); transform: scale(0.95); }
+        .btn-success { background-color: #10B981; border: none; color: #FFFFFF; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-success:active { transform: scale(0.95); background-color: #059669; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
@@ -56,6 +58,12 @@
             <div class="profile-role" id="display-role">...</div>
         </div>
 
+        <div class="section-box" id="install-section" style="display: none; border-color: rgba(16, 185, 129, 0.3);">
+            <div class="section-title" style="color: #10B981; border-color: rgba(16, 185, 129, 0.2);">📱 Application Mobile</div>
+            <p style="font-size: 0.85rem; color: #D1D5DB; margin-bottom: 5px;">Installez cette application sur votre écran d'accueil pour un accès rapide en un clic et un meilleur confort d'utilisation.</p>
+            <button id="btn-install-app" class="btn-success">⬇️ Installer sur mon appareil</button>
+        </div>
+
         <form id="form-mdp" class="section-box">
             <div class="section-title">🔒 Modifier mon mot de passe</div>
             <div class="form-group">
@@ -66,7 +74,7 @@
                 <label>Nouveau mot de passe</label>
                 <input type="password" id="nouveau-mdp" required>
             </div>
-            <button type="submit" class="btn-primary" style="margin-top:5px;">Enregistrer</button>
+            <button type="submit" class="btn-primary" style="margin-top:5px;">💾 Enregistrer</button>
         </form>
 
         <div class="section-box">
@@ -98,6 +106,41 @@
             document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version');
         }
 
+        // 🌟 GESTION DE L'INSTALLATION (PWA Add To Home Screen)
+        let deferredPrompt;
+        const installSection = document.getElementById('install-section');
+        const installBtn = document.getElementById('btn-install-app');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Empêche la mini-barre d'information d'apparaître automatiquement sur mobile
+            e.preventDefault();
+            // Sauvegarde l'événement pour pouvoir le déclencher plus tard via notre bouton
+            deferredPrompt = e;
+            // Affiche notre encart d'installation
+            installSection.style.display = 'flex';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Affiche l'invite d'installation native du système
+                deferredPrompt.prompt();
+                // Attend que l'utilisateur réponde à l'invite
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installSection.style.display = 'none';
+                }
+                // L'invite ne peut être utilisée qu'une seule fois
+                deferredPrompt = null;
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            // Masque la section une fois l'application installée avec succès
+            installSection.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // 🌟 FONCTIONS DU PROFIL (Mot de passe et Cache)
         function afficherAlerte(titre, message, isSuccess = true, callback = null) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
             document.getElementById('alert-title').textContent = titre;
@@ -116,8 +159,8 @@
                 method: 'POST', body: JSON.stringify({ action: "changer_mdp", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), ancienPassword: document.getElementById('ancien-mdp').value, nouveauPassword: document.getElementById('nouveau-mdp').value }) 
             }).then(res => res.json()).then(data => {
                 if(data.result === "success") { afficherAlerte("Succès", "Mot de passe modifié. Veuillez vous reconnecter.", true, () => { localStorage.clear(); window.location.href = 'login.html'; }); } 
-                else { afficherAlerte("Erreur", data.message, false); btn.disabled = false; btn.textContent = "Enregistrer"; }
-            }).catch(() => { afficherAlerte("Erreur", "Problème réseau.", false); btn.disabled = false; btn.textContent = "Enregistrer"; });
+                else { afficherAlerte("Erreur", data.message, false); btn.disabled = false; btn.textContent = "💾 Enregistrer"; }
+            }).catch(() => { afficherAlerte("Erreur", "Problème réseau.", false); btn.disabled = false; btn.textContent = "💾 Enregistrer"; });
         });
 
         document.getElementById('btn-vider-cache').addEventListener('click', function() {
