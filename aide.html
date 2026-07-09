@@ -3,117 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Centre d'aide</title>
+    <title>Centre d'Aide</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
-        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-green: #10B981;
+            --accent-orange: #F59E0B;
+            --accent-purple: #8B5CF6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
+        
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.4rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
+
+        .glass-card { 
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; 
+            display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); 
+        }
+
+        .help-title { font-size: 1.1rem; color: #60A5FA; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; }
+        .help-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+        .help-text strong { color: var(--text-main); }
         
-        details { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; margin-bottom: 5px; transition: all 0.3s ease; display: none; /* Masqué par défaut, affiché via JS selon le rôle */ }
-        summary { font-size: 1.1rem; font-weight: bold; color: #FFFFFF; cursor: pointer; list-style: none; display: flex; align-items: center; outline: none; }
-        summary::-webkit-details-marker { display: none; }
-        details[open] summary { margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 12px; color: #60A5FA; }
-        details p { font-size: 0.95rem; color: #D1D5DB; line-height: 1.5; margin-bottom: 10px; }
-        details ul { padding-left: 20px; color: #D1D5DB; font-size: 0.95rem; line-height: 1.5; }
-        details li { margin-bottom: 8px; }
-        .tag { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #93C5FD; }
-        
-        .app-version { position: fixed; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        .badge-new { background: var(--accent-green); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-left: auto; }
+
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Mode d'emploi</h1></div>
-        
-        <details class="role-all" open>
-            <summary>🔍 Recherche et Inventaire</summary>
-            <p>Ce module vous permet de localiser rapidement un objet et de consulter sa fiche.</p>
-            <ul>
-                <li><b>Scanner un code :</b> Utilisez l'appareil photo pour scanner un QR code généré par l'application ou un code-barres commercial standard.</li>
-                <li><b>Recherche textuelle :</b> Tapez le nom, la catégorie ou la référence d'un objet.</li>
-                <li><b>Historique :</b> Sur la fiche d'un objet, cliquez sur "Historique des mouvements" pour voir le journal détaillé des actions liées à cet article.</li>
-            </ul>
-        </details>
+        <div class="header">
+            <button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button>
+            <h1>Guide & Nouveautés</h1>
+        </div>
 
-        <details class="role-write">
-            <summary>➕ Ajouter ou Corriger un objet</summary>
-            <p>Utilisez ce module pour faire entrer un nouvel objet dans le stock ou corriger une erreur.</p>
-            <ul>
-                <li><b>Création rapide :</b> Tapez un nom long (plus de 3 lettres), et une référence unique sera générée automatiquement.</li>
-                <li><b>Associer un code existant :</b> Cliquez sur l'icône 📷 pour scanner le code-barres original du produit (EAN) et le lier à la fiche.</li>
-                <li><b>Correction :</b> Si vous avez fait une erreur en ajoutant un objet, modifiez les champs et cliquez à nouveau sur "Mettre à jour la fiche".</li>
-                <li><b>Impression :</b> Une fois validé, vous pouvez imprimer une étiquette propre contenant le QR code.</li>
-            </ul>
-        </details>
+        <p style="text-align:center; font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">
+            Bienvenue sur le centre d'aide de la <strong>Version 0.2.1</strong>. Découvrez comment utiliser les nouvelles fonctionnalités de l'application.
+        </p>
 
-        <details class="role-write">
-            <summary>🔄 Déplacer et 📤 Sortir</summary>
-            <p>Ces modules permettent de tracer les flux de la marchandise.</p>
-            <ul>
-                <li><b>Déplacement individuel :</b> Scannez un objet et sélectionnez sa nouvelle zone dans le menu déroulant.</li>
-                <li><b>Mode Rafale 🚀 :</b> Dans le module de Scan, basculez en "Mode Rafale". Scannez plusieurs objets à la suite pour les déplacer ou les sortir simultanément. <i>(Une alerte se déclenchera si vous scannez un objet déjà sorti).</i></li>
-                <li><b>Archivage (Sortie) :</b> Un motif est obligatoire (Vendu, Détruit, etc.). L'objet disparaîtra du stock actif mais restera conservé dans l'historique global de la base.</li>
-            </ul>
-        </details>
+        <!-- 1. Mode Hors-Ligne -->
+        <div class="glass-card">
+            <div class="help-title">📡 Mode Hors-Ligne Intelligent <span class="badge-new">Nouveau</span></div>
+            <div class="help-text">
+                Vous n'avez plus besoin d'une connexion internet permanente pour travailler en réserve !<br><br>
+                Si vous perdez le réseau (Wi-Fi ou 4G), un <strong>badge rouge</strong> apparaîtra en haut de l'écran. Vous pouvez continuer à <strong>déplacer</strong> et <strong>sortir</strong> des objets normalement. L'application mémorisera vos actions silencieusement et les enverra au serveur Google dès que vous retrouverez une connexion.
+            </div>
+        </div>
 
-        <details class="role-write">
-            <summary>📦 Lots, Kits et Audits</summary>
-            <ul>
-                <li><b>Assembler des Kits :</b> Sur la fiche descriptive d'un objet (Parent), ouvrez la section "Mode Lot" pour y associer d'autres sous-références.</li>
-                <li><b>Faire un Audit :</b> Choisissez une zone spécifique. Le système calculera les objets attendus. Scannez tout ce que vous voyez. Le rapport final (imprimable) croisera vos scans avec la base pour lister les manquants et les anomalies (ex: un objet prévu ailleurs).</li>
-            </ul>
-        </details>
+        <!-- 2. Lecture Rapide -->
+        <div class="glass-card">
+            <div class="help-title">⚡ Lecture Rapide (Double-Tap) <span class="badge-new">Nouveau</span></div>
+            <div class="help-text">
+                Dans l'onglet <strong>Inventaire</strong>, gagnez du temps pour vérifier une référence :<br><br>
+                <strong>Touchez 2 fois très rapidement</strong> (Double-Tap) une ligne d'objet. Une fenêtre instantanée s'ouvrira avec la référence en grand format et son QR Code prêt à être scanné par un collègue. Un appui simple ouvre la fiche descriptive complète habituelle.
+            </div>
+        </div>
 
-        <details class="role-admin">
-            <summary>⚙️ Administration du système</summary>
-            <p>Outils exclusifs au rôle Administrateur.</p>
-            <ul>
-                <li><b>Tableau de bord :</b> Suivez les statistiques, les alertes d'anomalies, les objets dormants (+6 mois) et l'activité de l'équipe du jour.</li>
-                <li><b>Structure (Zones/Catégories) :</b> Ajoutez ou supprimez les emplacements officiels pour éviter les fautes de frappe sur le terrain.</li>
-                <li><b>Import/Export CSV :</b> Téléchargez la sauvegarde complète ou importez un tableau Excel. Le système est intelligent : si une référence existe déjà, il mettra à jour sa fiche sans créer de doublon.</li>
-                <li><b>Équipe :</b> Gérez les mots de passe et les droits (Admin, Standard, ou Lecteur).</li>
-                <li><b>Diagnostics :</b> Vérifiez l'état de la connexion avec le serveur Google et de la caméra de l'appareil.</li>
-                <li><b>Historique Global :</b> Accessible via l'icône 🕒 dans l'inventaire, permet de voir l'intégralité du registre et de le filtrer (Par action, date, utilisateur...).</li>
-            </ul>
-        </details>
+        <!-- 3. Galerie Photos -->
+        <div class="glass-card">
+            <div class="help-title">📸 Galerie Photos HD <span class="badge-new">Nouveau</span></div>
+            <div class="help-text">
+                Lors de l'<strong>Ajout</strong> d'un nouvel objet, vous pouvez désormais prouver son état visuel.<br><br>
+                Touchez la zone <em>"Galerie d'État"</em> pour prendre ou sélectionner jusqu'à <strong>3 photos Haute Définition</strong> (usure, détails, boîte). Elles seront sauvegardées de façon sécurisée avec la fiche de l'objet.
+            </div>
+        </div>
+
+        <!-- 4. Filtres Croisés -->
+        <div class="glass-card">
+            <div class="help-title">🔍 Filtres Multicritères <span class="badge-new">Nouveau</span></div>
+            <div class="help-text">
+                Trouvez vos articles plus vite dans l'<strong>Inventaire</strong>.<br><br>
+                Sous la barre de recherche, utilisez les menus déroulants pour croiser vos recherches. Vous pouvez par exemple chercher <em>"Vase"</em> UNIQUEMENT dans la catégorie <em>"Céramique"</em> ET dans la zone <em>"Réserve A"</em>.
+            </div>
+        </div>
+
+        <!-- 5. Historique Personnel -->
+        <div class="glass-card">
+            <div class="help-title">🕒 Mes Actions du Jour <span class="badge-new">Nouveau</span></div>
+            <div class="help-text">
+                Un doute sur ce que vous avez fait ce matin ?<br><br>
+                Rendez-vous dans <strong>Mon Profil</strong>. Une nouvelle section affiche la liste chronologique exacte de toutes les actions (ajouts, déplacements, sorties, audits) que <strong>vous</strong> avez réalisées aujourd'hui.
+            </div>
+        </div>
+
+        <!-- 6. Retours Haptiques & Silence -->
+        <div class="glass-card">
+            <div class="help-title">📳 Retours Haptiques (Silence) <span class="badge-new">Nouveau</span></div>
+            <div class="help-text">
+                L'application a été rendue silencieuse pour un meilleur confort de travail. Les "bips" constants ont été remplacés par de <strong>légères vibrations physiques</strong> (retours haptiques) qui confirment vos actions.<br><br>
+                <strong>Seule exception :</strong> un buzzer sonore fort se déclenchera si vous scannez un objet qui est déclaré comme "SORTI" ou "ARCHIVÉ", pour vous alerter immédiatement de l'anomalie sans regarder l'écran.
+            </div>
+        </div>
+
+        <!-- Rappel : Création de Lots -->
+        <div class="glass-card" style="border-color: rgba(96, 165, 250, 0.3);">
+            <div class="help-title" style="color: var(--text-main);">📦 Rappel : Créer un Lot / Kit</div>
+            <div class="help-text">
+                Pour associer plusieurs objets ensemble (ex: un clavier avec un ordinateur) :<br>
+                1. Scannez l'objet "Parent" principal.<br>
+                2. Dans sa fiche, cliquez sur <strong>Assembler des objets</strong>.<br>
+                3. Scannez les codes-barres des objets "Enfants".<br>
+                4. Validez. La composition du lot sera enregistrée dans les notes de l'objet parent.
+            </div>
+        </div>
+
+        <!-- Rappel : Réintégration -->
+        <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.3); margin-bottom: 20px;">
+            <div class="help-title" style="color: var(--text-main);">↩️ Rappel : Réintégration</div>
+            <div class="help-text">
+                Si vous scannez un objet préalablement "Sorti" ou "Archivé", le système vous proposera automatiquement un bouton vert <strong>Réintégrer l'objet en stock</strong> pour annuler sa sortie et le replacer dans une zone active.
+            </div>
+        </div>
+
     </div>
 
     <div class="app-version" id="version-display"></div>
 
     <script>
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
-        
-        // GESTION DYNAMIQUE DE L'AFFICHAGE SELON LE RÔLE
-        window.addEventListener('DOMContentLoaded', () => {
-            const role = localStorage.getItem('app_role') || 'lecteur'; // Sécurité : lecteur par défaut
-            
-            // Tout le monde voit .role-all (déjà géré par le display par défaut de detail)
-            document.querySelectorAll('.role-all').forEach(el => el.style.display = 'block');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
 
-            // Standards et Admins voient l'écriture
-            if (role === 'standard' || role === 'admin') {
-                document.querySelectorAll('.role-write').forEach(el => el.style.display = 'block');
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) {
+                navigator.vibrate(40);
             }
-
-            // Seulement les Admins voient l'administration
-            if (role === 'admin') {
-                document.querySelectorAll('.role-admin').forEach(el => el.style.display = 'block');
-            }
-        });
-
-        let timeoutId;
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 
-            else { clearTimeout(timeoutId); }
-        });
+        };
     </script>
 </body>
 </html>

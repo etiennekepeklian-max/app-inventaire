@@ -5,144 +5,205 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Audit de Zone / Total</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-blue-hover: #2563EB;
+            --accent-green: #10B981;
+            --accent-orange: #F59E0B;
+            --accent-purple: #8B5CF6;
+            --accent-red: #EF4444;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.4rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
 
-        .zone-card { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 10px; }
-        input, select { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; margin-bottom: 5px; }
-        option { background-color: #1A2B56; color: white; }
-        .btn { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; width: 100%; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; display: flex; justify-content: center; align-items: center; gap: 8px;}
-        .btn:active { transform: scale(0.95); }
+        .glass-card { 
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; 
+            display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
 
-        .progress-container { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .progress-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; color: #60A5FA; }
-        .progress-bar-bg { width: 100%; background: rgba(255,255,255,0.1); border-radius: 6px; height: 10px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: #10B981; width: 0%; transition: width 0.3s ease; }
+        input, select { 
+            background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); 
+            border-radius: 10px; padding: 14px; color: var(--text-main); font-size: 1rem; width: 100%; 
+            outline: none; margin-bottom: 5px; transition: border-color 0.2s; 
+        }
+        input:focus, select:focus { border-color: #60A5FA; background-color: rgba(0,0,0,0.3); }
+        option { background-color: #1E293B; color: white; }
+
+        .btn { 
+            border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; 
+            width: 100%; cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            font-size: 1.05rem; display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn:active { transform: scale(0.96); }
+
+        .progress-container { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 14px; border: 1px solid var(--glass-border); }
+        .progress-header { display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: bold; margin-bottom: 10px; color: #60A5FA; }
+        .progress-bar-bg { width: 100%; background: rgba(255,255,255,0.05); border-radius: 8px; height: 12px; overflow: hidden; border: 1px solid var(--glass-border); }
+        .progress-bar-fill { height: 100%; background: var(--accent-green); width: 0%; transition: width 0.3s ease; box-shadow: 0 0 10px var(--accent-green); }
 
         .tabs-nav { display: flex; gap: 10px; margin-top: 5px; margin-bottom: 10px; }
-        .tab-btn { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #D1D5DB; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .tab-btn.active { background: #3B82F6; color: white; border-color: #60A5FA; }
+        .tab-btn { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { background: var(--accent-blue); color: white; border-color: rgba(96, 165, 250, 0.5); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
 
-        #scanner-box { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; }
-        #reader { width: 100%; border-radius: 8px; overflow: hidden; }
+        #scanner-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 16px; border: 1px solid var(--glass-border); }
+        #reader { width: 100%; border-radius: 12px; overflow: hidden; }
 
-        #bloc-rafale-liste { display: flex; flex-direction: column; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 12px; margin-top: 15px; }
-        .rafale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .rafale-count { background: #3B82F6; color: white; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        #bloc-rafale-liste { display: flex; flex-direction: column; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 14px; margin-top: 15px; border: 1px solid var(--glass-border); }
+        .rafale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; }
+        .rafale-count { background: var(--accent-blue); color: white; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
         .rafale-items { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .rafale-item { background: rgba(255, 255, 255, 0.05); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; color: #93C5FD; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .rafale-item { background: rgba(255, 255, 255, 0.05); padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; color: #93C5FD; font-family: monospace; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.02); }
 
-        .report-section { display: none; flex-direction: column; gap: 12px; }
-        .badge-count { padding: 15px; border-radius: 10px; font-weight: bold; display: flex; flex-direction: column; gap: 5px; }
-        .bg-found { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981; }
-        .bg-missing { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid #EF4444; }
-        .bg-wrong { background: rgba(245, 158, 11, 0.2); color: #FDE047; border: 1px solid #F59E0B; }
-        .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: #D1D5DB; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; line-height: 1.4; }
+        .report-section { display: none; flex-direction: column; gap: 15px; }
+        .badge-count { padding: 16px; border-radius: 14px; font-weight: bold; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .bg-found { background: rgba(16, 185, 129, 0.1); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .bg-missing { background: rgba(239, 68, 68, 0.1); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .bg-wrong { background: rgba(245, 158, 11, 0.1); color: #FDE047; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .item-list { max-height: 120px; overflow-y: auto; font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; line-height: 1.5; font-weight: normal; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; margin-top: 15px; }
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column;}
+        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; font-weight: 800; }
+        .modal-message { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-modal-ok { background: var(--accent-blue); border: none; color: #FFFFFF; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; margin-top: 15px; }
         
         .modal-buttons { display: flex; gap: 15px; margin-top: 15px;}
-        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
-        .btn-confirm-danger { background: #10B981; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: transparent; border: 1px solid var(--glass-border); color: #FFFFFF; padding: 12px; border-radius: 10px; flex: 1; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-cancel:active { background: var(--glass-highlight); }
+        .btn-confirm-danger { background: var(--accent-green); border: none; color: #FFFFFF; padding: 12px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-confirm-danger:active { transform: scale(0.95); }
 
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; text-decoration: none; color: var(--text-main); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
+        .btn-global-help:active { transform: scale(0.85); background: var(--glass-highlight); }
+
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Faire un Audit</h1></div>
+        <div class="header"><button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button><h1>Faire un Audit</h1></div>
         
-        <div class="zone-card" id="step-choix">
+        <div class="glass-card" id="step-choix">
             <h2 style="font-size: 1.1rem; color: #60A5FA; margin-bottom: 10px; text-align: center;">Type d'audit à réaliser</h2>
-            <button class="btn" id="btn-choix-zone" style="background: #3B82F6;">📍 Audit d'une zone précise</button>
-            <button class="btn" id="btn-choix-total" style="background: #8B5CF6;">🌍 Audit Total de l'inventaire</button>
+            <button class="btn" id="btn-choix-zone" style="background: var(--accent-blue);" onclick="triggerHaptic()">📍 Audit d'une zone précise</button>
+            <button class="btn" id="btn-choix-total" style="background: var(--accent-purple);" onclick="triggerHaptic()">🌍 Audit Total de l'inventaire</button>
         </div>
 
-        <div class="zone-card" id="step-zone-input" style="display: none;">
-            <p style="font-size: 0.95rem; color: #D1D5DB;">Sélectionnez l'emplacement exact à auditer :</p>
+        <div class="glass-card" id="step-zone-input" style="display: none;">
+            <p style="font-size: 0.95rem; color: var(--text-muted);">Sélectionnez l'emplacement exact à auditer :</p>
             <select id="input-zone" required>
                 <option value="">Chargement des zones...</option>
             </select>
-            <button class="btn" id="btn-demarrer-audit">📋 Démarrer le pointage</button>
-            <button class="btn" id="btn-retour-choix" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Annuler</button>
+            <button class="btn" id="btn-demarrer-audit" style="background: var(--accent-blue);" onclick="triggerHaptic()">📋 Démarrer le pointage</button>
+            <button class="btn" id="btn-retour-choix" style="background: transparent; border: 1px solid var(--glass-border); margin-top: 5px; box-shadow:none;" onclick="triggerHaptic()">Annuler</button>
         </div>
 
         <div id="audit-ui" style="display: none; flex-direction: column; width: 100%;">
             <div class="progress-container">
-                <div class="progress-header"><span id="prog-title">Audit en cours</span><span id="prog-text">0 / 0 attendus</span></div>
+                <div class="progress-header"><span id="prog-title">Audit en cours</span><span id="prog-text" style="color:white;">0 / 0 attendus</span></div>
                 <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill"></div></div>
             </div>
 
             <div class="tabs-nav">
-                <button class="tab-btn active" id="tab-scan-btn">📷 Scanner</button>
-                <button class="tab-btn" id="tab-outils-btn">🛠️ Outils</button>
+                <button class="tab-btn active" id="tab-scan-btn" onclick="triggerHaptic()">📷 Scanner</button>
+                <button class="tab-btn" id="tab-outils-btn" onclick="triggerHaptic()">🛠️ Outils</button>
             </div>
 
             <div id="tab-scan-content" style="display: flex; flex-direction: column; gap: 10px;">
                 <div id="scanner-box"><div id="reader"></div></div>
                 <div id="bloc-rafale-liste">
-                    <div class="rafale-header"><span>Derniers scans :</span><span class="rafale-count" id="rafale-count">0</span></div>
+                    <div class="rafale-header"><span style="color:var(--text-muted); font-weight:bold;">Derniers scans :</span><span class="rafale-count" id="rafale-count">0</span></div>
                     <div class="rafale-items" id="rafale-items"></div>
                 </div>
             </div>
 
             <div id="tab-outils-content" style="display: none; flex-direction: column; gap: 15px;">
-                <div class="zone-card">
+                <div class="glass-card">
                     <h3 style="font-size: 1rem; color: #60A5FA;">⌨️ Saisie Manuelle (Étiquette endommagée)</h3>
                     <input type="text" id="manual-ref-input" placeholder="Taper la référence exacte...">
-                    <button class="btn" id="btn-manual-add">Ajouter au pointage</button>
+                    <button class="btn" id="btn-manual-add" style="background: var(--accent-blue);" onclick="triggerHaptic()">Ajouter au pointage</button>
                 </div>
-                <div class="zone-card">
+                <div class="glass-card">
                     <h3 style="font-size: 1rem; color: #60A5FA;">🤝 Fusion Collaborative</h3>
-                    <button class="btn" id="btn-export-session" style="background: #8B5CF6; margin-bottom: 5px;">📤 Exporter mes scans (Copier)</button>
-                    <button class="btn" id="btn-import-session" style="background: #8B5CF6;">📥 Importer des scans (Coller)</button>
+                    <button class="btn" id="btn-export-session" style="background: var(--accent-purple); margin-bottom: 5px;" onclick="triggerHaptic()">📤 Exporter mes scans (Copier)</button>
+                    <button class="btn" id="btn-import-session" style="background: var(--accent-purple);" onclick="triggerHaptic()">📥 Importer des scans (Coller)</button>
                 </div>
-                <div class="zone-card">
-                    <h3 style="font-size: 1rem; color: #F59E0B;">⏸️ Pause & Sauvegarde</h3>
-                    <button class="btn" id="btn-pause-audit" style="background: #F59E0B;">Sauvegarder et suspendre</button>
+                <div class="glass-card" style="border-color: rgba(245, 158, 11, 0.3);">
+                    <h3 style="font-size: 1rem; color: var(--accent-orange);">⏸️ Pause & Sauvegarde</h3>
+                    <button class="btn" id="btn-pause-audit" style="background: var(--accent-orange);" onclick="triggerHaptic()">Sauvegarder et suspendre</button>
                 </div>
             </div>
 
-            <button class="btn" id="btn-cloturer-audit" style="margin-top: 15px; background: #10B981;">📊 Terminer et générer le rapport</button>
+            <button class="btn" id="btn-cloturer-audit" style="margin-top: 15px; background: var(--accent-green);" onclick="triggerHaptic()">📊 Terminer et générer le rapport</button>
         </div>
 
         <div class="report-section" id="bloc-rapport">
-            <h2 style="font-size: 1.2rem; color: #60A5FA;" id="titre-rapport">Résultat de l'Audit</h2>
+            <h2 style="font-size: 1.3rem; color: #60A5FA; text-transform:uppercase; font-weight:800; text-align:center;" id="titre-rapport">Résultat de l'Audit</h2>
             
             <div class="badge-count bg-found">
-                <div>🟢 Objets Confirmés sur place : <span id="count-trouve" style="float:right;">0</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🟢 Objets Confirmés :</span>
+                    <span id="count-trouve" style="background:rgba(16, 185, 129, 0.2); padding:4px 10px; border-radius:20px;">0</span>
+                </div>
                 <div class="item-list" id="list-trouves"></div>
             </div>
             <div class="badge-count bg-missing">
-                <div id="label-manquants">🔴 Objets Manquants (Alertes) : <span id="count-manquant" style="float:right;">0</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="label-manquants">🔴 Objets Manquants :</span>
+                    <span id="count-manquant" style="background:rgba(239, 68, 68, 0.2); padding:4px 10px; border-radius:20px;">0</span>
+                </div>
                 <div class="item-list" id="list-manquants"></div>
             </div>
             <div class="badge-count bg-wrong">
-                <div id="label-egares">🟡 Objets Égarés / Anomalies : <span id="count-egare" style="float:right;">0</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="label-egares">🟡 Égarés / Anomalies :</span>
+                    <span id="count-egare" style="background:rgba(245, 158, 11, 0.2); padding:4px 10px; border-radius:20px;">0</span>
+                </div>
                 <div class="item-list" id="list-egares"></div>
             </div>
             
-            <button class="btn" id="btn-imprimer-rapport" style="background: #10B981; margin-top: 10px;">🖨️ Imprimer le rapport d'audit</button>
-            <button class="btn" onclick="effacerSauvegardeEtRecharger()" style="background: transparent; border: 1px solid #D1D5DB; margin-top: 5px;">Refaire un audit</button>
+            <button class="btn" id="btn-imprimer-rapport" style="background: var(--accent-green); margin-top: 10px;" onclick="triggerHaptic()">🖨️ Imprimer le rapport d'audit</button>
+            <button class="btn" onclick="triggerHaptic(); effacerSauvegardeEtRecharger()" style="background: transparent; border: 1px solid var(--glass-border); margin-top: 5px; box-shadow:none;">Refaire un audit</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size: 1.2rem; color: white; margin-bottom: 10px;" id="alert-title">Attention</h3><p style="color: #D1D5DB; font-size: 0.95rem; line-height: 1.4;" id="alert-message">Message.</p><button class="btn-modal-ok" id="btn-alert-ok">OK</button></div></div>
-    <div class="modal-overlay" id="custom-prompt"><div class="modal-content"><h3 class="modal-title">Coller les données</h3><p class="modal-message" style="margin-bottom:10px;">Fusionnez les scans d'un collaborateur :</p><textarea id="prompt-input" rows="4" style="margin-bottom:20px; border-radius:8px; padding:10px; width:100%; font-size:0.8rem; background:rgba(255,255,255,0.1); color:white; border:1px solid #ccc;"></textarea><div class="modal-buttons"><button class="btn-cancel" id="btn-prompt-cancel">Annuler</button><button class="btn-confirm-danger" id="btn-prompt-ok">Fusionner</button></div></div></div>
-    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><h3 class="modal-title">Reprise d'Audit</h3><p class="modal-message" style="margin-bottom:20px;">Un audit précédent a été mis en pause. Souhaitez-vous le reprendre ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel">Non, purger</button><button class="btn-confirm-danger" id="btn-confirm-ok">Oui, reprendre</button></div></div></div>
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
+
+    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 class="modal-title" id="alert-title" style="text-align:center;">Attention</h3><p class="modal-message" id="alert-message" style="text-align:center;">Message.</p><button class="btn-modal-ok" id="btn-alert-ok" onclick="triggerHaptic()">OK</button></div></div>
+    
+    <div class="modal-overlay" id="custom-prompt"><div class="modal-content"><h3 class="modal-title">Coller les données</h3><p class="modal-message" style="margin-bottom:10px;">Fusionnez les scans d'un collaborateur :</p><textarea id="prompt-input" rows="4" style="margin-bottom:20px; border-radius:10px; padding:12px; width:100%; font-size:0.85rem; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--glass-border); outline:none;"></textarea><div class="modal-buttons"><button class="btn-cancel" id="btn-prompt-cancel" onclick="triggerHaptic()">Annuler</button><button class="btn-confirm-danger" id="btn-prompt-ok" onclick="triggerHaptic()">Fusionner</button></div></div></div>
+    
+    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><h3 class="modal-title">Reprise d'Audit</h3><p class="modal-message" style="margin-bottom:20px;">Un audit précédent a été mis en pause. Souhaitez-vous le reprendre ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel" onclick="triggerHaptic()">Non, purger</button><button class="btn-confirm-danger" id="btn-confirm-ok" onclick="triggerHaptic()">Oui, reprendre</button></div></div></div>
 
     <div class="app-version" id="version-display"></div>
 
@@ -152,26 +213,39 @@
         let typeAudit = "", zoneCible = "", baseLocale = [], attendusRefs = [], scannedRefs = [], scanner;
         let lastReportTrouves = [], lastReportManquants = [], lastReportEgares = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
 
-        // BIPS AUDIO FEEDBACKS
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playFeedback(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'ok') { osc.type = 'sine'; osc.frequency.value = 1000; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); if(navigator.vibrate) navigator.vibrate(100); } 
-            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.value = 160; gain.gain.setValueAtTime(0.2, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.4); if(navigator.vibrate) navigator.vibrate([200, 100, 200]); } 
-            else if (type === 'dup') { osc.type = 'square'; osc.frequency.value = 550; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.setValueAtTime(0, audioCtx.currentTime + 0.08); gain.gain.setValueAtTime(0.1, audioCtx.currentTime + 0.15); osc.start(); osc.stop(audioCtx.currentTime + 0.25); }
+        // 🌟 RETOUR HAPTIQUE GLOBAL (Silencieux)
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) { navigator.vibrate(40); }
+        };
+
+        // 🌟 ALERTE SONORE STRICTE POUR "DÉJÀ SORTI" UNIQUEMENT (Anomalie)
+        function playErrorBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sawtooth'; osc.frequency.value = 160;
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            } catch(e) {}
         }
 
-        function afficherAlerte(titre, message, boutonCache = false) { document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('btn-alert-ok').style.display = boutonCache ? 'none' : 'block'; document.getElementById('custom-alert').style.display = 'flex'; }
+        function afficherAlerte(titre, message, boutonCache = false) { 
+            document.getElementById('alert-title').textContent = titre; 
+            document.getElementById('alert-message').textContent = message; 
+            document.getElementById('btn-alert-ok').style.display = boutonCache ? 'none' : 'block'; 
+            document.getElementById('custom-alert').style.display = 'flex'; 
+        }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
         function normaliserTexte(txt) { return txt ? String(txt).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : ""; }
 
         document.getElementById('tab-scan-btn').addEventListener('click', function() { this.classList.add('active'); document.getElementById('tab-outils-btn').classList.remove('active'); document.getElementById('tab-scan-content').style.display = 'flex'; document.getElementById('tab-outils-content').style.display = 'none'; });
         document.getElementById('tab-outils-btn').addEventListener('click', function() { this.classList.add('active'); document.getElementById('tab-scan-btn').classList.remove('active'); document.getElementById('tab-scan-content').style.display = 'none'; document.getElementById('tab-outils-content').style.display = 'flex'; });
 
-        // 🌟 CHARGEMENT DYNAMIQUE DES ZONES
+        // CHARGEMENT DYNAMIQUE DES ZONES
         window.addEventListener('DOMContentLoaded', () => { 
             if(localStorage.getItem('audit_en_cours')) { document.getElementById('custom-confirm').style.display = 'flex'; }
             
@@ -193,7 +267,7 @@
             typeAudit = saved.typeAudit; zoneCible = saved.zoneCible; scannedRefs = saved.scannedRefs; baseLocale = JSON.parse(localStorage.getItem('miroir_stock'));
             document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'none';
             calculerAttendus(); ouvrirScannerAudit(); majInterfaceScan();
-            scannedRefs.forEach(ref => { const item = document.createElement('div'); item.className = 'rafale-item'; item.innerHTML = `<span>${ref}</span> <span style="color:#10B981;">✔️</span>`; document.getElementById('rafale-items').prepend(item); });
+            scannedRefs.forEach(ref => { const item = document.createElement('div'); item.className = 'rafale-item'; item.innerHTML = `<span>${ref}</span> <span style="color:var(--accent-green);">✔️</span>`; document.getElementById('rafale-items').prepend(item); });
         });
 
         document.getElementById('btn-choix-zone').addEventListener('click', () => { document.getElementById('step-choix').style.display = 'none'; document.getElementById('step-zone-input').style.display = 'flex'; });
@@ -221,12 +295,27 @@
 
         function ouvrirScannerAudit() { document.getElementById('audit-ui').style.display = 'flex'; scanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 }, false); scanner.render(r => { traiterScan(String(r).trim().toUpperCase()); }); }
 
+        // 🌟 TRAITEMENT DU SCAN (SILENCIEUX + ALERTE ANOMALIE SI SORTI)
         function traiterScan(ref) {
-            if(scannedRefs.includes(ref)) { playFeedback('dup'); } else {
-                scannedRefs.push(ref); if(attendusRefs.includes(ref)) playFeedback('ok'); else playFeedback('error');
+            triggerHaptic(); // Confirmation silencieuse
+
+            if(scannedRefs.includes(ref)) {
+                // Déjà scanné dans cet audit, on ignore silencieusement
+            } else {
+                scannedRefs.push(ref); 
+                
+                let match = baseLocale.find(a => String(a.reference).toUpperCase() === ref);
+                let isOk = attendusRefs.includes(ref) ? '<span style="color:var(--accent-green);">✔️</span>' : '<span style="color:var(--accent-orange);">⚠️</span>';
+                
+                if (match && match.estSorti) {
+                    playErrorBeep(); // Seul bip autorisé
+                    isOk = '<span style="color:#FCA5A5; font-weight:bold;">❌ (SORTI)</span>';
+                    afficherAlerte("⚠️ Anomalie", `L'objet scanné (${ref}) est enregistré comme étant DÉJÀ SORTI !`);
+                }
+
                 const item = document.createElement('div'); item.className = 'rafale-item';
-                let isOk = attendusRefs.includes(ref) ? '<span style="color:#10B981;">✔️</span>' : '<span style="color:#F59E0B;">⚠️</span>';
-                item.innerHTML = `<span>${ref}</span> ${isOk}`; document.getElementById('rafale-items').prepend(item);
+                item.innerHTML = `<span>${ref}</span> ${isOk}`; 
+                document.getElementById('rafale-items').prepend(item);
                 majInterfaceScan();
             }
         }

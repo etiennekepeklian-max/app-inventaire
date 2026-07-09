@@ -5,73 +5,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestion de Stock - Accueil</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
+        /* 🎨 NOUVELLE PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; /* Slate 900 */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; /* Slate 50 */
+            --text-muted: #94A3B8; /* Slate 400 */
+            --accent-blue: rgba(59, 130, 246, 0.2);
+            --accent-blue-border: rgba(96, 165, 250, 0.5);
+            --accent-green: rgba(16, 185, 129, 0.15);
+            --accent-green-border: rgba(52, 211, 153, 0.4);
+            --accent-orange: rgba(245, 158, 11, 0.1);
+            --accent-orange-border: rgba(245, 158, 11, 0.3);
+            --accent-red: rgba(239, 68, 68, 0.1);
+            --accent-red-border: rgba(248, 113, 113, 0.4);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 30px; position: relative; 
+        }
+
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; padding-top: 10px; }
-        .top-nav { display: flex; justify-content: space-between; align-items: center; width: 100%; position: absolute; top: 0; left: 0; }
-        .btn-circle { width: 45px; height: 45px; background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; text-decoration: none; color: #FFFFFF; transition: transform 0.2s, background-color 0.2s; z-index: 10; }
-        .btn-circle:active { background-color: rgba(255, 255, 255, 0.2); transform: scale(0.85); }
+        
+        /* Composant de base Glassmorphism */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-nav { display: flex; justify-content: flex-start; align-items: center; width: 100%; position: absolute; top: 0; left: 0; }
+        .btn-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; text-decoration: none; color: var(--text-main); transition: transform 0.2s, background-color 0.2s; z-index: 10; }
+        .btn-circle:active { background-color: var(--glass-highlight); transform: scale(0.85); }
+        
         .header-section { display: flex; flex-direction: column; align-items: center; margin-top: 45px; margin-bottom: 10px; }
-        .app-logo { width: 90px; height: auto; border-radius: 20px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); margin-bottom: 15px; }
-        h1 { font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; }
-        .network-status { font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; transition: all 0.3s ease; }
-        .status-online { color: #34D399; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
-        .status-offline { color: #FCA5A5; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .app-logo { width: 90px; height: auto; border-radius: 22px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5); margin-bottom: 15px; }
+        h1 { font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; font-weight: 800; color: var(--text-main); }
+        
+        .network-status { font-size: 0.8rem; font-weight: 600; padding: 6px 14px; border-radius: 20px; transition: all 0.3s ease; backdrop-filter: blur(5px); }
+        .status-online { color: #34D399; background: var(--accent-green); border: 1px solid var(--accent-green-border); }
+        .status-offline { color: #FCA5A5; background: var(--accent-red); border: 1px solid var(--accent-red-border); }
+        
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; }
-        .btn-grid { background-color: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px; text-decoration: none; color: #FFFFFF; font-weight: 600; font-size: 0.95rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px 10px; text-align: center; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn-grid:active { background-color: rgba(255, 255, 255, 0.15); transform: scale(0.95); }
+        
+        /* Micro-interactions sur les boutons */
+        .btn-grid { 
+            text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.95rem; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            gap: 8px; padding: 20px 10px; text-align: center; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; 
+        }
+        .btn-grid:active { background-color: var(--glass-highlight); transform: scale(0.92); }
+        
         .btn-icon { font-size: 1.8rem; margin-bottom: 2px; }
         .btn-wide { grid-column: span 2; flex-direction: row; padding: 18px; font-size: 1.05rem; }
         .btn-wide .btn-icon { margin-bottom: 0; margin-right: 10px; font-size: 1.6rem; }
-        .btn-highlight { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4)); border-color: rgba(96, 165, 250, 0.5); }
-        .btn-audit { background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.3)); border-color: rgba(52, 211, 153, 0.4); }
-        .admin-divider { grid-column: span 2; text-align: center; font-size: 0.75rem; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
-        .admin-divider::before, .admin-divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
-        .btn-logout { background-color: transparent; border: 1px solid rgba(248, 113, 113, 0.5); color: #FCA5A5; margin-top: 15px; margin-bottom: 20px; cursor: pointer; grid-column: span 2; padding: 15px; font-weight: bold; border-radius: 14px; font-size: 1rem; transition: all 0.2s; }
-        .btn-logout:active { background-color: rgba(248, 113, 113, 0.15); transform: scale(0.95); }
         
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        .btn-highlight { background: var(--accent-blue); border-color: var(--accent-blue-border); }
+        .btn-audit { background: var(--accent-green); border-color: var(--accent-green-border); }
+        
+        .admin-divider { grid-column: span 2; text-align: center; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+        .admin-divider::before, .admin-divider::after { content: ""; flex: 1; height: 1px; background: var(--glass-border); }
+        
+        .btn-logout { background-color: transparent; border: 1px solid var(--accent-red-border); color: #FCA5A5; margin-top: 15px; margin-bottom: 20px; cursor: pointer; grid-column: span 2; padding: 15px; font-weight: bold; border-radius: 14px; font-size: 1rem; transition: all 0.2s; }
+        .btn-logout:active { background-color: var(--accent-red); transform: scale(0.95); }
+        
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help {
+            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 1.6rem; text-decoration: none; color: var(--text-main);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+        }
+        .btn-global-help:active { transform: scale(0.85); background-color: var(--glass-highlight); }
+
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="top-nav">
-            <a href="profil.html" class="btn-circle" title="Mon Profil">👤</a>
-            <a href="aide.html" class="btn-circle" title="Centre d'aide">❓</a>
+            <a href="profil.html" class="btn-circle glass-panel" title="Mon Profil" onclick="triggerHaptic()">👤</a>
         </div>
+        
         <div class="header-section">
             <img src="icon-192.png" alt="Logo" class="app-logo">
             <h1>Mon Stock</h1>
             <div id="status-badge" class="network-status status-online">🟢 En ligne</div>
         </div>
+        
         <nav class="menu-grid">
-            <a href="scanner.html" class="btn-grid btn-wide btn-highlight"><span class="btn-icon">🔍</span> Rechercher & Scanner</a>
-            <a href="ajouter.html" class="btn-grid"><span class="btn-icon">➕</span> Ajouter / Corriger</a>
-            <a href="inventaire.html" class="btn-grid"><span class="btn-icon">📋</span> Inventaire</a>
-            <a href="deplacer.html" class="btn-grid"><span class="btn-icon">🔄</span> Déplacer</a>
-            <a href="sortir.html" class="btn-grid"><span class="btn-icon">📤</span> Sortir</a>
-            <a href="audit.html" class="btn-grid btn-wide btn-audit"><span class="btn-icon">📦</span> Faire un Audit</a>
+            <a href="scanner.html" class="btn-grid glass-panel btn-wide btn-highlight" onclick="triggerHaptic()"><span class="btn-icon">🔍</span> Rechercher & Scanner</a>
+            <a href="ajouter.html" class="btn-grid glass-panel" onclick="triggerHaptic()"><span class="btn-icon">➕</span> Ajouter / Corriger</a>
+            <a href="inventaire.html" class="btn-grid glass-panel" onclick="triggerHaptic()"><span class="btn-icon">📋</span> Inventaire</a>
+            <a href="deplacer.html" class="btn-grid glass-panel" onclick="triggerHaptic()"><span class="btn-icon">🔄</span> Déplacer</a>
+            <a href="sortir.html" class="btn-grid glass-panel" onclick="triggerHaptic()"><span class="btn-icon">📤</span> Sortir</a>
+            <a href="audit.html" class="btn-grid glass-panel btn-wide btn-audit" onclick="triggerHaptic()"><span class="btn-icon">📦</span> Faire un Audit</a>
 
             <div id="admin-divider" class="admin-divider" style="display: none;">Espace Administrateur</div>
-            <a href="admin.html" class="btn-grid" id="menu-admin" style="display: none; background-color: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);"><span class="btn-icon">⚙️</span> Administration</a>
-            <a href="https://docs.google.com/spreadsheets/d/1zlp2nEpMj8eTEF5UvFO-KYt1JVCMSfuXddNRbH0yqYM/edit" target="_blank" class="btn-grid" id="menu-bdd" style="display: none; background-color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);"><span class="btn-icon">🗄️</span> Base Google</a>
-            <button id="btn-logout" class="btn-logout">🔓 Déconnexion</button>
+            <a href="admin.html" class="btn-grid glass-panel" id="menu-admin" style="display: none; background: var(--accent-orange); border-color: var(--accent-orange-border);" onclick="triggerHaptic()"><span class="btn-icon">⚙️</span> Administration</a>
+            <a href="https://docs.google.com/spreadsheets/d/1zlp2nEpMj8eTEF5UvFO-KYt1JVCMSfuXddNRbH0yqYM/edit" target="_blank" class="btn-grid glass-panel" id="menu-bdd" style="display: none; background: var(--accent-green); border-color: var(--accent-green-border);" onclick="triggerHaptic()"><span class="btn-icon">🗄️</span> Base Google</a>
+            <button id="btn-logout" class="btn-logout" onclick="triggerHaptic()">🔓 Déconnexion</button>
         </nav>
     </div>
+
+    <!-- BOUTON D'AIDE GLOBAL -->
+    <a href="aide.html" class="btn-global-help glass-panel" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
     <div class="app-version" id="version-display"></div>
 
     <script>
-        // 🌟 DÉFINITION DE LA VERSION MAITRE
-        const APP_VERSION_MAITRE = "0.1.1";
+        // 🌟 DÉFINITION DE LA NOUVELLE VERSION MAITRE
+        const APP_VERSION_MAITRE = "0.2.1";
         localStorage.setItem('app_version', APP_VERSION_MAITRE);
         document.getElementById('version-display').textContent = "Version " + APP_VERSION_MAITRE;
+
+        // 🌟 FONCTION GLOBALE DE RETOUR HAPTIQUE (Micro-vibration)
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) {
+                navigator.vibrate(40); // Vibration courte et subtile de 40ms
+            }
+        };
 
         if (localStorage.getItem('app_role') === 'admin') {
             document.getElementById('admin-divider').style.display = 'flex';
@@ -89,12 +159,12 @@
         function updateNetworkStatus() {
             const badge = document.getElementById('status-badge');
             if (navigator.onLine) {
-                badge.textContent = "🟢 En ligne"; badge.className = "network-status status-online";
+                badge.textContent = "🟢 En ligne"; badge.className = "network-status status-online glass-panel";
                 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "inventaire", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
                 .then(r => r.json()).then(d => { if(d.result === "success") localStorage.setItem('miroir_stock', JSON.stringify(d.data)); });
             } else {
-                badge.textContent = "🔴 Hors-ligne"; badge.className = "network-status status-offline";
+                badge.textContent = "🔴 Hors-ligne"; badge.className = "network-status status-offline glass-panel";
             }
         }
         window.addEventListener('online', updateNetworkStatus); window.addEventListener('offline', updateNetworkStatus); updateNetworkStatus(); 
@@ -102,8 +172,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
         }
-    </script>
-    <script>
+
         let timeoutId;
         document.addEventListener("visibilitychange", function() {
             if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } 

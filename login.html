@@ -5,26 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Connexion</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM SYNCHRONISÉES */
+        :root {
+            --bg-dark: #0F172A; /* Slate 900 */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; /* Slate 50 */
+            --text-muted: #94A3B8; /* Slate 400 */
+            --accent-blue: #3B82F6;
+            --accent-blue-hover: #2563EB;
+            --accent-red-bg: rgba(239, 68, 68, 0.1);
+            --accent-red-border: rgba(248, 113, 113, 0.4);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .login-box { width: 90%; max-width: 400px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 30px 25px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .app-logo { width: 100px; height: 100px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); margin-bottom: 20px; }
-        h1 { font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 1px; }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; padding: 20px;
+        }
+
+        /* Panneau principal en Glassmorphism */
+        .login-box { 
+            width: 100%; max-width: 400px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            padding: 35px 25px; 
+            display: flex; flex-direction: column; align-items: center; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+        }
+
+        .app-logo { width: 100px; height: 100px; border-radius: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
         
         .form-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; text-align: left; }
-        label { font-size: 0.9rem; color: #D1D5DB; font-weight: bold; }
-        input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 14px; color: #FFFFFF; font-size: 1rem; outline: none; transition: border-color 0.2s; }
-        input:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
+        label { font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .btn-login { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s; width: 100%; }
-        .btn-login:active { transform: scale(0.95); background-color: #2563EB; }
-        .btn-login:disabled { background-color: #9CA3AF; transform: scale(1); }
+        input { 
+            background-color: rgba(0, 0, 0, 0.2); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 10px; padding: 14px; 
+            color: var(--text-main); font-size: 1rem; outline: none; 
+            transition: border-color 0.2s, background-color 0.2s; 
+        }
+        input:focus { border-color: #60A5FA; background-color: rgba(0, 0, 0, 0.3); }
+        
+        .btn-login { 
+            background-color: var(--accent-blue); border: none; padding: 16px; border-radius: 12px; 
+            color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-login:active { transform: scale(0.94); background-color: var(--accent-blue-hover); }
+        .btn-login:disabled { background-color: #64748B; transform: scale(1); box-shadow: none; cursor: not-allowed; }
 
-        .error-message { color: #FCA5A5; font-size: 0.9rem; margin-top: 15px; display: none; text-align: center; background: rgba(239,68,68,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3); width: 100%; }
-        .app-version { position: absolute; bottom: 15px; font-size: 0.8rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        .error-message { color: #FCA5A5; font-size: 0.9rem; margin-top: 15px; display: none; text-align: center; background: var(--accent-red-bg); border: 1px solid var(--accent-red-border); padding: 12px; border-radius: 10px; width: 100%; }
+        
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help {
+            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 1.6rem; text-decoration: none; color: var(--text-main);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+        }
+        .btn-global-help:active { transform: scale(0.85); background-color: var(--glass-highlight); }
+
+        .app-version { position: absolute; bottom: 15px; left: 20px; font-size: 0.8rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -41,12 +99,14 @@
                 <label>Mot de passe</label>
                 <input type="password" id="password" autocomplete="new-password" spellcheck="false" data-lpignore="true">
             </div>
-            <button type="button" class="btn-login" id="btn-submit">Se connecter</button>
+            <button type="button" class="btn-login" id="btn-submit" onclick="triggerHaptic()">Se connecter</button>
             <div class="error-message" id="error-msg"></div>
         </div>
     </div>
     
-    <div class="app-version" id="version-display">Version 0.1.1</div>
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">?)</a>
+
+    <div class="app-version" id="version-display">Version 0.2.1</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
@@ -57,6 +117,13 @@
         if (localStorage.getItem('app_token')) { 
             window.location.href = 'index.html'; 
         }
+
+        // 🌟 RETOUR HAPTIQUE
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) {
+                navigator.vibrate(40);
+            }
+        };
 
         function executerConnexion() {
             const loginInput = document.getElementById('login').value.trim();
@@ -82,7 +149,7 @@
             })
             .then(res => res.json()).then(data => {
                 if (data.result === "success") {
-                    // Nettoyage immédiat des champs en mémoire pour ne laisser aucune trace au navigateur
+                    // Purge immédiate de la mémoire volatile des champs de saisie
                     document.getElementById('login').value = "";
                     document.getElementById('password').value = "";
                     
@@ -106,9 +173,9 @@
 
         document.getElementById('btn-submit').addEventListener('click', executerConnexion);
 
-        // Simulation du comportement natif d'un formulaire pour la touche Entrée
+        // Routage et gestion clavier ergonomique pour écrans tactiles
         document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') executerConnexion();
+            if (e.key === 'Enter') { triggerHaptic(); executerConnexion(); }
         });
         document.getElementById('login').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') document.getElementById('password').focus();

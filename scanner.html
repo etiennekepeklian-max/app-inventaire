@@ -5,193 +5,238 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rechercher et Scanner</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-green: #10B981;
+            --accent-orange: #F59E0B;
+            --accent-red: #EF4444;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; position: relative; }
         
-        .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
         
-        .mode-selector { display: flex; gap: 10px; background: rgba(0, 0, 0, 0.2); padding: 5px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .btn-mode { flex: 1; padding: 12px; border: none; border-radius: 8px; background: transparent; color: #D1D5DB; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; }
-        .btn-mode.active { background: #3B82F6; color: #FFFFFF; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); }
+        /* Glass Cards */
+        .glass-card { 
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px; 
+        }
+
+        .mode-selector { display: flex; gap: 10px; background: rgba(0, 0, 0, 0.3); padding: 6px; border-radius: 14px; border: 1px solid var(--glass-border); }
+        .btn-mode { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: var(--text-muted); font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: all 0.3s ease; }
+        .btn-mode.active { background: var(--accent-blue); color: #FFFFFF; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
 
         .btn-copy { background: transparent; border: none; color: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; padding: 4px; border-radius: 4px; transition: background 0.2s; }
-        .btn-copy:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
+        .btn-copy:active { background: var(--glass-highlight); transform: scale(0.9); }
 
         #bloc-scanner { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
-        #reader-container { width: 100%; background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        #reader { width: 100%; border-radius: 8px; overflow: hidden; }
+        #reader-container { width: 100%; background: var(--glass-bg); padding: 15px; border-radius: 16px; border: 1px solid var(--glass-border); }
+        #reader { width: 100%; border-radius: 12px; overflow: hidden; }
         
-        .btn-primary { background-color: #3B82F6; border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
-        .btn-primary:active { transform: scale(0.98); background-color: #2563EB; }
+        .btn-primary { background-color: var(--accent-blue); border: none; padding: 16px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .btn-primary:active { transform: scale(0.96); }
         
-        .search-box-text { width: 100%; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; }
-        option { background-color: #1A2B56; color: white; }
-        input:focus, select:focus { border-color: #60A5FA; }
+        input, select, textarea { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 14px; color: var(--text-main); font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
+        option { background-color: #1E293B; color: white; }
+        input:focus, select:focus { border-color: #60A5FA; background-color: rgba(0,0,0,0.3); }
 
         .results-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
-        .result-row { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
-        .result-row:active { background: rgba(255,255,255,0.15); }
+        .result-row { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .result-row:active { background: var(--glass-highlight); }
 
         .actions-scanner { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        .btn-terminer-rafale { background: linear-gradient(135deg, #10B981, #059669); border: none; padding: 18px; border-radius: 12px; color: white; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; width: 100%; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); cursor: pointer; }
-        .btn-large-danger { background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.15rem; cursor: pointer; width: 100%; margin-top: 15px; }
+        .btn-terminer-rafale { background: var(--accent-green); border: none; padding: 18px; border-radius: 12px; color: white; font-weight: 900; font-size: 1.15rem; text-transform: uppercase; width: 100%; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); cursor: pointer; transition: 0.2s; }
+        .btn-terminer-rafale:active { transform: scale(0.96); }
+        .btn-large-danger { background-color: transparent; border: 2px solid var(--accent-red); color: #FCA5A5; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
+        .btn-large-danger:active { background: rgba(239, 68, 68, 0.1); transform: scale(0.96); }
 
-        #bloc-rafale-liste { display: none; flex-direction: column; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 12px; margin-top: 15px; }
-        .rafale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .rafale-count { background: #10B981; color: white; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+        #bloc-rafale-liste { display: none; flex-direction: column; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--glass-border); }
+        .rafale-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; }
+        .rafale-count { background: var(--accent-green); color: white; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
         .rafale-items { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .rafale-item { background: rgba(255, 255, 255, 0.05); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; color: #93C5FD; font-family: monospace; display: flex; justify-content: space-between; align-items: center; }
+        .rafale-item { background: rgba(255, 255, 255, 0.05); padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; color: #93C5FD; font-family: monospace; display: flex; justify-content: space-between; align-items: center; }
 
         #bloc-infos { display: none; flex-direction: column; gap: 15px; width: 100%; }
-        .info-card { background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .info-card h2 { font-size: 1.2rem; margin-bottom: 12px; color: #60A5FA; }
-        .info-card p { font-size: 0.95rem; margin-bottom: 8px; color: #D1D5DB; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .info-card p { font-size: 0.95rem; margin-bottom: 8px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .info-card span.valeur { color: #FFFFFF; font-weight: bold; display: flex; align-items: center; }
 
-        .notes-area { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #D1D5DB; max-height: 100px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
+        .notes-area { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); font-size: 0.85rem; color: #D1D5DB; max-height: 100px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
 
-        .choix-actions { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-choix { flex: 1; border: none; padding: 15px 10px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: transform 0.2s; }
-        .btn-choix-deplacer { background-color: #F59E0B; }
-        .btn-choix-sortir { background-color: #EF4444; }
+        .choix-actions { display: flex; gap: 10px; margin-top: 5px; }
+        .btn-choix { flex: 1; border: none; padding: 15px 10px; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: transform 0.2s; }
+        .btn-choix:active { transform: scale(0.94); }
+        .btn-choix-deplacer { background-color: var(--accent-orange); }
+        .btn-choix-sortir { background-color: var(--accent-red); }
 
-        .form-action { display: none; flex-direction: column; background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .form-action { display: none; flex-direction: column; background: var(--glass-bg); padding: 15px; border-radius: 16px; margin-top: 10px; border: 1px solid var(--glass-border); }
         .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
-        label { margin-bottom: 8px; font-size: 0.9rem; color: #D1D5DB; }
+        label { margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); font-weight: bold; }
         
-        .btn-valider-deplacer, .btn-valider-sortir { border: none; padding: 14px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .btn-valider-deplacer { background-color: #F59E0B; }
-        .btn-valider-sortir { background-color: #EF4444; }
+        .btn-valider-deplacer, .btn-valider-sortir { border: none; padding: 14px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .btn-valider-deplacer { background-color: var(--accent-orange); }
+        .btn-valider-sortir { background-color: var(--accent-red); }
 
-        #result-box { display: none; flex-direction: column; align-items: center; background-color: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); width: 100%; }
+        #result-box { display: none; flex-direction: column; align-items: center; background-color: var(--glass-bg); padding: 25px; border-radius: 16px; text-align: center; border: 1px solid var(--glass-border); width: 100%; backdrop-filter: blur(12px); }
         .icon-success { font-size: 3.5rem; margin-bottom: 10px; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
-        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
-        .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 15px; line-height: 1.4; text-align: left; max-height: 220px; overflow-y: auto; }
-        
-        .modal-buttons { display: flex; gap: 15px; margin-top: 15px;}
-        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
-        .btn-confirm { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; }
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; text-decoration: none; color: var(--text-main); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
+        .btn-global-help:active { transform: scale(0.85); background-color: var(--glass-highlight); }
 
-        .hist-row { font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 6px 0; color: #E5E7EB; }
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; font-weight: 800; }
+        .modal-message { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5; text-align: left; max-height: 220px; overflow-y: auto; }
+        
+        .modal-buttons { display: flex; gap: 15px; margin-top: 20px;}
+        .btn-cancel { background: transparent; border: 1px solid var(--glass-border); color: #FFFFFF; padding: 14px; border-radius: 10px; flex: 1; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-cancel:active { background: var(--glass-highlight); }
+        .btn-confirm { background: var(--accent-red); border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-confirm:active { transform: scale(0.95); }
+        .btn-modal-ok { background: var(--accent-blue); border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; transition: 0.2s; }
+        .btn-modal-ok:active { transform: scale(0.95); }
+
+        .hist-row { font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; color: #E5E7EB; text-align: left; line-height: 1.4; }
         .hist-row:last-child { border-bottom: none; }
 
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Rechercher & Scanner</h1></div>
+        <div class="header"><button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button><h1>Rechercher & Scanner</h1></div>
 
         <div class="mode-selector" id="mode-selector">
-            <button class="btn-mode active" id="btn-mode-unique">Scan / Recherche</button>
-            <button class="btn-mode" id="btn-mode-rafale">Mode Rafale 🚀</button>
+            <button class="btn-mode active" id="btn-mode-unique" onclick="triggerHaptic()">Scan / Recherche</button>
+            <button class="btn-mode" id="btn-mode-rafale" onclick="triggerHaptic()">Mode Rafale 🚀</button>
         </div>
 
         <div id="bloc-scanner">
-            <div class="search-box-text" id="search-box-text-container">
+            <div class="glass-card" id="search-box-text-container" style="width: 100%;">
                 <input type="text" id="saisie-recherche" placeholder="Écrire nom ou référence...">
-                <button class="btn-primary" id="btn-declencher-recherche" style="padding:12px; border-radius:8px;">🔍 Lancer la recherche</button>
+                <button class="btn-primary" id="btn-declencher-recherche" onclick="triggerHaptic()">🔍 Lancer la recherche</button>
                 <div class="results-list" id="zone-resultats-textuels"></div>
             </div>
 
-            <button id="btn-demarrer-scan" class="btn-primary">📷 Ouvrir l'appareil photo</button>
+            <button id="btn-demarrer-scan" class="btn-primary" onclick="triggerHaptic()">📷 Ouvrir l'appareil photo</button>
             
             <div id="reader-container" style="display: none;">
                 <div id="reader"></div>
                 <div id="bloc-rafale-liste">
                     <div class="rafale-header">
-                        <span>Objets scannés :</span>
+                        <span style="color:var(--text-muted); font-weight:bold;">Objets scannés :</span>
                         <span class="rafale-count" id="rafale-count">0</span>
                     </div>
                     <div class="rafale-items" id="rafale-items"></div>
                 </div>
                 <div class="actions-scanner">
-                    <button class="btn-terminer-rafale" id="btn-terminer-rafale" style="display: none;">✅ Terminer le scan</button>
-                    <button type="button" class="btn-large-danger" onclick="arreterScanner()">❌ Annuler et fermer</button>
+                    <button class="btn-terminer-rafale" id="btn-terminer-rafale" style="display: none;" onclick="triggerHaptic()">✅ Terminer le scan</button>
+                    <button type="button" class="btn-large-danger" onclick="triggerHaptic(); arreterScanner()">❌ Annuler et fermer</button>
                 </div>
             </div>
             <p id="message-recherche" style="display: none; color: #60A5FA; margin-top: 10px;">Recherche en cours... ⏳</p>
         </div>
 
         <div id="bloc-infos">
-            <div class="info-card" id="info-card-unique">
+            <div class="glass-card info-card" id="info-card-unique">
                 <h2 id="info-nom">Fiche Objet</h2>
                 <div id="zone-details-roles"></div>
                 
-                <button class="btn-primary" id="btn-voir-historique-objet" style="background:#8B5CF6; padding:10px; font-size:0.9rem; margin-top:10px; margin-bottom:5px;">🕒 Historique de cet objet</button>
+                <button class="btn-primary" id="btn-voir-historique-objet" style="background:#8B5CF6; padding:12px; font-size:0.9rem; margin-top:5px;" onclick="triggerHaptic()">🕒 Historique de cet objet</button>
 
-                <div style="background: rgba(255,255,255,0.03); padding:10px; border-radius:10px; margin-top:8px; border:1px solid rgba(255,255,255,0.08);">
-                    <h4 style="font-size:0.85rem; color:#60A5FA; margin-bottom:5px;">📦 Mode Lot / Kit (Bundle)</h4>
-                    <button class="btn-primary" id="btn-mode-kit" style="background:#0284C7; padding:8px; font-size:0.85rem;">🛠️ Assembler des objets dans ce Kit</button>
-                    <div id="zone-composition-kit" style="display:none; flex-direction:column; gap:8px; margin-top:8px;">
+                <div style="background: rgba(0,0,0,0.2); padding:12px; border-radius:12px; margin-top:8px; border:1px solid var(--glass-border);">
+                    <h4 style="font-size:0.9rem; color:#60A5FA; margin-bottom:10px;">📦 Mode Lot / Kit (Bundle)</h4>
+                    <button class="btn-primary" id="btn-mode-kit" style="background:#0284C7; padding:10px; font-size:0.85rem;" onclick="triggerHaptic()">🛠️ Assembler des objets dans ce Kit</button>
+                    <div id="zone-composition-kit" style="display:none; flex-direction:column; gap:8px; margin-top:10px;">
                         <input type="text" id="input-sub-ref" placeholder="Scanner/Taper sous-référence...">
-                        <button type="button" class="btn-primary" id="btn-add-sub-ref" style="background:#10B981; padding:8px; font-size:0.8rem;">Ajouter au kit</button>
-                        <div id="kit-tracked-list" style="font-size:0.75rem; color:#93C5FD; font-family:monospace; margin-top:2px;"></div>
-                        <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:10px; font-size:0.9rem; font-weight:bold; margin-top:4px;">💾 Enregistrer la composition du lot</button>
+                        <button type="button" class="btn-primary" id="btn-add-sub-ref" style="background:var(--accent-green); padding:10px; font-size:0.85rem;" onclick="triggerHaptic()">Ajouter au kit</button>
+                        <div id="kit-tracked-list" style="font-size:0.8rem; color:#93C5FD; font-family:monospace; margin-top:4px;"></div>
+                        <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:12px; font-size:0.95rem; font-weight:bold; margin-top:5px;" onclick="triggerHaptic()">💾 Enregistrer la composition du lot</button>
                     </div>
                 </div>
                 
-                <h4 style="font-size:0.9rem; margin-top:15px; color:#9CA3AF;">📝 Notes & Incidents</h4>
+                <h4 style="font-size:0.9rem; margin-top:10px; color:var(--text-muted);">📝 Notes & Incidents</h4>
                 <div class="notes-area" id="res-notes"></div>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-note" placeholder="Ajouter une remarque..." style="flex:3; padding:8px;">
-                    <button class="btn-primary" id="btn-save-note" style="flex:1; background:#10B981; padding:8px; font-size:0.9rem;">Valider</button>
+                    <input type="text" id="input-note" placeholder="Ajouter une remarque..." style="flex:3;">
+                    <button class="btn-primary" id="btn-save-note" style="flex:1; background:var(--accent-green); padding:10px; font-size:0.9rem;" onclick="triggerHaptic()">Valider</button>
                 </div>
             </div>
             
-            <div class="info-card" id="info-card-rafale" style="display: none; border-color: #10B981;">
-                <h2 style="color: #10B981;">Action groupée (Rafale)</h2>
-                <p style="justify-content: flex-start; border: none;">Vous avez sélectionné <span class="valeur" id="info-rafale-count" style="margin-left: 5px; float:none;">0</span> &nbsp;article(s).</p>
+            <div class="glass-card info-card" id="info-card-rafale" style="display: none; border-color: var(--accent-green);">
+                <h2 style="color: var(--accent-green);">Action groupée (Rafale)</h2>
+                <p style="justify-content: flex-start; border: none;">Sélection : <span class="valeur" id="info-rafale-count" style="margin-left: 8px;">0</span> &nbsp;article(s).</p>
             </div>
 
             <div class="choix-actions" id="actions-actives">
-                <button class="btn-choix btn-choix-deplacer" id="btn-choix-deplacer"><span style="font-size: 1.5rem;">🔄</span> Déplacer</button>
-                <button class="btn-choix btn-choix-sortir" id="btn-choix-sortir"><span style="font-size: 1.5rem;">📤</span> Sortir</button>
+                <button class="btn-choix btn-choix-deplacer" id="btn-choix-deplacer" onclick="triggerHaptic()"><span style="font-size: 1.6rem;">🔄</span> Déplacer</button>
+                <button class="btn-choix btn-choix-sortir" id="btn-choix-sortir" onclick="triggerHaptic()"><span style="font-size: 1.6rem;">📤</span> Sortir</button>
             </div>
             
-            <button class="btn-primary" id="btn-reintegrer" style="background:#10B981; display:none; margin-top:10px;">↩️ Réintégrer l'objet en stock actif</button>
+            <button class="btn-primary" id="btn-reintegrer" style="background:var(--accent-green); display:none; margin-top:10px;" onclick="triggerHaptic()">↩️ Réintégrer l'objet en stock</button>
             
             <div id="form-deplacer" class="form-action">
                 <div class="form-group">
                     <label>Nouvel emplacement</label>
                     <select id="nouvel-emplacement" required><option value="">Chargement...</option></select>
                 </div>
-                <button class="btn-valider-deplacer" id="btn-valider-deplacer">Valider le déplacement</button>
+                <button class="btn-valider-deplacer" id="btn-valider-deplacer" onclick="triggerHaptic()">Valider le déplacement</button>
             </div>
             
-            <div id="form-sortir" class="form-action"><div class="form-group"><label>Motif de la sortie</label><input type="text" id="motif-sortie" placeholder="Ex: Restauration..."></div><button class="btn-valider-sortir" id="btn-ouvrir-modal">Archiver et Sortir</button></div>
+            <div id="form-sortir" class="form-action">
+                <div class="form-group">
+                    <label>Motif de la sortie</label>
+                    <input type="text" id="motif-sortie" placeholder="Ex: Restauration...">
+                </div>
+                <button class="btn-valider-sortir" id="btn-ouvrir-modal" onclick="triggerHaptic()">Archiver et Sortir</button>
+            </div>
 
-            <button id="btn-annuler-action" class="btn-large-danger" style="margin-top: 20px;">❌ Annuler la sélection</button>
+            <button id="btn-annuler-action" class="btn-large-danger" onclick="triggerHaptic()">❌ Annuler la sélection</button>
         </div>
 
         <div id="result-box">
-            <div class="icon-success" id="result-icon">✅</div><h3 id="result-titre">Action confirmée !</h3><p style="font-size: 0.95rem; color: #D1D5DB; margin-top: 10px;" id="result-texte"></p>
-            <button id="btn-nouveau-scan" class="btn-primary" style="margin-top:20px;">📷 Recommencer</button>
+            <div class="icon-success" id="result-icon">✅</div><h3 id="result-titre">Action confirmée !</h3><p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 10px;" id="result-texte"></p>
+            <button id="btn-nouveau-scan" class="btn-primary" style="margin-top:20px;" onclick="triggerHaptic()">📷 Recommencer</button>
         </div>
     </div>
 
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
+
     <div class="modal-overlay" id="modal-confirmation">
         <div class="modal-content">
-            <h3 class="modal-title">⚠️ Confirmation</h3>
+            <h3 class="modal-title" style="color: #FCA5A5;">⚠️ Confirmation</h3>
             <p class="modal-message">Sortir <b id="modal-nom-article" style="color: #60A5FA;"></b> pour le motif :<br><i id="modal-motif-rappel" style="color: white; font-size: 1.05rem;"></i> ?</p>
             <div class="modal-buttons">
-                <button type="button" class="btn-cancel" id="btn-annuler-sortie">Annuler</button>
-                <button type="button" class="btn-confirm" id="btn-confirmer-sortie">Confirmer</button>
+                <button type="button" class="btn-cancel" id="btn-annuler-sortie" onclick="triggerHaptic()">Annuler</button>
+                <button type="button" class="btn-confirm" id="btn-confirmer-sortie" onclick="triggerHaptic()">Confirmer</button>
             </div>
         </div>
     </div>
@@ -201,27 +246,27 @@
             <div class="modal-icon" id="alert-icon">⚠️</div>
             <h3 class="modal-title" id="alert-title">Attention</h3>
             <p class="modal-message" id="alert-message" style="text-align:center;"></p>
-            <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
+            <button class="btn-modal-ok" id="btn-alert-ok" onclick="triggerHaptic()">OK</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="modal-item-history">
         <div class="modal-content" style="max-width:380px;">
-            <div style="font-size:2rem; margin-bottom:5px;">🕒</div>
+            <div style="font-size:2.5rem; margin-bottom:5px;">🕒</div>
             <h3 class="modal-title" style="text-align:center;">Registre des mouvements</h3>
-            <div class="modal-message" id="history-rows-container">Chargement...</div>
-            <button class="btn-modal-ok" onclick="document.getElementById('modal-item-history').style.display='none'">Fermer</button>
+            <div class="modal-message" id="history-rows-container" style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1);">Chargement...</div>
+            <button class="btn-modal-ok" onclick="triggerHaptic(); document.getElementById('modal-item-history').style.display='none'">Fermer</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="custom-prompt">
         <div class="modal-content">
             <h3 class="modal-title">Réintégration active</h3>
-            <p class="modal-message" style="text-align:center; margin-bottom:5px;">Saisissez la zone de destination :</p>
+            <p class="modal-message" style="text-align:center; margin-bottom:10px;">Saisissez la zone de destination :</p>
             <input type="text" id="prompt-input" value="Réserve A">
             <div class="modal-buttons">
-                <button class="btn-cancel" id="btn-prompt-cancel">Annuler</button>
-                <button class="btn-confirm" id="btn-prompt-ok" style="background:#10B981;">Confirmer</button>
+                <button class="btn-cancel" id="btn-prompt-cancel" onclick="triggerHaptic()">Annuler</button>
+                <button class="btn-confirm" id="btn-prompt-ok" style="background:var(--accent-green);" onclick="triggerHaptic()">Confirmer</button>
             </div>
         </div>
     </div>
@@ -233,9 +278,30 @@
         let modeActuel = "unique"; let referenceScannee = ""; let listeRafale = []; let html5QrcodeScanner;
         let trackedKitRefs = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
 
-        // Chargement des emplacements au démarrage
+        // 🌟 RETOUR HAPTIQUE GLOBAL (Remplace tous les bips normaux)
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) { navigator.vibrate(40); }
+        };
+
+        // 🌟 ALERTE SONORE STRICTE POUR "DÉJÀ SORTI" UNIQUEMENT
+        function playErrorBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.value = 160;
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch(e) {}
+        }
+
+        // Chargement des emplacements au démarrage de la page
         window.addEventListener('DOMContentLoaded', () => {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(r => r.json()).then(d => {
@@ -249,10 +315,10 @@
         });
 
         const SVG_COPY = `<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z"/></svg>`;
-        window.copierTexte = function(texte, event) { if(event) event.stopPropagation(); navigator.clipboard.writeText(texte).then(() => { if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); } }); };
+        window.copierTexte = function(texte, event) { if(event) event.stopPropagation(); triggerHaptic(); navigator.clipboard.writeText(texte).then(() => { if(event) { const btn = event.currentTarget; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = SVG_COPY; }, 1500); } }); };
 
         function afficherAlerte(titre, message, isSuccess = false) { document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️"; document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message; document.getElementById('custom-alert').style.display = 'flex'; }
-        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; triggerHaptic(); });
 
         const btnModeUnique = document.getElementById('btn-mode-unique'); const btnModeRafale = document.getElementById('btn-mode-rafale'); const modeSelector = document.getElementById('mode-selector');
         const blocScanner = document.getElementById('bloc-scanner'); const btnDemarrerScan = document.getElementById('btn-demarrer-scan'); const readerContainer = document.getElementById('reader-container'); const msgRecherche = document.getElementById('message-recherche');
@@ -274,9 +340,9 @@
                     data.data.forEach(item => {
                         const row = document.createElement('div'); row.className = 'result-row';
                         row.innerHTML = `<span>${item.nom}</span><span>${item.reference} <button class="btn-copy" onclick="copierTexte('${item.reference}', event)">${SVG_COPY}</button></span>`;
-                        row.addEventListener('click', () => ouvrirFicheObjet(item)); zoneResultats.appendChild(row);
+                        row.addEventListener('click', () => { triggerHaptic(); ouvrirFicheObjet(item); }); zoneResultats.appendChild(row);
                     });
-                } else { zoneResultats.innerHTML = "<p style='font-size:0.85rem;color:#FFA8A8;text-align:center;'>Aucune correspondance active.</p>"; }
+                } else { zoneResultats.innerHTML = "<p style='font-size:0.85rem;color:#FCA5A5;text-align:center;'>Aucune correspondance active.</p>"; }
             }).catch(e => { msgRecherche.style.display = 'none'; afficherAlerte("Erreur", "Impossible de joindre le serveur."); });
         });
 
@@ -288,14 +354,19 @@
             blocScanner.style.display = 'none'; modeSelector.style.display = 'none';
             const refRow = `<p>Référence : <span class="valeur">${item.reference} <button class="btn-copy" onclick="copierTexte('${item.reference}', event)">${SVG_COPY}</button></span></p>`;
             
-            if (item.estSorti) { afficherAlerte("⚠️ Alerte Anomalie", "Cet objet est enregistré comme étant SORTI de l'inventaire !"); }
+            if (item.estSorti) { 
+                playErrorBeep(); 
+                afficherAlerte("⚠️ Alerte Anomalie", "Cet objet est enregistré comme étant SORTI de l'inventaire !"); 
+            }
 
             if (localStorage.getItem('app_role') === 'admin') {
                 let dateFormatee = item.dateAjout ? new Date(item.dateAjout).toLocaleDateString('fr-FR') : "Inconnue";
                 let dateSortieFormatee = item.dateSortie ? "le " + new Date(item.dateSortie).toLocaleDateString('fr-FR') : "En stock actif";
                 zoneDetails.innerHTML = refRow + `<p>Catégorie : <span class="valeur">${item.categorie}</span></p><p>Emplacement : <span class="valeur">${item.emplacement}</span></p><p>Date d'ajout : <span class="valeur">${dateFormatee}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Statut sortie : <span class="valeur">${dateSortieFormatee}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "Personne"}</span></p>`;
             } else { zoneDetails.innerHTML = refRow + `<p>Nom de l'objet : <span class="valeur">${item.nom}</span></p><p>Emplacement actuel : <span class="valeur">${item.emplacement}</span></p>`; }
-            if (item.estSorti) { document.getElementById('actions-actives').style.display = 'none'; document.getElementById('btn-reintegrer').style.display = 'block'; } else { document.getElementById('actions-actives').style.display = 'flex'; document.getElementById('btn-reintegrer').style.display = 'none'; }
+            
+            if (item.estSorti) { document.getElementById('actions-actives').style.display = 'none'; document.getElementById('btn-reintegrer').style.display = 'block'; } 
+            else { document.getElementById('actions-actives').style.display = 'flex'; document.getElementById('btn-reintegrer').style.display = 'none'; }
             infoCardRafale.style.display = 'none'; infoCardUnique.style.display = 'block'; blocInfos.style.display = 'flex';
         }
 
@@ -307,7 +378,7 @@
                 if(d.result === "success" && d.data.length > 0) {
                     container.innerHTML = d.data.map(log => {
                         let dObj = new Date(log.date); let dStr = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-                        return `<div class="hist-row"><b>${dStr}</b> [${log.action}] par <i>${log.utilisateur}</i> : <br>${log.detail}</div>`;
+                        return `<div class="hist-row"><b>${dStr}</b> <span style="color:#60A5FA;">[${log.action}]</span> par <i>${log.utilisateur}</i> : <br><span style="color:var(--text-muted);">${log.detail}</span></div>`;
                     }).join('');
                 } else { container.textContent = "Aucun historique consigné pour cet objet."; }
             }).catch(() => { container.textContent = "Erreur de chargement."; });
@@ -332,7 +403,7 @@
         });
 
         document.getElementById('btn-reintegrer').addEventListener('click', function() { document.getElementById('custom-prompt').style.display = 'flex'; });
-        document.getElementById('btn-prompt-cancel').addEventListener('click', () => { document.getElementById('custom-prompt').style.display = 'none'; });
+        document.getElementById('btn-prompt-cancel').addEventListener('click', () => { document.getElementById('custom-prompt').style.display = 'none'; triggerHaptic(); });
         document.getElementById('btn-prompt-ok').addEventListener('click', () => {
             let loc = document.getElementById('prompt-input').value.trim(); if(!loc) return; document.getElementById('custom-prompt').style.display = 'none';
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "reintegrer_stock", reference: referenceScannee, emplacement: loc, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
@@ -345,9 +416,10 @@
             html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 250, height: 250} }, false); html5QrcodeScanner.render(onScanSuccess, onScanFailure); 
         });
 
-        // CORRECTIF 2 : ALERTE ANOMALIE EN MODE RAFALE
         function onScanSuccess(decodedText, decodedResult) { 
             const ref = decodedText.trim().toUpperCase();
+            triggerHaptic(); // Confirmation physique (Silencieuse)
+            
             if (modeActuel === "unique") {
                 arreterScanner(); referenceScannee = ref; msgRecherche.style.display = 'block';
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: ref }) }).then(res => res.json()).then(data => {
@@ -355,19 +427,20 @@
                 });
             } else if (modeActuel === "rafale") {
                 if (!listeRafale.includes(ref)) {
-                    listeRafale.push(ref); rafaleCount.textContent = listeRafale.length; if (navigator.vibrate) navigator.vibrate(200);
+                    listeRafale.push(ref); rafaleCount.textContent = listeRafale.length; 
                     
                     const item = document.createElement('div'); item.className = 'rafale-item'; item.id = 'rafale-item-' + ref;
                     item.innerHTML = `<span>${ref} ⏳</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`; 
                     rafaleItems.prepend(item); 
                     
-                    // Vérification asynchrone pour l'alerte d'anomalie
+                    // Vérification asynchrone pour l'alerte sonore d'anomalie
                     fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", reference: ref, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
                     .then(res => res.json()).then(data => {
                         const domItem = document.getElementById('rafale-item-' + ref);
                         if(data.result === "success" && data.estSorti) {
-                            if(domItem) domItem.innerHTML = `<span style="color:#FCA5A5;">⚠️ ${ref} (DÉJÀ SORTI)</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
-                            afficherAlerte("⚠️ Anomalie Détectée", `L'objet scanné (${ref}) est enregistré comme étant déjà SORTI !`);
+                            playErrorBeep(); // 🔊 SEUL BIP AUTORISÉ : ALERTE ANOMALIE
+                            if(domItem) domItem.innerHTML = `<span style="color:#FCA5A5; font-weight:bold;">⚠️ ${ref} (DÉJÀ SORTI)</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
+                            afficherAlerte("⚠️ Anomalie", `L'objet scanné (${ref}) est DÉJÀ SORTI !`);
                         } else {
                             if(domItem) domItem.innerHTML = `<span>${ref}</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
                         }
@@ -387,6 +460,7 @@
         document.getElementById('btn-annuler-action').addEventListener('click', function() { window.location.reload(); });
 
         document.getElementById('btn-valider-deplacer').addEventListener('click', function() {
+            triggerHaptic();
             const newVal = document.getElementById('nouvel-emplacement').value.trim(); if(!newVal) return afficherAlerte("Attention", "Saisissez une zone.");
             const btn = document.getElementById('btn-valider-deplacer'); btn.textContent = "Mise à jour..."; btn.disabled = true;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: (modeActuel === "unique") ? "deplacer" : "deplacer_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), nouvelEmplacement: newVal, reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
@@ -396,14 +470,16 @@
         });
 
         document.getElementById('btn-ouvrir-modal').addEventListener('click', function() { 
+            triggerHaptic();
             const motif = document.getElementById('motif-sortie').value.trim(); if(!motif) return afficherAlerte("Attention", "Indiquez un motif de sortie."); 
             document.getElementById('modal-motif-rappel').textContent = motif;
             document.getElementById('modal-nom-article').textContent = (modeActuel === "unique") ? document.getElementById('info-nom').textContent : `Le lot de ${listeRafale.length} articles`;
             document.getElementById('modal-confirmation').style.display = 'flex'; 
         });
 
-        document.getElementById('btn-annuler-sortie').addEventListener('click', function() { document.getElementById('modal-confirmation').style.display = 'none'; });
+        document.getElementById('btn-annuler-sortie').addEventListener('click', function() { document.getElementById('modal-confirmation').style.display = 'none'; triggerHaptic(); });
         document.getElementById('btn-confirmer-sortie').addEventListener('click', function() {
+            triggerHaptic();
             const btn = document.getElementById('btn-confirmer-sortie'); btn.disabled = true;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: (modeActuel === "unique") ? "sortir" : "sortir_rafale", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), motif: document.getElementById('motif-sortie').value.trim(), reference: referenceScannee, references: listeRafale }) }).then(res => res.json()).then(data => {
                 document.getElementById('modal-confirmation').style.display = 'none'; if(data.result === "success") afficherSucces("📦", "Sortie réussie", (modeActuel === "unique") ? "L'article a été archivé." : `<b>${data.count} articles</b> archivés.`); else afficherAlerte("Erreur", "L'opération a échoué.");
@@ -412,7 +488,7 @@
         });
 
         function afficherSucces(icone, titre, texte) { blocInfos.style.display = 'none'; document.getElementById('result-icon').textContent = icone; document.getElementById('result-titre').textContent = titre; document.getElementById('result-texte').innerHTML = texte; resultBox.style.display = 'flex'; }
-        document.getElementById('btn-nouveau-scan').addEventListener('click', function() { window.location.reload(); });
+        document.getElementById('btn-nouveau-scan').addEventListener('click', function() { triggerHaptic(); window.location.reload(); });
     </script>
     <script>
         let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });

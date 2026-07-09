@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administration</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>
         if (!localStorage.getItem('app_token') || localStorage.getItem('app_role') !== 'admin') { 
@@ -14,72 +14,112 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-blue-hover: #2563EB;
+            --accent-green: #10B981;
+            --accent-orange: #F59E0B;
+            --accent-red: #EF4444;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.4rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
 
         .admin-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
-        .nav-tile { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 12px 5px; text-align: center; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: #FFFFFF; transition: all 0.2s; }
-        .nav-tile.active { background: #3B82F6; border-color: #60A5FA; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+        .nav-tile { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 5px; text-align: center; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: var(--text-muted); transition: all 0.2s; backdrop-filter: blur(10px); }
+        .nav-tile.active { background: var(--accent-blue); border-color: rgba(96, 165, 250, 0.5); color: #FFFFFF; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
 
-        .admin-section { display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 15px; flex-direction: column; gap: 15px; }
-        .admin-section.active { display: flex; }
+        .glass-card { 
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; 
+            display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
 
+        .admin-section { display: none; }
+        .admin-section.active { display: flex; flex-direction: column; gap: 15px; }
+
+        /* Widgets du Dashboard */
         .widget-row { display: flex; gap: 10px; }
-        .widget { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; text-align: center; }
+        .widget { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; text-align: center; }
         .widget-num { font-size: 1.6rem; font-weight: 900; color: #FFFFFF; }
-        .widget-label { font-size: 0.7rem; color: #D1D5DB; text-transform: uppercase; margin-top: 2px; }
-        .widget-meteo { font-size: 1.8rem; line-height: 1; }
+        .widget-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; font-weight: bold; }
+        .widget-meteo { font-size: 2rem; line-height: 1; }
 
-        .list-panel { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .list-panel h3 { font-size: 0.9rem; color: #60A5FA; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
-        .panel-row { font-size: 0.8rem; color: #D1D5DB; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
+        .list-panel { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; border: 1px solid var(--glass-border); }
+        .list-panel h3 { font-size: 0.9rem; color: #60A5FA; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
+        .panel-row { font-size: 0.85rem; color: var(--text-muted); padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; }
         .panel-row:last-child { border-bottom: none; }
 
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 0.85rem; color: #D1D5DB; font-weight: bold; }
-        input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; }
+        /* Formulaires */
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+        input, select, textarea { background-color: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; color: var(--text-main); font-size: 1rem; width: 100%; outline: none; transition: border-color 0.2s; }
         input:focus, select:focus { border-color: #60A5FA; }
-        option { background-color: #1A2B56; color: white; }
+        option { background-color: #1E293B; color: white; }
 
-        .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; cursor: pointer; transition: transform 0.2s; width: 100%; font-size: 1rem; }
-        .btn-action:active { transform: scale(0.95); }
-        .btn-export { background: linear-gradient(135deg, #10B981, #059669); }
-        .file-upload-label { background-color: rgba(96, 165, 250, 0.05); border: 2px dashed #60A5FA; color: #60A5FA; padding: 20px 10px; border-radius: 12px; text-align: center; display: block; cursor: pointer; transition: all 0.2s; font-size: 1.05rem; font-weight: bold; }
+        .btn-action { background-color: var(--accent-blue); border: none; padding: 14px; border-radius: 12px; color: #FFFFFF; font-weight: bold; cursor: pointer; transition: transform 0.2s; width: 100%; font-size: 1rem; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .btn-action:active { transform: scale(0.96); background-color: var(--accent-blue-hover); }
+        .btn-export { background: var(--accent-green); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        .btn-export:active { background: #059669; }
+        
+        .file-upload-label { background-color: rgba(96, 165, 250, 0.05); border: 2px dashed #60A5FA; color: #60A5FA; padding: 20px 10px; border-radius: 12px; text-align: center; display: block; cursor: pointer; transition: all 0.2s; font-size: 1rem; font-weight: bold; }
+        .file-upload-label:active { background: rgba(96, 165, 250, 0.1); }
 
-        .btn-delete-tag { background: transparent; border: none; color: #FCA5A5; font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0; margin-left: 6px; }
+        .btn-delete-tag { background: transparent; border: none; color: #FCA5A5; font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0 4px; margin-left: 6px; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; text-decoration: none; color: var(--text-main); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
+        .btn-global-help:active { transform: scale(0.85); background: var(--glass-highlight); }
+
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
-        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
-        .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; font-weight: 800; }
+        .modal-message { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-modal-ok { background: var(--accent-blue); border: none; color: #FFFFFF; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
         
         .modal-buttons { display: flex; gap: 15px; }
-        .btn-cancel { background: transparent; border: 1px solid #D1D5DB; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: 600; cursor: pointer; }
-        .btn-confirm-danger { background: #EF4444; border: none; color: #FFFFFF; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: transparent; border: 1px solid var(--glass-border); color: #FFFFFF; padding: 12px; border-radius: 10px; flex: 1; font-weight: 600; cursor: pointer; }
+        .btn-cancel:active { background: var(--glass-highlight); }
+        .btn-confirm-danger { background: var(--accent-red); border: none; color: #FFFFFF; padding: 12px; border-radius: 10px; flex: 1; font-weight: bold; cursor: pointer; }
+        .btn-confirm-danger:active { transform: scale(0.95); }
 
-        .diag-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.05); }
+        .diag-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid var(--glass-border); }
 
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Administration</h1></div>
+        <div class="header"><button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button><h1>Administration</h1></div>
         
         <div class="admin-nav">
-            <div class="nav-tile active" onclick="switchSection('sect-dash', this)">📊 Statis.</div>
-            <div class="nav-tile" onclick="switchSection('sect-struct', this)">🏷️ Données</div>
-            <div class="nav-tile" onclick="switchSection('sect-csv', this)">📥 Flux CSV</div>
-            <div class="nav-tile" onclick="switchSection('sect-team', this)">👥 Équipe</div>
-            <div class="nav-tile" onclick="switchSection('sect-diag', this)" style="grid-column: span 2;">🩺 Diagnostics</div>
+            <div class="nav-tile active" onclick="triggerHaptic(); switchSection('sect-dash', this)">📊 Statis.</div>
+            <div class="nav-tile" onclick="triggerHaptic(); switchSection('sect-struct', this)">🏷️ Données</div>
+            <div class="nav-tile" onclick="triggerHaptic(); switchSection('sect-csv', this)">📥 Flux CSV</div>
+            <div class="nav-tile" onclick="triggerHaptic(); switchSection('sect-team', this)">👥 Équipe</div>
+            <div class="nav-tile" onclick="triggerHaptic(); switchSection('sect-diag', this)" style="grid-column: span 2;">🩺 Diagnostics</div>
         </div>
 
         <div class="admin-section active" id="sect-dash">
@@ -88,92 +128,92 @@
                 <div class="widget"><div class="widget-num" id="stat-sorti">-</div><div class="widget-label">Sortis</div></div>
             </div>
             <div class="widget-row">
-                <div class="widget" style="display:flex; align-items:center; justify-content:space-around; padding:10px;">
+                <div class="widget" style="display:flex; align-items:center; justify-content:space-around; padding:15px 10px;">
                     <div style="text-align:left;"><div class="widget-num" id="stat-meteo">- %</div><div class="widget-label">Fiabilité</div></div>
                     <div class="widget-meteo" id="stat-meteo-icon">☀️</div>
                 </div>
                 <div class="widget" style="border-color: rgba(245, 158, 11, 0.3);">
-                    <div class="widget-num" id="stat-dormant" style="color:#F59E0B;">-</div>
+                    <div class="widget-num" id="stat-dormant" style="color:var(--accent-orange);">-</div>
                     <div class="widget-label">Dormants (+6m)</div>
                 </div>
             </div>
 
-            <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
-                <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px;">📍 PALMARÈS DES EMPLACEMENTS</p>
+            <div class="glass-card" style="padding:15px;">
+                <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px; text-transform:uppercase;">📍 Palmarès des emplacements</p>
                 <canvas id="chartEmp" height="180"></canvas>
             </div>
-            <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
-                <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px;">📈 ÉVOLUTION TEMPORELLE DU STOCK</p>
+            <div class="glass-card" style="padding:15px;">
+                <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px; text-transform:uppercase;">📈 Évolution temporelle</p>
                 <canvas id="chartEvol" height="140"></canvas>
             </div>
-            <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
-                <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px;">🎨 RÉPARTITION DES CATÉGORIES</p>
+            <div class="glass-card" style="padding:15px;">
+                <p style="font-size:0.75rem; color:#60A5FA; text-align:center; font-weight:bold; margin-bottom:5px; text-transform:uppercase;">🎨 Répartition Catégories</p>
                 <canvas id="chartCat" height="180"></canvas>
             </div>
 
             <div class="list-panel">
                 <h3>🚨 FIL D'ALERTE DES ANOMALIES</h3>
-                <div id="panel-anomalies"><p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune alerte récente.</p></div>
+                <div id="panel-anomalies"><p style="font-size:0.85rem;color:var(--text-muted);text-align:center;">Aucune alerte récente.</p></div>
             </div>
             <div class="list-panel">
                 <h3>👥 ACTIVITÉ DE L'ÉQUIPE (AUJOURD'HUI)</h3>
-                <div id="panel-equipe"><p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune action enregistrée aujourd'hui.</p></div>
+                <div id="panel-equipe"><p style="font-size:0.85rem;color:var(--text-muted);text-align:center;">Aucune action enregistrée aujourd'hui.</p></div>
             </div>
             <div class="list-panel">
                 <h3>📤 FLUX DES SORTIES RÉCENTES</h3>
-                <div id="panel-sorties"><p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune sortie consignée.</p></div>
+                <div id="panel-sorties"><p style="font-size:0.85rem;color:var(--text-muted);text-align:center;">Aucune sortie consignée.</p></div>
             </div>
         </div>
 
-        <div class="admin-section" id="sect-struct">
+        <div class="admin-section glass-card" id="sect-struct">
             <div class="form-group">
                 <label>📍 Ajouter un Emplacement Structuré</label>
                 <input type="text" id="new-emp" placeholder="Ex: Rayon A > Étagère 1">
-                <button class="btn-action" id="btn-add-emp" style="background-color: #3B82F6; margin-top:5px;">➕ Enregistrer la zone</button>
+                <button class="btn-action" id="btn-add-emp" style="margin-top:5px;" onclick="triggerHaptic()">➕ Enregistrer la zone</button>
             </div>
-            <p style="font-size: 0.8rem; color: #9CA3AF;">Zones configurées :</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Zones configurées :</p>
             <div id="emp-list" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px;"></div>
 
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1);">
+            <hr style="border:0; border-top:1px solid var(--glass-border);">
 
             <div class="form-group">
                 <label>🏷️ Ajouter une Catégorie</label>
                 <input type="text" id="new-cat" placeholder="Ex: Céramique">
-                <button class="btn-action" id="btn-add-cat" style="background-color: #10B981; margin-top:5px;">➕ Enregistrer la catégorie</button>
+                <button class="btn-action" id="btn-add-cat" style="background-color: var(--accent-green); margin-top:5px; box-shadow:none;" onclick="triggerHaptic()">➕ Enregistrer la catégorie</button>
             </div>
-            <p style="font-size: 0.8rem; color: #9CA3AF;">Catégories configurées :</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Catégories configurées :</p>
             <div id="cat-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
         </div>
 
-        <div class="admin-section" id="sect-csv">
+        <div class="admin-section glass-card" id="sect-csv">
             <div class="form-group">
                 <label>📥 Importation / Mise à jour en masse</label>
                 
-                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.75rem; color: #D1D5DB;">
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 10px; margin-bottom: 10px; font-size: 0.8rem; color: #D1D5DB;">
                     <p style="color:#10B981; font-weight:bold; margin-bottom:5px;">⚠️ Ordre strict des 11 colonnes (séparateur point-virgule ;) :</p>
-                    <ol style="padding-left: 20px; font-family: monospace; color: #93C5FD; margin-bottom:0; line-height:1.4;">
+                    <ol style="padding-left: 20px; font-family: monospace; color: #93C5FD; margin-bottom:0; line-height:1.5;">
                         <li>Reference</li><li>Nom</li><li>Emplacement</li><li>Date_Ajout</li><li>Utilisateur</li>
                         <li>Image_QR</li><li>Date_Sortie</li><li>Motif_Sortie</li><li>Utilisateur_Sortie</li><li>Categorie</li><li>Notes</li>
                     </ol>
                 </div>
                 
-                <p style="font-size:0.8rem; color:#D1D5DB; margin-bottom:5px;">Si la référence existe, la fiche se mettra à jour sans doublons.</p>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">Si la référence existe, la fiche se mettra à jour sans doublons.</p>
                 <input type="file" id="csv-file" accept=".csv" style="display: none;" />
-                <label for="csv-file" class="file-upload-label">
+                <label for="csv-file" class="file-upload-label" onclick="triggerHaptic()">
                     <span id="file-name-display">📁 Toucher pour choisir un fichier .CSV</span>
                 </label>
-                <button class="btn-action" id="btn-import-mass" style="margin-top:5px;">Lancer le traitement du fichier</button>
+                <button class="btn-action" id="btn-import-mass" style="margin-top:10px;" onclick="triggerHaptic()">Lancer le traitement du fichier</button>
             </div>
 
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1);">
+            <hr style="border:0; border-top:1px solid var(--glass-border);">
 
             <div class="form-group">
                 <label>📤 Sauvegarde et Export complet</label>
-                <button class="btn-action btn-export" id="btn-export">📊 Télécharger l'inventaire complet</button>
+                <button class="btn-action btn-export" id="btn-export" onclick="triggerHaptic()">📊 Télécharger l'inventaire complet</button>
             </div>
         </div>
 
-        <div class="admin-section" id="sect-team">
+        <div class="admin-section glass-card" id="sect-team">
             <form id="form-creer" style="display:flex; flex-direction:column; gap:12px;">
                 <h3 style="font-size: 0.95rem; color: #60A5FA;">➕ Créer un compte d'accès</h3>
                 <div class="form-group"><input type="text" id="creer-login" placeholder="Identifiant (Login)" required></div>
@@ -185,13 +225,13 @@
                         <option value="admin">Administrateur complet</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-action">Créer l'utilisateur</button>
+                <button type="submit" class="btn-action" onclick="triggerHaptic()">Créer l'utilisateur</button>
             </form>
 
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 5px 0;">
+            <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 5px 0;">
 
             <form id="form-modifier" style="display:flex; flex-direction:column; gap:12px;">
-                <h3 style="font-size: 0.95rem; color: #F59E0B;">✏️ Modifier ou Supprimer un compte</h3>
+                <h3 style="font-size: 0.95rem; color: var(--accent-orange);">✏️ Modifier ou Supprimer un compte</h3>
                 <div class="form-group"><select id="select-user" required><option value="">Chargement de l'équipe...</option></select></div>
                 <div class="form-group">
                     <select id="modif-role">
@@ -202,23 +242,25 @@
                 </div>
                 <div class="form-group"><input type="text" id="modif-mdp" placeholder="Changer le mot de passe (optionnel)"></div>
                 
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn-action" style="background-color: #F59E0B; flex: 2;">Mettre à jour</button>
-                    <button type="button" class="btn-action" id="btn-delete-user" style="background-color: transparent; border: 2px solid #EF4444; color: #FCA5A5; flex: 1;">🗑️ Supprimer</button>
+                <div style="display: flex; gap: 10px; margin-top:5px;">
+                    <button type="submit" class="btn-action" style="background-color: var(--accent-orange); flex: 2;" onclick="triggerHaptic()">Mettre à jour</button>
+                    <button type="button" class="btn-action" id="btn-delete-user" style="background-color: transparent; border: 2px solid var(--accent-red); color: #FCA5A5; flex: 1; box-shadow:none;" onclick="triggerHaptic()">🗑️ Supprimer</button>
                 </div>
             </form>
         </div>
 
-        <div class="admin-section" id="sect-diag">
+        <div class="admin-section glass-card" id="sect-diag">
             <h3 style="color:#60A5FA;">🩺 Diagnostic de santé système</h3>
-            <p style="font-size:0.8rem; color:#D1D5DB; margin-bottom:10px;">Cet outil vérifie que tous les modules de l'application (Serveur, Caméra, Mémoire) fonctionnent correctement.</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Cet outil vérifie que tous les modules de l'application (Serveur, Caméra, Mémoire) fonctionnent correctement.</p>
             <div id="diag-results" style="margin-bottom:10px;"></div>
-            <button class="btn-action" onclick="runDiagnostics()" style="background:#8B5CF6;">Lancer le contrôle système</button>
+            <button class="btn-action" onclick="triggerHaptic(); runDiagnostics()" style="background:#8B5CF6;">Lancer le contrôle système</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="custom-modal"><div class="modal-content"><div class="modal-icon" id="modal-icon">✅</div><h3 class="modal-title" id="modal-title">Succès</h3><p class="modal-message" id="modal-text">Action effectuée.</p><button class="btn-modal-ok" id="btn-fermer-modal">OK</button></div></div>
-    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><div class="modal-icon" id="modal-icon">⚠️</div><h3 class="modal-title">Confirmation</h3><p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel">Annuler</button><button class="btn-confirm-danger" id="btn-confirm-ok">Confirmer</button></div></div></div>
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
+
+    <div class="modal-overlay" id="custom-modal"><div class="modal-content"><div class="modal-icon" id="modal-icon">✅</div><h3 class="modal-title" id="modal-title">Succès</h3><p class="modal-message" id="modal-text">Action effectuée.</p><button class="btn-modal-ok" id="btn-fermer-modal" onclick="triggerHaptic()">OK</button></div></div>
+    <div class="modal-overlay" id="custom-confirm"><div class="modal-content"><div class="modal-icon" id="modal-icon">⚠️</div><h3 class="modal-title">Confirmation</h3><p class="modal-message" id="confirm-text">Êtes-vous sûr ?</p><div class="modal-buttons"><button class="btn-cancel" id="btn-confirm-cancel" onclick="triggerHaptic()">Annuler</button><button class="btn-confirm-danger" id="btn-confirm-ok" onclick="triggerHaptic()">Confirmer</button></div></div></div>
 
     <div class="app-version" id="version-display"></div>
 
@@ -226,7 +268,9 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+
+        window.triggerHaptic = function() { if (navigator.vibrate) navigator.vibrate(40); };
 
         function switchSection(sectionId, tileEl) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
@@ -252,7 +296,7 @@
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; actionConfirmationCallback = null; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; if(actionConfirmationCallback) actionConfirmationCallback(); });
 
-        // CORRECTIF 4 : FONCTIONS DE CHARGEMENT RETOURNANT DES PROMESSES POUR ÉVITER LE CONFLIT GOOGLE SCRIPT
+        // CHARGEMENT SÉQUENTIEL (Adapté pour fond sombre ChartJS)
         function chargerDashboard() {
             return fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "get_dashboard" }) })
             .then(res => res.json()).then(data => {
@@ -264,22 +308,25 @@
                     document.getElementById('stat-dormant').textContent = d.deadStockCount;
                     document.getElementById('stat-meteo-icon').textContent = d.meteoScore >= 90 ? "☀️" : (d.meteoScore >= 75 ? "⛅" : "🌧️");
 
-                    new Chart(document.getElementById('chartCat'),{ type:'pie', data:{ labels:Object.keys(d.categories), datasets:[{data:Object.values(d.categories), backgroundColor:['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6']}] }, options:{plugins:{legend:{labels:{color:'white'}}}} });
-                    new Chart(document.getElementById('chartEmp'),{ type:'bar', data:{ labels:Object.keys(d.emplacements), datasets:[{label:'Objets', data:Object.values(d.emplacements), backgroundColor:'#60A5FA'}] }, options:{scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'white'}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'white'}}},plugins:{legend:{display:false}}} });
-                    new Chart(document.getElementById('chartEvol'),{ type:'line', data:{ labels:Object.keys(d.evolutionTemporelle), datasets:[{data:Object.values(d.evolutionTemporelle), borderColor:'#10B981', tension:0.2, fill:false}] }, options:{scales:{x:{ticks:{color:'white'}},y:{ticks:{color:'white'}}},plugins:{legend:{display:false}}} });
+                    const chartOptions = { plugins: { legend: { labels: { color: '#F8FAFC' } } } };
+                    const gridOptions = { scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#F8FAFC' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#F8FAFC' } } }, plugins: { legend: { display: false } } };
+
+                    new Chart(document.getElementById('chartCat'),{ type:'pie', data:{ labels:Object.keys(d.categories), datasets:[{data:Object.values(d.categories), backgroundColor:['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6']}] }, options: chartOptions });
+                    new Chart(document.getElementById('chartEmp'),{ type:'bar', data:{ labels:Object.keys(d.emplacements), datasets:[{label:'Objets', data:Object.values(d.emplacements), backgroundColor:'#60A5FA'}] }, options: gridOptions });
+                    new Chart(document.getElementById('chartEvol'),{ type:'line', data:{ labels:Object.keys(d.evolutionTemporelle), datasets:[{data:Object.values(d.evolutionTemporelle), borderColor:'#10B981', tension:0.2, fill:false}] }, options: gridOptions });
 
                     let panAnom = document.getElementById('panel-anomalies');
-                    if(d.anomaliesFil.length > 0) { panAnom.innerHTML = d.anomaliesFil.map(a => `<div class="panel-row"><span style="color:#FCA5A5;">⚠️ ${a.nom} (${a.reference})</span><span>${a.detail.split(':')[1] || a.detail}</span></div>`).join(''); } 
-                    else { panAnom.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune alerte récente.</p>`; }
+                    if(d.anomaliesFil.length > 0) { panAnom.innerHTML = d.anomaliesFil.map(a => `<div class="panel-row"><span style="color:#FCA5A5; font-weight:bold;">⚠️ ${a.nom} (${a.reference})</span><span>${a.detail.split(':')[1] || a.detail}</span></div>`).join(''); } 
+                    else { panAnom.innerHTML = `<p style="font-size:0.85rem;color:var(--text-muted);text-align:center;">Aucune alerte récente.</p>`; }
 
                     let panEq = document.getElementById('panel-equipe');
                     let eqKeys = Object.keys(d.teamActivity);
-                    if(eqKeys.length > 0) { panEq.innerHTML = eqKeys.map(k => `<div class="panel-row"><span>👤 ${k}</span><span class="rafale-count" style="background:#10B981; padding:2px 8px; border-radius:4px;">${d.teamActivity[k]} actions</span></div>`).join(''); } 
-                    else { panEq.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune action enregistrée aujourd'hui.</p>`; }
+                    if(eqKeys.length > 0) { panEq.innerHTML = eqKeys.map(k => `<div class="panel-row"><span style="color:white;">👤 ${k}</span><span style="background:var(--accent-green); color:white; font-weight:bold; padding:4px 10px; border-radius:8px;">${d.teamActivity[k]} actions</span></div>`).join(''); } 
+                    else { panEq.innerHTML = `<p style="font-size:0.85rem;color:var(--text-muted);text-align:center;">Aucune action enregistrée aujourd'hui.</p>`; }
 
                     let panSorties = document.getElementById('panel-sorties');
-                    if(d.recentExits.length > 0) { panSorties.innerHTML = d.recentExits.map(s => `<div class="panel-row"><span>📦 ${s.nom}</span><span style="font-size:0.75rem; font-style:italic;">Motif: ${s.motif} (${s.utilisateur})</span></div>`).join(''); } 
-                    else { panSorties.innerHTML = `<p style="font-size:0.8rem;color:#9CA3AF;text-align:center;">Aucune sortie consignée.</p>`; }
+                    if(d.recentExits.length > 0) { panSorties.innerHTML = d.recentExits.map(s => `<div class="panel-row"><span style="color:white;">📦 ${s.nom}</span><span style="font-size:0.8rem; font-style:italic;">${s.motif} (${s.utilisateur})</span></div>`).join(''); } 
+                    else { panSorties.innerHTML = `<p style="font-size:0.85rem;color:var(--text-muted);text-align:center;">Aucune sortie consignée.</p>`; }
                 }
             }).catch(e => console.error("Erreur Dashboard"));
         }
@@ -289,7 +336,7 @@
                 if(d.result === "success") {
                     d.data.sort((a, b) => { if(a === "Non classé") return 1; if(b === "Non classé") return -1; return a.localeCompare(b); });
                     const zone = document.getElementById('cat-list'); zone.innerHTML = "";
-                    d.data.forEach(c => zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:12px; font-size:0.85rem; display:inline-flex; align-items:center;">${c} <button type="button" class="btn-delete-tag" onclick="supprCat('${c}')">×</button></span>`);
+                    d.data.forEach(c => zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:8px 14px; border-radius:12px; font-size:0.9rem; display:inline-flex; align-items:center;">${c} <button type="button" class="btn-delete-tag" onclick="triggerHaptic(); supprCat('${c}')">×</button></span>`);
                 }
             }).catch(e => console.error("Erreur Catégories"));
         }
@@ -306,7 +353,7 @@
                 if(d.result === "success") {
                     d.data.sort((a, b) => a.localeCompare(b));
                     const zone = document.getElementById('emp-list'); zone.innerHTML = "";
-                    d.data.forEach(e => zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:12px; font-size:0.85rem; display:inline-flex; align-items:center;">${e} <button type="button" class="btn-delete-tag" onclick="supprEmp('${e}')">×</button></span>`);
+                    d.data.forEach(e => zone.innerHTML += `<span style="background:rgba(255,255,255,0.1); padding:8px 14px; border-radius:12px; font-size:0.9rem; display:inline-flex; align-items:center;">${e} <button type="button" class="btn-delete-tag" onclick="triggerHaptic(); supprEmp('${e}')">×</button></span>`);
                 }
             }).catch(e => console.error("Erreur Emplacements"));
         }
@@ -341,6 +388,7 @@
         document.getElementById('form-modifier').addEventListener('submit', function(e) { e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "modifier_utilisateur", targetLogin: document.getElementById('select-user').value, newRole: document.getElementById('modif-role').value, newPassword: document.getElementById('modif-mdp').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Succès", `Modifications enregistrées.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } btn.disabled = false; }); });
 
         document.getElementById('csv-file').addEventListener('change', function(e) {
+            triggerHaptic();
             const display = document.getElementById('file-name-display');
             if(this.files && this.files.length > 0) { display.innerHTML = `<span style="color:#10B981;">📄 ${this.files[0].name}</span>`; } else { display.textContent = "📁 Toucher pour choisir un fichier .CSV"; }
         });
@@ -381,7 +429,7 @@
                     data.data.forEach(r => { csvContent += `${clean(r.reference)};${clean(r.nom)};${clean(r.emplacement)};${clean(r.dateAjout)};${clean(r.utilisateur)};${clean(r.imageQR)};${clean(r.dateSortie)};${clean(r.motifSortie)};${clean(r.utilisateurSortie)};${clean(r.categorie)};${clean(r.notes)}\n`; });
                     const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "base_complete.csv"); document.body.appendChild(link); link.click();
                 }
-                btn.textContent = "📊 Télécharger l'inventaire complet";
+                btn.innerHTML = "📊 Télécharger l'inventaire complet";
             });
         });
 
@@ -392,16 +440,12 @@
             let start = Date.now();
             try { await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body: JSON.stringify({...payloadBase, action:"get_dashboard"})}); results.push({name: "Connexion Serveur", status: "🟢 OK ("+(Date.now()-start)+"ms)"}); } catch(e) { results.push({name: "Connexion Serveur", status: "🔴 ÉCHEC"}); }
             try { let stream = await navigator.mediaDevices.getUserMedia({video: true}); stream.getTracks().forEach(track => track.stop()); results.push({name: "Accès Caméra", status: "🟢 OK"}); } catch(e) { results.push({name: "Accès Caméra", status: "🔴 BLOQUÉ"}); }
-            try { localStorage.setItem('test', 'ok'); localStorage.removeItem('test'); results.push({name: "Mémoire (LocalStorage)", status: "🟢 OK"}); } catch(e) { results.push({name: "Mémoire (LocalStorage)", status: "🔴 PLEIN/BLOQUÉ"}); }
+            try { localStorage.setItem('test', 'ok'); localStorage.removeItem('test'); results.push({name: "Mémoire Locale", status: "🟢 OK"}); } catch(e) { results.push({name: "Mémoire Locale", status: "🔴 PLEIN/BLOQUÉ"}); }
             container.innerHTML = results.map(r => `<div class="diag-item"><span>${r.name}</span><span style="font-weight:bold;">${r.status}</span></div>`).join('');
         }
 
-        // CORRECTIF 4 : Exécution séquentielle pour éviter la surcharge du serveur Google
         window.addEventListener('DOMContentLoaded', () => { 
-            chargerDashboard()
-                .then(() => chargerCategories())
-                .then(() => chargerEmplacements())
-                .then(() => chargerUtilisateurs());
+            chargerDashboard().then(() => chargerCategories()).then(() => chargerEmplacements()).then(() => chargerUtilisateurs());
         });
     </script>
 </body>

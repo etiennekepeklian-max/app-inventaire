@@ -5,137 +5,202 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Inventaire Général</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-green: #10B981;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
         .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; width: 100%; justify-content: center; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        .btn-hist-global { color: #FFFFFF; text-decoration: none; font-size: 1.4rem; position: absolute; right: 0; background: none; border: none; cursor: pointer; display: none; transition: transform 0.2s; }
+        .btn-hist-global { color: var(--text-main); text-decoration: none; font-size: 1.4rem; position: absolute; right: 0; background: none; border: none; cursor: pointer; display: none; transition: transform 0.2s; }
         .btn-hist-global:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.4rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
 
-        .search-bar { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 12px; color: white; font-size: 1rem; outline: none; }
-        .search-bar::placeholder { color: #9CA3AF; }
+        /* 🌟 NOUVEAU : FILTRES MULTICRITÈRES CROISÉS */
+        .search-container { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .search-bar { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; color: white; font-size: 1rem; outline: none; }
+        .search-bar::placeholder { color: var(--text-muted); }
+        .filter-row-selects { display: flex; gap: 8px; }
+        .filter-select { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px; color: var(--text-main); font-size: 0.85rem; outline: none; }
+        .filter-select option { background: #1E293B; }
+        
         .filter-row { display: flex; gap: 8px; width: 100%; margin-bottom: 5px; }
-        .btn-filter { flex: 1; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #60A5FA; padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-filter.active { background: #3B82F6; color: white; border-color: #60A5FA; }
+        .btn-filter { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-muted); padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-filter.active { background: var(--accent-blue); color: white; border-color: rgba(96, 165, 250, 0.5); }
 
+        /* Liste et Cartes d'objets (Glassmorphism) */
         .stock-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
-        .stock-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; }
-        .stock-card:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+        .stock-card { background: var(--glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .stock-card:active { transform: scale(0.96); background: var(--glass-highlight); }
         .card-left { display: flex; flex-direction: column; gap: 4px; }
-        .card-title { font-size: 1rem; font-weight: bold; color: #FFFFFF; }
-        .card-ref { font-size: 0.8rem; font-family: monospace; color: #93C5FD; }
+        .card-title { font-size: 1.05rem; font-weight: bold; color: var(--text-main); }
+        .card-ref { font-size: 0.85rem; font-family: monospace; color: #93C5FD; }
         .card-right { text-align: right; display: flex; flex-direction: column; gap: 4px; }
         .card-loc { font-size: 0.85rem; color: #F59E0B; font-weight: 600; }
-        .card-cat { font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color: #D1D5DB; display: inline-block; width: max-content; align-self: flex-end; }
+        .card-cat { font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; color: var(--text-muted); display: inline-block; width: max-content; align-self: flex-end; }
         .status-badge-out { font-size: 0.75rem; color: #FCA5A5; font-weight: bold; }
 
-        .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
-        .btn-primary:active { transform: scale(0.98); }
+        /* 🌟 NOUVEAU : SKELETON LOADERS (Animation de chargement) */
+        @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+        .skeleton { background: linear-gradient(to right, rgba(255,255,255,0.05) 8%, rgba(255,255,255,0.1) 18%, rgba(255,255,255,0.05) 33%); background-size: 800px 100%; animation: shimmer 2s infinite linear; border-radius: 6px; }
+        .skeleton-card { display: flex; justify-content: space-between; }
+        .skeleton-text-lg { width: 120px; height: 18px; margin-bottom: 8px; }
+        .skeleton-text-sm { width: 80px; height: 14px; }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 92%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+        /* Boutons d'action */
+        .btn-primary { background-color: var(--accent-blue); border: none; padding: 14px; border-radius: 12px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .btn-primary:active { transform: scale(0.96); }
+
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; text-decoration: none; color: var(--text-main); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
+        .btn-global-help:active { transform: scale(0.85); background: var(--glass-highlight); }
+
+        /* Modales en Glassmorphism */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 92%; max-width: 380px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         .modal-title { font-size: 1.25rem; color: #60A5FA; margin-bottom: 12px; font-weight: bold; text-align: left; }
-        .modal-body { text-align: left; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: #D1D5DB; max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
-        .modal-body p { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 4px; }
+        
+        .modal-body { text-align: left; display: flex; flex-direction: column; gap: 8px; font-size: 0.95rem; color: var(--text-muted); max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
+        .modal-body p { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
         .modal-body span.valeur { color: white; font-weight: bold; }
         
-        .notes-area { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; font-size: 0.8rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
+        .notes-area { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; font-size: 0.85rem; color: #E5E7EB; max-height: 90px; overflow-y: auto; text-align: left; margin-bottom: 10px; white-space: pre-wrap; }
         .btn-copy { background: transparent; border: none; color: #60A5FA; cursor: pointer; margin-left: 5px; vertical-align: middle; }
 
-        .hist-row { font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 8px 0; color: #E5E7EB; text-align: left; line-height: 1.3;}
+        .hist-row { font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 0; color: #E5E7EB; text-align: left; line-height: 1.4;}
         .hist-row:last-child { border-bottom: none; }
         
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        /* 🌟 NOUVEAU : Modale Lecture Rapide (Double Tap) */
+        .quick-view-ref { font-size: 2.5rem; font-family: monospace; color: #60A5FA; font-weight: 900; letter-spacing: 2px; margin: 15px 0; }
+        .quick-view-qr { width: 160px; height: 160px; margin: 0 auto 20px auto; border-radius: 10px; border: 4px solid white; }
+
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <button class="btn-retour" onclick="history.back()">⬅</button>
+            <button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button>
             <h1>Inventaire Général</h1>
-            <button class="btn-hist-global" id="btn-global-hist" title="Historique Global" onclick="ouvrirHistoriqueGlobal()">🕒</button>
+            <button class="btn-hist-global" id="btn-global-hist" title="Historique Global" onclick="triggerHaptic(); ouvrirHistoriqueGlobal()">🕒</button>
         </div>
         
-        <input type="text" id="input-recherche" class="search-bar" placeholder="Rechercher nom, code, lieu, catégorie...">
+        <div class="search-container">
+            <input type="text" id="input-recherche" class="search-bar" placeholder="Rechercher nom, référence...">
+            <div class="filter-row-selects">
+                <select id="filter-cat" class="filter-select"><option value="">Toutes catégories</option></select>
+                <select id="filter-loc" class="filter-select"><option value="">Toutes zones</option></select>
+            </div>
+        </div>
         
         <div class="filter-row">
-            <button class="btn-filter active" id="tri-recent" onclick="changerTri('recent')">🕒 Récent</button>
-            <button class="btn-filter" id="tri-nom" onclick="changerTri('nom')">🔤 Nom</button>
-            <button class="btn-filter" id="tri-cat" onclick="changerTri('cat')">🏷️ Catégorie</button>
-            <button class="btn-filter" id="tri-lieu" onclick="changerTri('lieu')">📍 Lieu</button>
+            <button class="btn-filter active" id="tri-recent" onclick="triggerHaptic(); changerTri('recent')">🕒 Récent</button>
+            <button class="btn-filter" id="tri-nom" onclick="triggerHaptic(); changerTri('nom')">🔤 Nom</button>
+            <button class="btn-filter" id="tri-cat" onclick="triggerHaptic(); changerTri('cat')">🏷️ Catégorie</button>
+            <button class="btn-filter" id="tri-lieu" onclick="triggerHaptic(); changerTri('lieu')">📍 Lieu</button>
         </div>
-
-        <p id="msg-chargement" style="text-align:center; font-size:0.9rem; color:#60A5FA;">Synchronisation de la base... ⏳</p>
         
-        <div class="stock-list" id="liste-stock"></div>
+        <div class="stock-list" id="liste-stock">
+            <!-- Skeletons Loaders injectés en JS -->
+        </div>
     </div>
 
+    <!-- BOUTON D'AIDE GLOBAL -->
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
+
+    <!-- 🌟 NOUVEAU : MODALE LECTURE RAPIDE (DOUBLE TAP) -->
+    <div class="modal-overlay" id="modal-quick-view">
+        <div class="modal-content" style="align-items: center;">
+            <h3 style="color: white; font-size: 1.1rem; text-transform: uppercase;">Contrôle Rapide</h3>
+            <div class="quick-view-ref" id="quick-ref">REF-1234</div>
+            <img id="quick-qr" class="quick-view-qr" src="" alt="QR">
+            <button class="btn-primary" onclick="triggerHaptic(); document.getElementById('modal-quick-view').style.display='none'">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODALE FOUILLE / DESCRIPTIVE DE L'OBJET -->
     <div class="modal-overlay" id="modal-fiche">
         <div class="modal-content">
             <h3 class="modal-title" id="fiche-nom">Détails de l'article</h3>
             <div class="modal-body" id="fiche-corps"></div>
             
-            <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:6px; font-size:0.85rem; padding:10px;">🕒 Historique complet des mouvements</button>
+            <button class="btn-primary" id="btn-hist-indiv" style="background:#8B5CF6; margin-bottom:10px; font-size:0.9rem;" onclick="triggerHaptic()">🕒 Historique complet des mouvements</button>
             
-            <div id="wrapper-kit" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px; margin-bottom:8px; display:none;">
-                <p style="font-size:0.8rem; color:#60A5FA; font-weight:bold; text-align:left; margin-bottom:4px;">📦 Assembler des articles dans ce Lot</p>
+            <div id="wrapper-kit" style="background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); padding:12px; border-radius:12px; margin-bottom:10px; display:none;">
+                <p style="font-size:0.85rem; color:#60A5FA; font-weight:bold; text-align:left; margin-bottom:8px;">📦 Assembler des articles (Lot)</p>
                 <div style="display:flex; gap:6px; margin-bottom:5px;">
-                    <input type="text" id="input-sub-ref" placeholder="Sous-référence..." style="padding:6px; font-size:0.85rem; width:100%; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.2); color:white;">
-                    <button type="button" class="btn-primary" id="btn-add-sub" style="background:#10B981; padding:6px; width:auto; font-size:0.8rem;">Ajouter</button>
+                    <input type="text" id="input-sub-ref" placeholder="Sous-référence..." style="padding:10px; font-size:0.9rem; width:100%; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.3); color:white;">
+                    <button type="button" class="btn-primary" id="btn-add-sub" style="background:var(--accent-green); padding:10px; width:auto; font-size:0.85rem;" onclick="triggerHaptic()">Ajouter</button>
                 </div>
-                <div id="kit-preview-list" style="font-size:0.7rem; color:#93C5FD; text-align:left; font-family:monospace; margin-bottom:5px;"></div>
-                <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:8px; font-size:0.8rem;">💾 Valider la composition du lot</button>
+                <div id="kit-preview-list" style="font-size:0.8rem; color:#93C5FD; text-align:left; font-family:monospace; margin-bottom:8px;"></div>
+                <button type="button" class="btn-primary" id="btn-save-kit" style="background:#8B5CF6; padding:10px; font-size:0.9rem;" onclick="triggerHaptic()">💾 Valider la composition du lot</button>
             </div>
 
-            <p style="text-align:left; font-size:0.8rem; font-weight:bold; color:#9CA3AF; margin-bottom:4px;">📝 Notes & Suivi d'incidents</p>
+            <p style="text-align:left; font-size:0.85rem; font-weight:bold; color:var(--text-muted); margin-bottom:4px;">📝 Notes & Suivi d'incidents</p>
             <div class="notes-area" id="fiche-notes"></div>
             
-            <div id="wrapper-note" style="display:flex; gap:6px; margin-bottom:10px;">
-                <input type="text" id="input-fiche-note" placeholder="Taper une remarque..." style="padding:8px; font-size:0.85rem; width:100%; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.2); color:white;">
-                <button class="btn-primary" id="btn-save-fiche-note" style="background:#10B981; padding:8px; width:auto; font-size:0.85rem;">Ajouter</button>
+            <div id="wrapper-note" style="display:flex; gap:6px; margin-bottom:15px;">
+                <input type="text" id="input-fiche-note" placeholder="Taper une remarque..." style="padding:10px; font-size:0.9rem; width:100%; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.3); color:white;">
+                <button class="btn-primary" id="btn-save-fiche-note" style="background:var(--accent-green); padding:10px; width:auto; font-size:0.9rem;" onclick="triggerHaptic()">Ajouter</button>
             </div>
 
-            <button class="btn-primary" id="btn-print-fiche-qr" style="background:#10B981; margin-bottom:6px;">🖨️ Réimprimer l'étiquette QR</button>
-            <button class="btn-primary" onclick="fermerFiche()" style="background:transparent; border:1px solid #D1D5DB;">Fermer la fiche</button>
+            <button class="btn-primary" id="btn-print-fiche-qr" style="background:var(--accent-green); margin-bottom:10px;" onclick="triggerHaptic()">🖨️ Réimprimer l'étiquette QR</button>
+            <button class="btn-primary" onclick="triggerHaptic(); fermerFiche()" style="background:transparent; border:1px solid var(--glass-border);">Fermer la fiche</button>
         </div>
     </div>
 
+    <!-- MODALE HISTORIQUE GLOBAL (SUPER-FILTRES) -->
     <div class="modal-overlay" id="modal-pop-hist">
         <div class="modal-content" style="max-width:380px; padding:15px;">
-            <h3 class="modal-title" style="text-align:center; font-size:1.1rem; margin-bottom:10px;">🕒 Journal de bord</h3>
+            <h3 class="modal-title" style="text-align:center; font-size:1.15rem; margin-bottom:15px; color:white;">🕒 Journal de bord</h3>
             
-            <div style="background: rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.1);">
-                <input type="text" id="hist-search" placeholder="Rechercher objet, lieu, détail..." style="width:100%; padding:8px; font-size:0.85rem; margin-bottom:8px; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+            <div style="background: var(--glass-bg); padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid var(--glass-border);">
+                <input type="text" id="hist-search" placeholder="Rechercher objet, lieu, détail..." style="width:100%; padding:10px; font-size:0.9rem; margin-bottom:8px; border-radius:8px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
                 
-                <select id="hist-sort-date" style="width:100%; padding:8px; font-size:0.85rem; margin-bottom:8px; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
-                    <option value="desc" style="background:#1A2B56;">📅 Trier: Plus récent d'abord</option>
-                    <option value="asc" style="background:#1A2B56;">📅 Trier: Plus ancien d'abord</option>
+                <select id="hist-sort-date" style="width:100%; padding:10px; font-size:0.9rem; margin-bottom:8px; border-radius:8px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                    <option value="desc" style="background:#1E293B;">📅 Trier: Plus récent d'abord</option>
+                    <option value="asc" style="background:#1E293B;">📅 Trier: Plus ancien d'abord</option>
                 </select>
                 
-                <div style="display:flex; gap:6px;">
-                    <select id="hist-filter-user" style="flex:1; padding:8px; font-size:0.8rem; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
-                        <option value="" style="background:#1A2B56;">👤 Tous util.</option>
+                <div style="display:flex; gap:8px;">
+                    <select id="hist-filter-user" style="flex:1; padding:10px; font-size:0.85rem; border-radius:8px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                        <option value="" style="background:#1E293B;">👤 Tous util.</option>
                     </select>
-                    <select id="hist-filter-action" style="flex:1; padding:8px; font-size:0.8rem; border-radius:6px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
-                        <option value="" style="background:#1A2B56;">⚙️ Toutes actions</option>
+                    <select id="hist-filter-action" style="flex:1; padding:10px; font-size:0.85rem; border-radius:8px; outline:none; border:none; background:rgba(0,0,0,0.3); color:white;">
+                        <option value="" style="background:#1E293B;">⚙️ Toutes actions</option>
                     </select>
                 </div>
             </div>
 
-            <div class="modal-body" id="container-rows-hist" style="max-height:220px; margin-bottom:10px; padding:5px; border-top:1px solid rgba(255,255,255,0.05);"></div>
-            <button class="btn-primary" onclick="document.getElementById('modal-pop-hist').style.display='none'">Fermer</button>
+            <div class="modal-body" id="container-rows-hist" style="max-height:250px; margin-bottom:15px; padding:5px; border-top:1px solid var(--glass-border);"></div>
+            <button class="btn-primary" onclick="triggerHaptic(); document.getElementById('modal-pop-hist').style.display='none'">Fermer</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size:1.1rem; color:white; margin-bottom:5px;" id="alert-title">Attention</h3><p style="color:#D1D5DB; font-size:0.9rem;" id="alert-message"></p><button class="btn-primary" id="btn-alert-ok" style="margin-top:15px; padding:10px;">OK</button></div></div>
+    <div class="modal-overlay" id="custom-alert"><div class="modal-content"><div style="font-size:3.5rem; margin-bottom:10px;" id="alert-icon">⚠️</div><h3 style="font-size:1.2rem; color:white; margin-bottom:10px;" id="alert-title">Attention</h3><p style="color:var(--text-muted); font-size:0.95rem; line-height:1.4;" id="alert-message"></p><button class="btn-primary" id="btn-alert-ok" style="margin-top:20px;">OK</button></div></div>
 
     <div class="app-version" id="version-display"></div>
 
@@ -151,28 +216,53 @@
         let trackedSubRefs = [];
         let historiqueActuel = []; 
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+
+        // 🌟 RETOUR HAPTIQUE GLOBAL
+        window.triggerHaptic = function() { if (navigator.vibrate) { navigator.vibrate(40); } };
 
         function afficherAlerte(titre, message, isSuccess = false) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
             document.getElementById('alert-title').textContent = titre; document.getElementById('alert-message').textContent = message;
             document.getElementById('custom-alert').style.display = 'flex';
+            triggerHaptic();
         }
-        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
+        document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; triggerHaptic(); });
 
-        window.copierReference = function(ref, e) { if(e) e.stopPropagation(); navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); }); };
+        window.copierReference = function(ref, e) { if(e) e.stopPropagation(); triggerHaptic(); navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); }); };
+
+        // 🌟 AFFICHER SKELETONS LOADERS AVANT LES DONNÉES
+        function renderSkeletons() {
+            const container = document.getElementById('liste-stock');
+            container.innerHTML = "";
+            for(let i=0; i<6; i++) {
+                container.innerHTML += `
+                    <div class="stock-card skeleton-card">
+                        <div class="card-left">
+                            <div class="skeleton skeleton-text-lg"></div>
+                            <div class="skeleton skeleton-text-sm"></div>
+                        </div>
+                        <div class="card-right">
+                            <div class="skeleton skeleton-text-sm" style="align-self:flex-end;"></div>
+                            <div class="skeleton skeleton-text-sm" style="width:50px; align-self:flex-end; margin-top:4px;"></div>
+                        </div>
+                    </div>`;
+            }
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
+            renderSkeletons(); // Affichage immédiat des Skeletons au lancement
+            
             if (localStorage.getItem('app_role') === 'admin') {
                 document.getElementById('btn-global-hist').style.display = 'block';
             }
             if(navigator.onLine) {
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", ...payloadBase }) })
                 .then(r => r.json()).then(d => {
-                    document.getElementById('msg-chargement').style.display = 'none';
                     if (d.result === "success") { 
                         inventaireComplet = d.data; 
                         localStorage.setItem('miroir_stock', JSON.stringify(d.data)); 
+                        peuplerFiltresCroises();
                         appliquerTriEtFiltre(); 
                     } else { chargerFailsafeLocal(); }
                 }).catch(() => { chargerFailsafeLocal(); });
@@ -180,16 +270,33 @@
         });
 
         function chargerFailsafeLocal() {
-            document.getElementById('msg-chargement').style.display = 'none';
             if(localStorage.getItem('miroir_stock')) { 
                 inventaireComplet = JSON.parse(localStorage.getItem('miroir_stock')); 
+                peuplerFiltresCroises();
                 appliquerTriEtFiltre(); 
             } else { 
-                document.getElementById('liste-stock').innerHTML = "<p style='text-align:center;color:#FCA5A5;'>Base locale indisponible.</p>"; 
+                document.getElementById('liste-stock').innerHTML = "<p style='text-align:center;color:#FCA5A5;margin-top:20px;'>Base locale indisponible.</p>"; 
             }
         }
 
+        // 🌟 PEUPLER DYNAMIQUEMENT LES FILTRES CROISÉS (Catégorie & Lieu)
+        function peuplerFiltresCroises() {
+            const categories = [...new Set(inventaireComplet.map(item => item.categorie))].filter(Boolean).sort();
+            const emplacements = [...new Set(inventaireComplet.map(item => item.emplacement))].filter(Boolean).sort();
+            
+            const selCat = document.getElementById('filter-cat');
+            selCat.innerHTML = '<option value="">Toutes catégories</option>';
+            categories.forEach(c => selCat.innerHTML += `<option value="${c}">${c}</option>`);
+
+            const selLoc = document.getElementById('filter-loc');
+            selLoc.innerHTML = '<option value="">Toutes zones</option>';
+            emplacements.forEach(e => selLoc.innerHTML += `<option value="${e}">${e}</option>`);
+        }
+
         document.getElementById('input-recherche').addEventListener('input', appliquerTriEtFiltre);
+        document.getElementById('filter-cat').addEventListener('change', () => { triggerHaptic(); appliquerTriEtFiltre(); });
+        document.getElementById('filter-loc').addEventListener('change', () => { triggerHaptic(); appliquerTriEtFiltre(); });
+
         function changerTri(type) {
             triActuel = type; document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
             if(type==='recent') document.getElementById('tri-recent').classList.add('active');
@@ -199,28 +306,67 @@
             appliquerTriEtFiltre();
         }
 
+        // 🌟 FILTRES MULTICRITÈRES CROISÉS
         function appliquerTriEtFiltre() {
-            let s = document.getElementById('input-recherche').value.trim().toLowerCase();
+            let search = document.getElementById('input-recherche').value.trim().toLowerCase();
+            let filCat = document.getElementById('filter-cat').value;
+            let filLoc = document.getElementById('filter-loc').value;
             let role = localStorage.getItem('app_role');
             let listeDeBase = role === 'admin' ? inventaireComplet : inventaireComplet.filter(x => !x.estSorti);
 
-            if(s) {
-                inventaireFiltre = listeDeBase.filter(x => String(x.nom).toLowerCase().includes(s) || String(x.reference).toLowerCase().includes(s) || String(x.emplacement).toLowerCase().includes(s) || String(x.categorie).toLowerCase().includes(s));
-            } else { inventaireFiltre = [...listeDeBase]; }
+            inventaireFiltre = listeDeBase.filter(x => {
+                let textMatch = !search || String(x.nom).toLowerCase().includes(search) || String(x.reference).toLowerCase().includes(search);
+                let catMatch = !filCat || x.categorie === filCat;
+                let locMatch = !filLoc || x.emplacement === filLoc;
+                return textMatch && catMatch && locMatch;
+            });
 
             if (triActuel === "recent") { inventaireFiltre.sort((a, b) => new Date(b.dateAjout || 0) - new Date(a.dateAjout || 0)); } 
             else if (triActuel === "nom") { inventaireFiltre.sort((a, b) => String(a.nom).localeCompare(String(b.nom))); } 
             else if (triActuel === "cat") { inventaireFiltre.sort((a, b) => { if(a.categorie === "Non classé") return 1; if(b.categorie === "Non classé") return -1; return String(a.categorie).localeCompare(String(b.categorie)); }); } 
             else if (triActuel === "lieu") { inventaireFiltre.sort((a, b) => String(a.emplacement).localeCompare(String(b.emplacement))); }
+            
             renderListe();
+        }
+
+        // 🌟 GESTION DE LA LECTURE RAPIDE (DOUBLE TAP)
+        let tapTimer = null;
+        let lastTapTime = 0;
+        
+        function handleRowClick(item, event) {
+            let currentTime = new Date().getTime();
+            let tapLength = currentTime - lastTapTime;
+
+            if (tapLength < 300 && tapLength > 0) {
+                // DOUBLE TAP DÉTECTÉ
+                clearTimeout(tapTimer);
+                triggerHaptic();
+                ouvrirLectureRapide(item);
+            } else {
+                // SINGLE TAP (Attente courte pour voir si c'est un double)
+                tapTimer = setTimeout(() => {
+                    triggerHaptic();
+                    ouvrirFiche(item);
+                }, 300);
+            }
+            lastTapTime = currentTime;
+        }
+
+        function ouvrirLectureRapide(item) {
+            document.getElementById('quick-ref').textContent = item.reference;
+            document.getElementById('quick-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&color=0F172A&bgcolor=FFFFFF&data=${encodeURIComponent(item.reference)}`;
+            document.getElementById('modal-quick-view').style.display = 'flex';
         }
 
         function renderListe() {
             const container = document.getElementById('liste-stock'); container.innerHTML = "";
-            if(inventaireFiltre.length === 0) { container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article trouvé.</p>"; return; }
+            if(inventaireFiltre.length === 0) { container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:var(--text-muted);margin-top:20px;'>Aucun article trouvé.</p>"; return; }
+            
             inventaireFiltre.forEach(item => {
-                const card = document.createElement('div'); card.className = 'stock-card'; card.onclick = () => ouvrirFiche(item);
-                let outText = item.estSorti ? '<span class="status-badge-out">🔴 ARCHIVÉ (SORTI)</span>' : '';
+                const card = document.createElement('div'); card.className = 'stock-card'; 
+                card.onclick = (e) => handleRowClick(item, e);
+                
+                let outText = item.estSorti ? '<span class="status-badge-out">🔴 ARCHIVÉ</span>' : '';
                 card.innerHTML = `<div class="card-left"><div class="card-title">${item.nom}</div><div class="card-ref">${item.reference}</div></div><div class="card-right"><div class="card-loc">${item.emplacement || "N/A"}</div><div class="card-cat">${item.categorie}</div>${outText}</div>`;
                 container.appendChild(card);
             });
@@ -246,7 +392,7 @@
         }
         function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
 
-        // 🌟 GESTION DES FILTRES HISTORIQUE DYNAMIQUES
+        // GESTION DES FILTRES HISTORIQUE DYNAMIQUES
         document.getElementById('hist-search').addEventListener('input', appliquerFiltresHistorique);
         document.getElementById('hist-sort-date').addEventListener('change', appliquerFiltresHistorique);
         document.getElementById('hist-filter-user').addEventListener('change', appliquerFiltresHistorique);
@@ -257,12 +403,12 @@
             let actions = [...new Set(historiqueActuel.map(i => i.action))].filter(Boolean).sort();
             
             const selUser = document.getElementById('hist-filter-user');
-            selUser.innerHTML = '<option value="" style="background:#1A2B56;">👤 Tous util.</option>';
-            users.forEach(u => selUser.innerHTML += `<option value="${u}" style="background:#1A2B56;">${u}</option>`);
+            selUser.innerHTML = '<option value="" style="background:#1E293B;">👤 Tous util.</option>';
+            users.forEach(u => selUser.innerHTML += `<option value="${u}" style="background:#1E293B;">${u}</option>`);
 
             const selAction = document.getElementById('hist-filter-action');
-            selAction.innerHTML = '<option value="" style="background:#1A2B56;">⚙️ Toutes actions</option>';
-            actions.forEach(a => selAction.innerHTML += `<option value="${a}" style="background:#1A2B56;">${a}</option>`);
+            selAction.innerHTML = '<option value="" style="background:#1E293B;">⚙️ Toutes actions</option>';
+            actions.forEach(a => selAction.innerHTML += `<option value="${a}" style="background:#1E293B;">${a}</option>`);
         }
 
         function appliquerFiltresHistorique() {
@@ -289,16 +435,16 @@
                     let dObj = new Date(l.date); 
                     let str = dObj.toLocaleDateString('fr-FR') + " à " + dObj.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
                     let actionBadge = `<span style="color:#60A5FA; font-weight:bold;">[${l.action}]</span>`;
-                    return `<div class="hist-row"><b>${str}</b><br>${actionBadge} <b>${l.nom || 'Objet inconnu'}</b> par <i>${l.utilisateur}</i> <br><span style="color:#D1D5DB; font-size:0.8rem;">${l.detail}</span></div>`;
+                    return `<div class="hist-row"><b>${str}</b><br>${actionBadge} <b style="color:white;">${l.nom || 'Objet inconnu'}</b> par <i>${l.utilisateur}</i> <br><span style="color:var(--text-muted); font-size:0.8rem;">${l.detail}</span></div>`;
                 }).join('');
             } else {
-                rowBox.innerHTML = "<p style='text-align:center; color:#9CA3AF; margin-top:20px;'>Aucun historique correspondant.</p>";
+                rowBox.innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:20px;'>Aucun historique correspondant.</p>";
             }
         }
 
         function ouvrirHistoriqueGlobal() {
             const rowBox = document.getElementById('container-rows-hist'); 
-            rowBox.innerHTML = "<p style='text-align:center;'>Chargement... ⏳</p>";
+            rowBox.innerHTML = "<p style='text-align:center; margin-top:20px; color:white;'>Chargement de l'historique... ⏳</p>";
             document.getElementById('hist-sort-date').value = "desc";
             document.getElementById('hist-search').value = "";
             document.getElementById('modal-pop-hist').style.display = 'flex';
@@ -309,13 +455,13 @@
                     historiqueActuel = d.data;
                     peuplerFiltresHistorique();
                     appliquerFiltresHistorique();
-                } else { rowBox.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>"; }
+                } else { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de chargement.</p>"; }
             }).catch(() => { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de réseau.</p>"; });
         }
 
         document.getElementById('btn-hist-indiv').addEventListener('click', function() {
             const rowBox = document.getElementById('container-rows-hist'); 
-            rowBox.innerHTML = "<p style='text-align:center;'>Chargement... ⏳</p>";
+            rowBox.innerHTML = "<p style='text-align:center; margin-top:20px; color:white;'>Chargement... ⏳</p>";
             document.getElementById('hist-sort-date').value = "desc"; 
             document.getElementById('hist-search').value = "";
             document.getElementById('modal-pop-hist').style.display = 'flex';
@@ -326,11 +472,12 @@
                     historiqueActuel = d.data;
                     peuplerFiltresHistorique();
                     appliquerFiltresHistorique();
-                } else { rowBox.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>"; }
+                } else { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de chargement.</p>"; }
             }).catch(() => { rowBox.innerHTML = "<p style='text-align:center; color:#FCA5A5;'>Erreur de réseau.</p>"; });
         });
 
         document.getElementById('btn-add-sub').addEventListener('click', function() {
+            triggerHaptic();
             let val = document.getElementById('input-sub-ref').value.trim().toUpperCase();
             if(val && !trackedSubRefs.includes(val)) { trackedSubRefs.push(val); document.getElementById('input-sub-ref').value = ""; document.getElementById('kit-preview-list').innerHTML = trackedSubRefs.map(r => `📦 ${r}`).join('<br>'); }
         });
@@ -342,6 +489,7 @@
         });
 
         document.getElementById('btn-save-fiche-note').addEventListener('click', function() {
+            triggerHaptic();
             let txt = document.getElementById('input-fiche-note').value.trim(); if(!txt) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: txt, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('input-fiche-note').value = ""; } });

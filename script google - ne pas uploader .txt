@@ -1,0 +1,343 @@
+function doPost(e) {
+  try {
+    var idBaseDeDonnees = "1zlp2nEpMj8eTEF5UvFO-KYt1JVCMSfuXddNRbH0yqYM";
+    var ss = SpreadsheetApp.openById(idBaseDeDonnees);
+    var scriptProps = PropertiesService.getScriptProperties();
+    
+    var sheetStock = ss.getSheetByName("stock");
+    var sheetUser = ss.getSheetByName("user");
+    var sheetHistorique = ss.getSheetByName("historique");
+
+    if (!sheetStock) throw new Error("Onglet 'stock' introuvable.");
+    if (!sheetUser) throw new Error("Onglet 'user' introuvable.");
+    if (!sheetHistorique) throw new Error("Onglet 'historique' introuvable.");
+
+    var rowData = JSON.parse(e.postData.contents);
+
+    function loggerHistorique(action, ref, nom, detail, user) {
+      sheetHistorique.appendRow([new Date(), action, ref, nom, detail, user]);
+    }
+
+    // --- 1. LOGIN ---
+    if (rowData.action === "login") {
+      var hashSaisi = hashPassword(rowData.password);
+      var data = sheetUser.getDataRange().getValues();
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][0] === rowData.login && data[i][1] === hashSaisi) {
+          var token = Utilities.getUuid();
+          var expiration = new Date();
+          expiration.setHours(expiration.getHours() + 1); 
+          sheetUser.getRange(i + 1, 3).setValue(token);
+          sheetUser.getRange(i + 1, 4).setValue(expiration);
+          return ContentService.createTextOutput(JSON.stringify({"result": "success", "token": token, "login": rowData.login, "role": data[i][4] || "standard"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Identifiants incorrects."})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- 2. VERIFICATION SECURITY TOKEN & DROITS ---
+    var roleUtilisateur = verifierToken(rowData.login, rowData.token, idBaseDeDonnees);
+    if (!roleUtilisateur) return ContentService.createTextOutput(JSON.stringify({"result": "EXPIRED", "message": "Session expirée."})).setMimeType(ContentService.MimeType.JSON);
+
+    var actionsInterditesLecteur = ["ajouter", "add_note", "reintegrer_stock", "deplacer", "deplacer_rafale", "sortir", "sortir_rafale", "bulk_import", "creer_utilisateur", "modifier_utilisateur", "supprimer_utilisateur", "add_categorie", "delete_categorie", "add_emplacement", "delete_emplacement"];
+    if (roleUtilisateur === "lecteur" && actionsInterditesLecteur.indexOf(rowData.action) > -1) {
+      return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Droits insuffisants (Compte Lecteur uniquement)."})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(rowData.reference || "");
+    var formulaImage = '=IMAGE("' + qrCodeUrl + '")';
+
+    // --- 3. GESTION DES LISTES DÉROULANTES ---
+    if (rowData.action === "get_categories") {
+      var cats = scriptProps.getProperty('app_categories');
+      if (!cats) { cats = JSON.stringify(["Peinture", "Sculpture", "Mobilier", "Gravure", "Non classé"]); scriptProps.setProperty('app_categories', cats); }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": JSON.parse(cats)})).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (rowData.action === "add_categorie") {
+      var catsData = scriptProps.getProperty('app_categories'); var catsArray = catsData ? JSON.parse(catsData) : [];
+      if (catsArray.indexOf(rowData.nouvelleCategorie) === -1) { catsArray.push(rowData.nouvelleCategorie); scriptProps.setProperty('app_categories', JSON.stringify(catsArray)); }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": catsArray})).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (rowData.action === "delete_categorie") {
+      var catsData = scriptProps.getProperty('app_categories'); var catsArray = catsData ? JSON.parse(catsData) : [];
+      var index = catsArray.indexOf(rowData.categorieToDelete);
+      if (index !== -1) { catsArray.splice(index, 1); scriptProps.setProperty('app_categories', JSON.stringify(catsArray)); }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": catsArray})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (rowData.action === "get_emplacements") {
+      var emps = scriptProps.getProperty('app_emplacements');
+      if (!emps) { emps = JSON.stringify(["Réserve A", "Réserve B", "Réserve C", "Camionnette"]); scriptProps.setProperty('app_emplacements', emps); }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": JSON.parse(emps)})).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (rowData.action === "add_emplacement") {
+      var empsData = scriptProps.getProperty('app_emplacements'); var empsArray = empsData ? JSON.parse(empsData) : [];
+      if (empsArray.indexOf(rowData.nouvelEmplacement) === -1) { empsArray.push(rowData.nouvelEmplacement); scriptProps.setProperty('app_emplacements', JSON.stringify(empsArray)); }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": empsArray})).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (rowData.action === "delete_emplacement") {
+      var empsData = scriptProps.getProperty('app_emplacements'); var empsArray = empsData ? JSON.parse(empsData) : [];
+      var indexEmp = empsArray.indexOf(rowData.emplacementToDelete);
+      if (indexEmp !== -1) { empsArray.splice(indexEmp, 1); scriptProps.setProperty('app_emplacements', JSON.stringify(empsArray)); }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": empsArray})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (rowData.action === "get_item_history") {
+      var dataHist = sheetHistorique.getDataRange().getValues(); var itemLogs = [];
+      for (var h = dataHist.length - 1; h > 0; h--) {
+        if (String(dataHist[h][2]).trim().toUpperCase() === String(rowData.reference).trim().toUpperCase()) {
+          itemLogs.push({ date: dataHist[h][0], action: dataHist[h][1], nom: dataHist[h][3], detail: dataHist[h][4], utilisateur: dataHist[h][5] });
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": itemLogs})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- ACTIONS DE FLUX DE STOCK ---
+    else if (rowData.action === "ajouter") {
+      var cat = rowData.categorie || "Non classé"; var noteText = rowData.note || ""; 
+      var dataStock = sheetStock.getDataRange().getValues(); var found = false;
+      for (var j = 1; j < dataStock.length; j++) {
+        if (dataStock[j][0] === rowData.reference) {
+          sheetStock.getRange(j + 1, 2).setValue(rowData.nom); sheetStock.getRange(j + 1, 3).setValue(rowData.emplacement);
+          sheetStock.getRange(j + 1, 6).setFormula(formulaImage); sheetStock.getRange(j + 1, 10).setValue(cat); sheetStock.getRange(j + 1, 11).setValue(noteText);
+          loggerHistorique("Modification", rowData.reference, rowData.nom, "Correction via l'ajout", rowData.login);
+          found = true; break;
+        }
+      }
+      if (!found) {
+        sheetStock.appendRow([rowData.reference, rowData.nom, rowData.emplacement, new Date(), rowData.login, formulaImage, "", "", "", cat, noteText]);
+        loggerHistorique("Ajout", rowData.reference, rowData.nom, "Lieu : " + rowData.emplacement + " | Catégorie : " + cat, rowData.login);
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    else if (rowData.action === "rechercher") {
+      var dataStock = sheetStock.getDataRange().getValues();
+      for (var k = 1; k < dataStock.length; k++) {
+        if (dataStock[k][0] === rowData.reference) {
+          return ContentService.createTextOutput(JSON.stringify({
+            "result": "success", "nom": dataStock[k][1], "emplacement": dataStock[k][2], "dateAjout": dataStock[k][3], "utilisateur": dataStock[k][4],
+            "estSorti": dataStock[k][6] ? true : false, "dateSortie": dataStock[k][6] || "", "motifSortie": dataStock[k][7] || "", "utilisateurSortie": dataStock[k][8] || "",
+            "categorie": dataStock[k][9] || "Non classé", "notes": dataStock[k][10] || ""
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Référence introuvable."})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "recherche_large") {
+      var dataStock = sheetStock.getDataRange().getValues(); var terme = rowData.terme ? String(rowData.terme).toLowerCase().trim() : ""; var resultats = [];
+      for (var s = 1; s < dataStock.length; s++) {
+        var ref = String(dataStock[s][0]).toLowerCase(); var nom = String(dataStock[s][1]).toLowerCase();
+        if (ref.indexOf(terme) > -1 || nom.indexOf(terme) > -1) {
+          if (roleUtilisateur === "admin") {
+            resultats.push({ reference: dataStock[s][0], nom: dataStock[s][1], emplacement: dataStock[s][2], dateAjout: dataStock[s][3], utilisateur: dataStock[s][4], estSorti: dataStock[s][6] ? true : false, dateSortie: dataStock[s][6] || "", motifSortie: dataStock[s][7] || "", utilisateurSortie: dataStock[s][8] || "", categorie: dataStock[s][9] || "Non classé", notes: dataStock[s][10] || "" });
+          } else {
+            if (!dataStock[s][6]) resultats.push({ reference: dataStock[s][0], nom: dataStock[s][1], emplacement: dataStock[s][2], notes: dataStock[s][10] || "" });
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": resultats})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "add_note") {
+      var dataStock = sheetStock.getDataRange().getValues();
+      for (var n = 1; n < dataStock.length; n++) {
+        if (dataStock[n][0] === rowData.reference) {
+          var noteExistante = dataStock[n][10] || ""; var dateNote = Utilities.formatDate(new Date(), "Europe/Paris", "dd/MM/yyyy HH:mm");
+          var nouvelleNote = noteExistante + (noteExistante ? "\n" : "") + "[" + dateNote + " - " + rowData.login + "]: " + rowData.note;
+          sheetStock.getRange(n + 1, 11).setValue(nouvelleNote);
+          loggerHistorique("Note", rowData.reference, dataStock[n][1], "Ajout note : " + rowData.note, rowData.login);
+          return ContentService.createTextOutput(JSON.stringify({"result": "success", "notes": nouvelleNote})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    else if (rowData.action === "reintegrer_stock") {
+      var dataStock = sheetStock.getDataRange().getValues();
+      for (var r = 1; r < dataStock.length; r++) {
+        if (dataStock[r][0] === rowData.reference) {
+          sheetStock.getRange(r + 1, 3).setValue(rowData.emplacement); sheetStock.getRange(r + 1, 7).setValue(""); sheetStock.getRange(r + 1, 8).setValue(""); sheetStock.getRange(r + 1, 9).setValue("");
+          loggerHistorique("Réintégration", rowData.reference, dataStock[r][1], "Retour dans : " + rowData.emplacement, rowData.login);
+          return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    else if (rowData.action === "deplacer") {
+      var dataStock = sheetStock.getDataRange().getValues();
+      for (var m = 1; m < dataStock.length; m++) {
+        if (dataStock[m][0] === rowData.reference) {
+          sheetStock.getRange(m + 1, 3).setValue(rowData.nouvelEmplacement);
+          loggerHistorique("Déplacement", rowData.reference, dataStock[m][1], dataStock[m][2] + " ➡️ " + rowData.nouvelEmplacement, rowData.login);
+          return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    else if (rowData.action === "deplacer_rafale") {
+      var dataStock = sheetStock.getDataRange().getValues(); var count = 0;
+      for (var d = 1; d < dataStock.length; d++) {
+        if (rowData.references.indexOf(dataStock[d][0]) > -1) {
+          sheetStock.getRange(d + 1, 3).setValue(rowData.nouvelEmplacement);
+          loggerHistorique("Déplacement", dataStock[d][0], dataStock[d][1], dataStock[d][2] + " ➡️ " + rowData.nouvelEmplacement + " (Rafale)", rowData.login);
+          count++;
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "count": count})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "sortir") {
+      var dataStock = sheetStock.getDataRange().getValues();
+      for (var s = 1; s < dataStock.length; s++) {
+        if (dataStock[s][0] === rowData.reference) {
+          sheetStock.getRange(s + 1, 7).setValue(new Date()); sheetStock.getRange(s + 1, 8).setValue(rowData.motif); sheetStock.getRange(s + 1, 9).setValue(rowData.login);
+          loggerHistorique("Sortie", rowData.reference, dataStock[s][1], "Motif : " + rowData.motif, rowData.login);
+          return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    else if (rowData.action === "sortir_rafale") {
+      var dataStock = sheetStock.getDataRange().getValues(); var cOut = 0;
+      for (var so = 1; so < dataStock.length; so++) {
+        if (rowData.references.indexOf(dataStock[so][0]) > -1) {
+          sheetStock.getRange(so + 1, 7).setValue(new Date()); sheetStock.getRange(so + 1, 8).setValue(rowData.motif); sheetStock.getRange(so + 1, 9).setValue(rowData.login);
+          loggerHistorique("Sortie", dataStock[so][0], dataStock[so][1], "Motif : " + rowData.motif + " (Rafale)", rowData.login);
+          cOut++;
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "count": cOut})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "inventaire") {
+      var dataStock = sheetStock.getDataRange().getValues(); var output = [];
+      for (var p = 1; p < dataStock.length; p++) {
+        output.push({
+          reference: dataStock[p][0], nom: dataStock[p][1], emplacement: dataStock[p][2],
+          dateAjout: dataStock[p][3], utilisateur: dataStock[p][4], imageQR: dataStock[p][5],
+          estSorti: dataStock[p][6] ? true : false, dateSortie: dataStock[p][6] || "",
+          motifSortie: dataStock[p][7] || "", utilisateurSortie: dataStock[p][8] || "",
+          categorie: dataStock[p][9] || "Non classé", notes: dataStock[p][10] || ""
+        });
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": output})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "get_historique") {
+      var dataHist = sheetHistorique.getDataRange().getValues(); var logs = [];
+      for (var h = dataHist.length - 1; h > 0; h--) {
+        logs.push({ date: dataHist[h][0], action: dataHist[h][1], reference: dataHist[h][2], nom: dataHist[h][3], detail: dataHist[h][4], utilisateur: dataHist[h][5] });
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": logs})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- CORRECTIF : CHANGEMENT DE MOT DE PASSE UTILISATEUR ---
+    else if (rowData.action === "changer_mdp") {
+      var dataUser = sheetUser.getDataRange().getValues();
+      var ancienHash = hashPassword(rowData.ancienPassword);
+      for (var u = 1; u < dataUser.length; u++) {
+        if (dataUser[u][0] === rowData.login && dataUser[u][1] === ancienHash) {
+          sheetUser.getRange(u + 1, 2).setValue(hashPassword(rowData.nouveauPassword));
+          return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Ancien mot de passe incorrect."})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // --- 4. ESPACE COMPTE ADMINISTRATEUR ---
+    if (roleUtilisateur !== "admin") return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Accès admin requis."})).setMimeType(ContentService.MimeType.JSON);
+
+    if (rowData.action === "get_dashboard") {
+      var stockValues = sheetStock.getDataRange().getValues(); var histValues = sheetHistorique.getDataRange().getValues();
+      var now = new Date(); var sixMonthsAgo = new Date(); sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      var stats = { totalActif: 0, totalSorti: 0, categories: {}, emplacements: {}, deadStockCount: 0, anomaliesFil: [], teamActivity: {}, recentExits: [], meteoScore: 100, evolutionTemporelle: {} };
+      var totalAuditsValides = 0; var totalAuditsAnomalies = 0; var todayStr = now.toLocaleDateString('fr-FR');
+
+      for (var h = histValues.length - 1; h > 0; h--) {
+        var rowDate = new Date(histValues[h][0]); var actionType = histValues[h][1]; var refLog = histValues[h][2]; var nomLog = histValues[h][3]; var detailLog = histValues[h][4]; var userLog = histValues[h][5];
+        if (rowDate.toLocaleDateString('fr-FR') === todayStr) { stats.teamActivity[userLog] = (stats.teamActivity[userLog] || 0) + 1; }
+        if (actionType === "Audit" || actionType === "Rapport") { if (detailLog.indexOf("Manquant") > -1 || detailLog.indexOf("Égaré") > -1) { totalAuditsAnomalies++; } else { totalAuditsValides++; } }
+        if (detailLog.indexOf("Manquant") > -1 && stats.anomaliesFil.length < 5) { stats.anomaliesFil.push({ date: histValues[h][0], reference: refLog, nom: nomLog, detail: detailLog }); }
+      }
+
+      var totalAuditsCalculables = totalAuditsValides + totalAuditsAnomalies;
+      if (totalAuditsCalculables > 0) { stats.meteoScore = Math.round((totalAuditsValides / totalAuditsCalculables) * 100); }
+
+      for (var st = 1; st < stockValues.length; st++) {
+        var isOut = stockValues[st][6] ? true : false; var itemRef = stockValues[st][0]; var itemNom = stockValues[st][1]; var itemEmp = stockValues[st][2] || "Non spécifié"; var itemDate = new Date(stockValues[st][3]); var itemCat = stockValues[st][9] || "Non classé";
+        if (itemDate >= sixMonthsAgo) { var moisAnnee = (itemDate.getMonth() + 1) + "/" + itemDate.getFullYear(); stats.evolutionTemporelle[moisAnnee] = (stats.evolutionTemporelle[moisAnnee] || 0) + 1; }
+        if (!isOut) {
+          stats.totalActif++; stats.emplacements[itemEmp] = (stats.emplacements[itemEmp] || 0) + 1; stats.categories[itemCat] = (stats.categories[itemCat] || 0) + 1;
+          var diffTemps = Math.abs(now - itemDate); var diffJours = Math.ceil(diffTemps / (1000 * 60 * 60 * 24));
+          if (diffJours > 180) { stats.deadStockCount++; }
+        } else {
+          stats.totalSorti++;
+          if (stats.recentExits.length < 5) { stats.recentExits.push({ reference: itemRef, nom: itemNom, dateSortie: stockValues[st][6], motif: stockValues[st][7] || "Non précisé", utilisateur: stockValues[st][8] || "Inconnu" }); }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": stats})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "bulk_import") {
+      var items = rowData.items; var countImport = 0; var dataStock = sheetStock.getDataRange().getValues();
+      for (var im = 0; im < items.length; im++) {
+        var item = items[im]; if(!item.reference) continue;
+        var qrForm = '=IMAGE("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(item.reference) + '")';
+        var found = false;
+        for (var j = 1; j < dataStock.length; j++) {
+          if (dataStock[j][0] === item.reference) {
+             if (item.nom !== undefined) sheetStock.getRange(j+1, 2).setValue(item.nom); if (item.emplacement !== undefined) sheetStock.getRange(j+1, 3).setValue(item.emplacement); if (item.dateAjout !== undefined && item.dateAjout !== "") sheetStock.getRange(j+1, 4).setValue(item.dateAjout); if (item.utilisateur !== undefined && item.utilisateur !== "") sheetStock.getRange(j+1, 5).setValue(item.utilisateur);
+             sheetStock.getRange(j+1, 6).setFormula(qrForm); if (item.dateSortie !== undefined) sheetStock.getRange(j+1, 7).setValue(item.dateSortie); if (item.motifSortie !== undefined) sheetStock.getRange(j+1, 8).setValue(item.motifSortie); if (item.utilisateurSortie !== undefined) sheetStock.getRange(j+1, 9).setValue(item.utilisateurSortie); if (item.categorie !== undefined) sheetStock.getRange(j+1, 10).setValue(item.categorie); if (item.note !== undefined) sheetStock.getRange(j+1, 11).setValue(item.note);
+             found = true; break;
+          }
+        }
+        if (!found) { sheetStock.appendRow([item.reference, item.nom || "", item.emplacement || "", item.dateAjout || new Date(), item.utilisateur || rowData.login, qrForm, item.dateSortie || "", item.motifSortie || "", item.utilisateurSortie || "", item.categorie || "Non classé", item.note || ""]); }
+        countImport++;
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "count": countImport})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    else if (rowData.action === "lister_utilisateurs") {
+      var du = sheetUser.getDataRange().getValues(); var users = [];
+      for (var j = 1; j < du.length; j++) users.push({ login: du[j][0], role: du[j][4] || "standard" });
+      return ContentService.createTextOutput(JSON.stringify({"result": "success", "data": users})).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (rowData.action === "creer_utilisateur") {
+      sheetUser.appendRow([rowData.newLogin, hashPassword(rowData.newPassword), "", "", rowData.newRole]); return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (rowData.action === "modifier_utilisateur") {
+      var dum = sheetUser.getDataRange().getValues();
+      for (var um = 1; um < dum.length; um++) {
+        if (dum[um][0] === rowData.targetLogin) { sheetUser.getRange(um + 1, 5).setValue(rowData.newRole); if (rowData.newPassword) sheetUser.getRange(um + 1, 2).setValue(hashPassword(rowData.newPassword)); return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON); }
+      }
+    }
+    else if (rowData.action === "supprimer_utilisateur") {
+      var dum2 = sheetUser.getDataRange().getValues();
+      for (var um2 = 1; um2 < dum2.length; um2++) {
+        if (dum2[um2][0] === rowData.targetLogin) { sheetUser.deleteRow(um2 + 1); return ContentService.createTextOutput(JSON.stringify({"result": "success"})).setMimeType(ContentService.MimeType.JSON); }
+      }
+      return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Utilisateur introuvable."})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": "Action inconnue."})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function hashPassword(password) {
+  var digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password); var hashStr = '';
+  for (var i = 0; i < digest.length; i++) { var byte = digest[i]; if (byte < 0) byte += 256; var byteStr = byte.toString(16); if (byteStr.length == 1) byteStr = '0' + byteStr; hashStr += byteStr; }
+  return hashStr;
+}
+
+function verifierToken(login, token, idBase) {
+  if (!login || !token) return false;
+  var sheetUser = SpreadsheetApp.openById(idBase).getSheetByName("user"); var data = sheetUser.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === login && data[i][2] === token && new Date() < new Date(data[i][3])) return data[i][4] || "standard";
+  }
+  return false;
+}

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ajouter / Corriger un Objet</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>
         if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { 
@@ -16,59 +16,119 @@
         }
     </script>
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-blue-hover: #2563EB;
+            --accent-green: #10B981;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
-        /* Header avec retour arrière intelligent */
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
 
-        .form-card { background: rgba(0, 0, 0, 0.2); border-radius: 14px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; gap: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .glass-card { 
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 25px 20px; 
+            display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+        }
         
-        .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; position: relative; }
         .row-inline { display: flex; gap: 8px; align-items: flex-end; }
         .row-inline input { flex: 1; }
         
-        label { font-size: 0.85rem; color: #D1D5DB; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; transition: border-color 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: #60A5FA; background-color: rgba(255, 255, 255, 0.15); }
-        option { background-color: #1A2B56; color: white; }
+        label { font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input, select, textarea { 
+            background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); 
+            border-radius: 10px; padding: 14px; color: var(--text-main); font-size: 1rem; width: 100%; 
+            outline: none; transition: border-color 0.2s, background-color 0.2s; 
+        }
+        input:focus, select:focus, textarea:focus { border-color: #60A5FA; background-color: rgba(0, 0, 0, 0.3); }
+        option { background-color: #1E293B; color: white; }
 
-        .btn-scan-input { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: white; padding: 12px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 50px; height: 48px; transition: background 0.2s; }
-        .btn-scan-input:active { background: rgba(255, 255, 255, 0.25); }
+        .btn-scan-input { 
+            background: var(--glass-bg); border: 1px solid var(--glass-border); 
+            border-radius: 10px; color: white; font-size: 1.3rem; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; width: 55px; height: 50px; 
+            transition: transform 0.2s, background-color 0.2s; 
+        }
+        .btn-scan-input:active { background: var(--glass-highlight); transform: scale(0.9); }
 
-        .btn-action { background-color: #3B82F6; border: none; padding: 16px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1.05rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-        .btn-action:active { transform: scale(0.95); }
-        .btn-action:disabled { background-color: #6B7280; cursor: not-allowed; box-shadow: none; }
-        .btn-print { background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: none; }
+        .btn-action { 
+            background-color: var(--accent-blue); border: none; padding: 16px; border-radius: 12px; 
+            color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-action:active { transform: scale(0.96); background-color: var(--accent-blue-hover); }
+        .btn-action:disabled { background-color: #64748B; cursor: not-allowed; box-shadow: none; transform: scale(1); }
+        
+        .btn-print { background: var(--accent-green); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); display: none; }
 
-        #scanner-box { display: none; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        #reader { width: 100%; border-radius: 8px; overflow: hidden; }
+        /* 🌟 NOUVEAU : UI GALERIE PHOTOS */
+        .photo-upload-zone {
+            border: 2px dashed var(--glass-border); background: rgba(0,0,0,0.1);
+            padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; 
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .photo-upload-zone:active { background: rgba(255,255,255,0.05); border-color: var(--accent-blue); }
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .photo-preview { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
+
+        #scanner-box { display: none; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 16px; border: 1px solid var(--glass-border); }
+        #reader { width: 100%; border-radius: 12px; overflow: hidden; }
+
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help {
+            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 1.6rem; text-decoration: none; color: var(--text-main);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+        }
+        .btn-global-help:active { transform: scale(0.85); background-color: var(--glass-highlight); }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
-        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
-        .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; }
+        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; font-weight: 800; }
+        .modal-message { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-modal-ok { background: var(--accent-blue); border: none; color: #FFFFFF; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1.05rem; }
 
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Ajouter / Corriger</h1></div>
+        <div class="header"><button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button><h1>Ajouter / Corriger</h1></div>
 
         <div id="scanner-box">
             <div id="reader"></div>
-            <button class="btn-action" onclick="fermerScannerCam()" style="background:transparent; border:1px solid #EF4444; color:#FCA5A5; margin-top:10px; padding:10px;">❌ Annuler le scan</button>
+            <button class="btn-action" onclick="fermerScannerCam()" style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(248, 113, 113, 0.4); color:#FCA5A5; margin-top:10px; padding:12px; box-shadow:none;">❌ Annuler le scan</button>
         </div>
 
-        <form id="form-ajouter" class="form-card">
+        <form id="form-ajouter" class="glass-card">
             <div class="form-group">
                 <label for="input-nom">Nom de l'objet / Article</label>
                 <input type="text" id="input-nom" placeholder="Ex: Vase en porcelaine" required>
@@ -97,21 +157,33 @@
             </div>
 
             <div class="form-group">
+                <label>Galerie d'État (Optionnel)</label>
+                <label class="photo-upload-zone" for="photo-input" onclick="triggerHaptic()">
+                    <div style="font-size: 1.5rem; margin-bottom: 5px;">📸</div>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Toucher pour joindre jusqu'à 3 photos HD</span>
+                    <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="previewPhotos(this)">
+                </label>
+                <div class="photo-grid" id="photo-grid"></div>
+            </div>
+
+            <div class="form-group">
                 <label for="input-note">Notes / Suivi des Incidents</label>
                 <textarea id="input-note" rows="3" placeholder="Caractéristiques, état, remarques particulières..."></textarea>
             </div>
 
-            <button type="submit" class="btn-action" id="btn-submit-form">💾 Enregistrer en Base</button>
-            <button type="button" class="btn-action btn-print" id="btn-imprimer-qr" onclick="imprimerEtiquetteQR()">🖨️ Imprimer l'étiquette QR</button>
+            <button type="submit" class="btn-action" id="btn-submit-form" onclick="triggerHaptic()">💾 Enregistrer en Base</button>
+            <button type="button" class="btn-action btn-print" id="btn-imprimer-qr" onclick="triggerHaptic(); imprimerEtiquetteQR()">🖨️ Imprimer l'étiquette QR</button>
         </form>
     </div>
+
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
     <div class="modal-overlay" id="custom-modal">
         <div class="modal-content">
             <div class="modal-icon" id="modal-icon">✅</div>
             <h3 class="modal-title" id="modal-title">Enregistré !</h3>
             <p class="modal-message" id="modal-text">L'élément a été correctement indexé.</p>
-            <button class="btn-modal-ok" id="btn-fermer-modal">OK</button>
+            <button class="btn-modal-ok" id="btn-fermer-modal" onclick="triggerHaptic()">OK</button>
         </div>
     </div>
 
@@ -121,20 +193,52 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         let html5QrcodeScanner = null;
+        let base64Photos = []; // Tableau pour stocker les photos en base64
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.1.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+
+        // 🌟 RETOUR HAPTIQUE GLOBAL
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) { navigator.vibrate(40); }
+        };
 
         function afficherPopup(titre, message, isSuccess = true) {
             document.getElementById('modal-icon').textContent = isSuccess ? "✅" : "⚠️";
             document.getElementById('modal-title').textContent = titre;
             document.getElementById('modal-text').textContent = message;
             document.getElementById('custom-modal').style.display = 'flex';
+            triggerHaptic();
         }
         document.getElementById('btn-fermer-modal').addEventListener('click', () => { document.getElementById('custom-modal').style.display = 'none'; });
 
-        // 🌟 RECHARGE ET PEUPLEMENT DES MENUS DÉROULANTS DEPUIS LA BDD
+        // 🌟 NOUVEAU : GESTION DE LA GALERIE PHOTOS HD
+        function previewPhotos(input) {
+            const grid = document.getElementById('photo-grid');
+            grid.innerHTML = '';
+            base64Photos = []; // Reset
+
+            if (input.files) {
+                // Limite stricte à 3 photos pour éviter de surcharger la BDD
+                const files = Array.from(input.files).slice(0, 3);
+                
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        // Affichage de l'aperçu
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'photo-preview';
+                        grid.appendChild(img);
+                        // Stockage pour l'envoi
+                        base64Photos.push(e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        // 🌟 RECHARGE ET PEUPLEMENT DES MENUS DÉROULANTS
         window.addEventListener('DOMContentLoaded', () => {
-            // 1. Chargement des Catégories
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_categories", ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if (d.result === "success") {
@@ -145,7 +249,6 @@
                 }
             });
 
-            // 2. Chargement des Emplacements
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", ...payloadBase }) })
             .then(r => r.json()).then(d => {
                 if (d.result === "success") {
@@ -157,10 +260,9 @@
             });
         });
 
-        // 🌟 SYSTÈME DE GÉNÉRATION AUTOMATIQUE DE RÉFÉRENCE INTERNE UNIQUE
+        // 🌟 SYSTÈME DE GÉNÉRATION AUTOMATIQUE DE RÉFÉRENCE INTERNE
         document.getElementById('input-nom').addEventListener('input', function() {
             const refInput = document.getElementById('input-ref');
-            // Si le champ référence a déjà été rempli manuellement ou par scan, on ne l'écrase pas
             if (refInput.value.trim() !== "" && !refInput.hasAttribute('data-auto')) return;
 
             let nom = this.value.trim();
@@ -177,11 +279,12 @@
         });
 
         document.getElementById('input-ref').addEventListener('input', function() {
-            this.removeAttribute('data-auto'); // L'opérateur tape manuellement, on casse l'automatisation
+            this.removeAttribute('data-auto');
         });
 
-        // 🌟 SCANNER PHOTO POUR CODES COMMERCIAUX (EAN/UPC) OU INTERNES
+        // 🌟 SCANNER PHOTO
         function ouvrirScannerCam() {
+            triggerHaptic();
             document.getElementById('form-ajouter').style.display = 'none';
             document.getElementById('scanner-box').style.display = 'block';
             html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 }, false);
@@ -192,7 +295,7 @@
             document.getElementById('input-ref').value = decodedText.trim().toUpperCase();
             document.getElementById('input-ref').removeAttribute('data-auto');
             fermerScannerCam();
-            if (navigator.vibrate) navigator.vibrate(100);
+            triggerHaptic();
         }
 
         function onScanFailure(error) {}
@@ -201,6 +304,7 @@
             if (html5QrcodeScanner) { html5QrcodeScanner.clear(); }
             document.getElementById('scanner-box').style.display = 'none';
             document.getElementById('form-ajouter').style.display = 'flex';
+            triggerHaptic();
         }
 
         // 🌟 SOUMISSION DU FORMULAIRE ET ENREGISTREMENT
@@ -217,7 +321,8 @@
                 reference: document.getElementById('input-ref').value.trim().toUpperCase(),
                 categorie: document.getElementById('select-cat').value,
                 emplacement: document.getElementById('select-emp').value,
-                note: document.getElementById('input-note').value.trim()
+                note: document.getElementById('input-note').value.trim(),
+                photos: base64Photos // Les 3 photos HD compressées
             };
 
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(item) })
@@ -226,7 +331,7 @@
                     afficherPopup("Enregistré !", `L'objet "${item.nom}" est synchronisé.`);
                     document.getElementById('btn-imprimer-qr').style.display = 'flex';
                     
-                    // CORRECTIF 3 : On réactive le bouton pour permettre la correction
+                    // On maintient le bouton actif pour permettre une correction
                     btn.disabled = false;
                     btn.textContent = "💾 Mettre à jour la fiche";
                 } else {
@@ -239,7 +344,7 @@
             });
         });
 
-        // 🌟 IMPRESSION STRICTE DE L'ÉTIQUETTE QR PROPRE
+        // 🌟 IMPRESSION STRICTE DE L'ÉTIQUETTE QR
         function imprimerEtiquetteQR() {
             const ref = document.getElementById('input-ref').value.trim().toUpperCase();
             const nom = document.getElementById('input-nom').value.trim();

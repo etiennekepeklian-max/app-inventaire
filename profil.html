@@ -5,67 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mon Profil</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1A2B56">
+    <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script>if (!localStorage.getItem('app_token') || !localStorage.getItem('app_login')) { window.location.href = 'login.html'; }</script>
     <style>
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
+        :root {
+            --bg-dark: #0F172A; 
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
+            --accent-blue: #3B82F6;
+            --accent-blue-hover: #2563EB;
+            --accent-green: rgba(16, 185, 129, 0.15);
+            --accent-green-border: rgba(52, 211, 153, 0.4);
+            --accent-red: rgba(239, 68, 68, 0.1);
+            --accent-red-border: rgba(248, 113, 113, 0.4);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 30px; position: relative; }
-        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+            padding-bottom: 50px; position: relative; 
+        }
+
+        .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
         .header { display: flex; align-items: center; margin-bottom: 10px; position: relative; }
-        .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
+        .btn-retour { color: var(--text-main); text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
-        h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 1.4rem; width: 100%; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
 
-        .profile-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 10px; }
-        .profile-icon { font-size: 4rem; margin-bottom: 10px; }
+        .glass-card { 
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px; 
+            display: flex; flex-direction: column; gap: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); 
+        }
+
+        .profile-header { text-align: center; margin-bottom: 5px; }
+        .profile-icon { font-size: 3.5rem; margin-bottom: 10px; }
         .profile-name { font-size: 1.3rem; font-weight: bold; color: #60A5FA; margin-bottom: 5px; }
-        .profile-role { font-size: 0.9rem; color: #D1D5DB; text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; display: inline-block; }
+        .profile-role { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px; display: inline-block; border: 1px solid var(--glass-border); }
 
-        .section-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .section-title { font-size: 1rem; color: #60A5FA; font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; text-align: left; }
+        .section-title { font-size: 1rem; color: #60A5FA; font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 
         .form-group { display: flex; flex-direction: column; gap: 5px; text-align: left; }
-        label { font-size: 0.85rem; color: #D1D5DB; font-weight: bold; }
-        input { background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
-        input:focus { border-color: #60A5FA; }
+        label { font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px; color: var(--text-main); font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
+        input:focus { border-color: #60A5FA; background-color: rgba(0, 0, 0, 0.3); }
 
-        .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary:active { transform: scale(0.95); background-color: #2563EB; }
-        .btn-danger { background-color: transparent; border: 1px solid #EF4444; color: #FCA5A5; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-danger:active { background-color: rgba(239,68,68,0.1); transform: scale(0.95); }
-        .btn-success { background-color: #10B981; border: none; color: #FFFFFF; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-success:active { transform: scale(0.95); background-color: #059669; }
+        /* Boutons */
+        .btn { padding: 14px; border-radius: 10px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background-color: var(--accent-blue); color: #FFFFFF; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .btn-primary:active { background-color: var(--accent-blue-hover); }
+        
+        .btn-success { background: var(--accent-green); border: 1px solid var(--accent-green-border); color: #34D399; }
+        .btn-success:active { background: rgba(16, 185, 129, 0.25); }
+        
+        .btn-danger { background: var(--accent-red); border: 1px solid var(--accent-red-border); color: #FCA5A5; }
+        .btn-danger:active { background: rgba(239, 68, 68, 0.2); }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
-        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; }
-        .modal-message { color: #D1D5DB; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
-        .btn-modal-ok { background: #3B82F6; border: none; color: #FFFFFF; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; font-weight: 800; }
+        .modal-message { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-modal-ok { background: var(--accent-blue); border: none; color: #FFFFFF; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
 
-        .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
+        /* Bouton d'Aide Global Flottant */
+        .btn-global-help { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; text-decoration: none; color: var(--text-main); box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s; }
+        .btn-global-help:active { transform: scale(0.85); background: var(--glass-highlight); }
+
+        .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
+        
+        /* 🌟 NOUVEAU : Historique Personnel */
+        .history-list { max-height: 200px; overflow-y: auto; padding-right: 5px; }
+        .hist-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 0.85rem; line-height: 1.4; }
+        .hist-item:last-child { border-bottom: none; }
+        .hist-time { color: white; font-weight: bold; }
+        .hist-action { color: #60A5FA; font-weight: bold; }
+        .hist-obj { color: white; font-weight: bold; }
+        .hist-detail { color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 2px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Mon Profil</h1></div>
+        <div class="header"><button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button><h1>Mon Profil</h1></div>
         
-        <div class="profile-card">
+        <div class="glass-card profile-header">
             <div class="profile-icon">👤</div>
             <div class="profile-name" id="display-login">...</div>
             <div class="profile-role" id="display-role">...</div>
         </div>
 
-        <div class="section-box" id="install-section" style="display: none; border-color: rgba(16, 185, 129, 0.3);">
-            <div class="section-title" style="color: #10B981; border-color: rgba(16, 185, 129, 0.2);">📱 Application Mobile</div>
-            <p style="font-size: 0.85rem; color: #D1D5DB; margin-bottom: 5px;">Installez cette application sur votre écran d'accueil pour un accès rapide en un clic et un meilleur confort d'utilisation.</p>
-            <button id="btn-install-app" class="btn-success">⬇️ Installer sur mon appareil</button>
+        <div class="glass-card">
+            <div class="section-title"><span>🕒</span> Mes Actions du Jour</div>
+            <div class="history-list" id="personal-history-list">
+                <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding: 10px 0;">Chargement... ⏳</p>
+            </div>
+            <button class="btn btn-primary" style="margin-top:5px; padding: 10px; font-size:0.9rem;" onclick="triggerHaptic(); chargerHistoriquePersonnel()">🔄 Rafraîchir</button>
         </div>
 
-        <form id="form-mdp" class="section-box">
-            <div class="section-title">🔒 Modifier mon mot de passe</div>
+        <div class="glass-card" id="install-section" style="display: none; border-color: rgba(52, 211, 153, 0.4);">
+            <div class="section-title" style="color: #34D399; border-color: rgba(16, 185, 129, 0.2);"><span>📱</span> Application Mobile</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Installez cette application sur votre écran d'accueil pour un accès rapide en un clic et un meilleur confort d'utilisation.</p>
+            <button id="btn-install-app" class="btn btn-success" onclick="triggerHaptic()">⬇️ Installer sur mon appareil</button>
+        </div>
+
+        <form id="form-mdp" class="glass-card">
+            <div class="section-title"><span>🔒</span> Mot de passe</div>
             <div class="form-group">
                 <label>Ancien mot de passe</label>
                 <input type="password" id="ancien-mdp" required>
@@ -74,29 +129,32 @@
                 <label>Nouveau mot de passe</label>
                 <input type="password" id="nouveau-mdp" required>
             </div>
-            <button type="submit" class="btn-primary" style="margin-top:5px;">💾 Enregistrer</button>
+            <button type="submit" class="btn btn-primary" style="margin-top:5px;" onclick="triggerHaptic()">💾 Enregistrer</button>
         </form>
 
-        <div class="section-box">
-            <div class="section-title">🛠️ Maintenance</div>
-            <p style="font-size: 0.85rem; color: #D1D5DB; margin-bottom: 5px;">Si l'application rencontre un bug d'affichage ou des données obsolètes, vous pouvez forcer le nettoyage du cache.</p>
-            <button id="btn-vider-cache" class="btn-danger">🧹 Vider le cache de l'application</button>
+        <div class="glass-card">
+            <div class="section-title"><span>🛠️</span> Maintenance</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Si l'application rencontre un bug d'affichage ou des données obsolètes, forcez le nettoyage du cache.</p>
+            <button id="btn-vider-cache" class="btn btn-danger" onclick="triggerHaptic()">🧹 Vider le cache local</button>
         </div>
     </div>
+
+    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
     <div class="modal-overlay" id="custom-alert">
         <div class="modal-content">
             <div class="modal-icon" id="alert-icon">✅</div>
             <h3 class="modal-title" id="alert-title">Succès</h3>
             <p class="modal-message" id="alert-message">Action effectuée.</p>
-            <button class="btn-modal-ok" id="btn-alert-ok">OK</button>
+            <button class="btn-modal-ok" id="btn-alert-ok" onclick="triggerHaptic()">OK</button>
         </div>
     </div>
 
-    <div class="app-version" id="version-display">Version 0.1.1</div>
+    <div class="app-version" id="version-display">Version 0.2.1</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
+        const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         
         document.getElementById('display-login').textContent = localStorage.getItem('app_login');
         let roleName = localStorage.getItem('app_role') === 'admin' ? "Administrateur" : (localStorage.getItem('app_role') === 'lecteur' ? "Lecteur Uniquement" : "Standard");
@@ -106,36 +164,76 @@
             document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version');
         }
 
+        // 🌟 RETOUR HAPTIQUE GLOBAL
+        window.triggerHaptic = function() {
+            if (navigator.vibrate) { navigator.vibrate(40); }
+        };
+
+        // 🌟 NOUVEAU : CHARGEMENT DE L'HISTORIQUE PERSONNEL DU JOUR
+        function chargerHistoriquePersonnel() {
+            const container = document.getElementById('personal-history-list');
+            container.innerHTML = "<p style='color:var(--text-muted); font-size:0.85rem; text-align:center; padding: 10px 0;'>Chargement... ⏳</p>";
+            
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_historique", ...payloadBase }) })
+            .then(r => r.json()).then(d => {
+                if(d.result === "success") {
+                    const today = new Date().toLocaleDateString('fr-FR');
+                    const currentUser = localStorage.getItem('app_login');
+                    
+                    // Filtrage local : Seulement l'utilisateur en cours ET seulement aujourd'hui
+                    const myActions = d.data.filter(item => {
+                        const itemDate = new Date(item.date).toLocaleDateString('fr-FR');
+                        return item.utilisateur === currentUser && itemDate === today;
+                    });
+                    
+                    // Tri du plus récent au plus ancien
+                    myActions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    if (myActions.length > 0) {
+                        container.innerHTML = myActions.map(log => {
+                            let time = new Date(log.date).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+                            return `<div class="hist-item">
+                                        <span class="hist-time">${time}</span> - 
+                                        <span class="hist-action">[${log.action}]</span> 
+                                        <span class="hist-obj">${log.nom || 'Objet inconnu'}</span>
+                                        <span class="hist-detail">${log.detail}</span>
+                                    </div>`;
+                        }).join('');
+                    } else {
+                        container.innerHTML = "<p style='color:var(--text-muted); font-size:0.85rem; text-align:center; padding: 10px 0;'>Aucune action enregistrée aujourd'hui.</p>";
+                    }
+                } else {
+                    container.innerHTML = "<p style='color:#FCA5A5; font-size:0.85rem; text-align:center; padding: 10px 0;'>Erreur de chargement.</p>";
+                }
+            }).catch(() => {
+                container.innerHTML = "<p style='color:#FCA5A5; font-size:0.85rem; text-align:center; padding: 10px 0;'>Erreur réseau.</p>";
+            });
+        }
+
+        // Lancement au démarrage de la page
+        window.addEventListener('DOMContentLoaded', chargerHistoriquePersonnel);
+
         // 🌟 GESTION DE L'INSTALLATION (PWA Add To Home Screen)
         let deferredPrompt;
         const installSection = document.getElementById('install-section');
         const installBtn = document.getElementById('btn-install-app');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Empêche la mini-barre d'information d'apparaître automatiquement sur mobile
             e.preventDefault();
-            // Sauvegarde l'événement pour pouvoir le déclencher plus tard via notre bouton
             deferredPrompt = e;
-            // Affiche notre encart d'installation
             installSection.style.display = 'flex';
         });
 
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
-                // Affiche l'invite d'installation native du système
                 deferredPrompt.prompt();
-                // Attend que l'utilisateur réponde à l'invite
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installSection.style.display = 'none';
-                }
-                // L'invite ne peut être utilisée qu'une seule fois
+                if (outcome === 'accepted') { installSection.style.display = 'none'; }
                 deferredPrompt = null;
             }
         });
 
         window.addEventListener('appinstalled', () => {
-            // Masque la section une fois l'application installée avec succès
             installSection.style.display = 'none';
             deferredPrompt = null;
         });
@@ -146,8 +244,10 @@
             document.getElementById('alert-title').textContent = titre;
             document.getElementById('alert-message').textContent = message;
             document.getElementById('custom-alert').style.display = 'flex';
+            triggerHaptic();
             document.getElementById('btn-alert-ok').onclick = () => {
                 document.getElementById('custom-alert').style.display = 'none';
+                triggerHaptic();
                 if(callback) callback();
             };
         }
@@ -159,8 +259,8 @@
                 method: 'POST', body: JSON.stringify({ action: "changer_mdp", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), ancienPassword: document.getElementById('ancien-mdp').value, nouveauPassword: document.getElementById('nouveau-mdp').value }) 
             }).then(res => res.json()).then(data => {
                 if(data.result === "success") { afficherAlerte("Succès", "Mot de passe modifié. Veuillez vous reconnecter.", true, () => { localStorage.clear(); window.location.href = 'login.html'; }); } 
-                else { afficherAlerte("Erreur", data.message, false); btn.disabled = false; btn.textContent = "💾 Enregistrer"; }
-            }).catch(() => { afficherAlerte("Erreur", "Problème réseau.", false); btn.disabled = false; btn.textContent = "💾 Enregistrer"; });
+                else { afficherAlerte("Erreur", data.message, false); btn.disabled = false; btn.innerHTML = "💾 Enregistrer"; }
+            }).catch(() => { afficherAlerte("Erreur", "Problème réseau.", false); btn.disabled = false; btn.innerHTML = "💾 Enregistrer"; });
         });
 
         document.getElementById('btn-vider-cache').addEventListener('click', function() {
