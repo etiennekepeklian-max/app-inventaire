@@ -213,23 +213,52 @@
         let typeAudit = "", zoneCible = "", baseLocale = [], attendusRefs = [], scannedRefs = [], scanner;
         let lastReportTrouves = [], lastReportManquants = [], lastReportEgares = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.2');
 
-        // 🌟 RETOUR HAPTIQUE GLOBAL (Silencieux)
+        // 🌟 RETOUR HAPTIQUE GLOBAL (Respecte le choix du profil)
         window.triggerHaptic = function() {
-            if (navigator.vibrate) { navigator.vibrate(40); }
+            if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
+                navigator.vibrate(40); 
+            }
         };
 
-        // 🌟 ALERTE SONORE STRICTE POUR "DÉJÀ SORTI" UNIQUEMENT (Anomalie)
+        // 🌟 ALERTES SONORES RESTAURÉES ET DIFFÉRENCIÉES
+        
+        // Bip d'Anomalie (Objet Sorti / Inconnu) : Saccadé et fort
         function playErrorBeep() {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
                 osc.type = 'sawtooth'; osc.frequency.value = 160;
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc.start(); osc.stop(ctx.currentTime + 0.4);
+            } catch(e) {}
+        }
+
+        // Bip de Doublon : Court et double (Warning)
+        function playWarningBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'square'; osc.frequency.value = 350;
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.start(); 
+                setTimeout(() => { osc.frequency.value = 250; }, 80);
+                osc.stop(ctx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        // Bip d'Erreur de Zone : Grave et continu
+        function playZoneErrorBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'triangle'; osc.frequency.value = 200;
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                osc.start(); osc.stop(ctx.currentTime + 0.3);
             } catch(e) {}
         }
 
@@ -295,22 +324,37 @@
 
         function ouvrirScannerAudit() { document.getElementById('audit-ui').style.display = 'flex'; scanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 }, false); scanner.render(r => { traiterScan(String(r).trim().toUpperCase()); }); }
 
-        // 🌟 TRAITEMENT DU SCAN (SILENCIEUX + ALERTE ANOMALIE SI SORTI)
+        // 🌟 TRAITEMENT DU SCAN (BIPS RÉINTÉGRÉS SELON LE CONTEXTE)
         function traiterScan(ref) {
-            triggerHaptic(); // Confirmation silencieuse
+            triggerHaptic();
 
             if(scannedRefs.includes(ref)) {
-                // Déjà scanné dans cet audit, on ignore silencieusement
+                // DOUBLON
+                playWarningBeep();
+                // On peut l'ignorer visuellement pour ne pas polluer la liste, mais on avertit au son.
             } else {
                 scannedRefs.push(ref); 
                 
                 let match = baseLocale.find(a => String(a.reference).toUpperCase() === ref);
-                let isOk = attendusRefs.includes(ref) ? '<span style="color:var(--accent-green);">✔️</span>' : '<span style="color:var(--accent-orange);">⚠️</span>';
+                let isOk = '';
                 
-                if (match && match.estSorti) {
-                    playErrorBeep(); // Seul bip autorisé
-                    isOk = '<span style="color:#FCA5A5; font-weight:bold;">❌ (SORTI)</span>';
-                    afficherAlerte("⚠️ Anomalie", `L'objet scanné (${ref}) est enregistré comme étant DÉJÀ SORTI !`);
+                if (match) {
+                    if (match.estSorti) {
+                        playErrorBeep(); // ANOMALIE
+                        isOk = '<span style="color:#FCA5A5; font-weight:bold;">❌ (SORTI)</span>';
+                        afficherAlerte("⚠️ Anomalie", `L'objet scanné (${ref}) est enregistré comme étant DÉJÀ SORTI !`);
+                    } else if (!attendusRefs.includes(ref) && typeAudit === "zone") {
+                        // ERREUR DE ZONE
+                        playZoneErrorBeep();
+                        isOk = '<span style="color:var(--accent-orange); font-weight:bold;">⚠️ (AUTRE ZONE)</span>';
+                    } else {
+                        // TOUT VA BIEN (Silencieux)
+                        isOk = '<span style="color:var(--accent-green);">✔️</span>';
+                    }
+                } else {
+                    // INCONNU
+                    playErrorBeep();
+                    isOk = '<span style="color:#FCA5A5; font-weight:bold;">❌ (INCONNU)</span>';
                 }
 
                 const item = document.createElement('div'); item.className = 'rafale-item';
@@ -437,7 +481,16 @@
         function effacerSauvegardeEtRecharger() { localStorage.removeItem('audit_en_cours'); window.location.reload(); }
     </script>
     <script>
-        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
+        let timeoutId; document.addEventListener("visibilitychange", function() { 
+            if (document.hidden) { 
+                timeoutId = setTimeout(() => {
+                    let hapticState = localStorage.getItem('app_haptic_disabled');
+                    localStorage.clear();
+                    if(hapticState) localStorage.setItem('app_haptic_disabled', hapticState);
+                    window.location.href = "login.html";
+                }, 30000); 
+            } else { clearTimeout(timeoutId); } 
+        });
     </script>
 </body>
 </html>

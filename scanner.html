@@ -278,30 +278,44 @@
         let modeActuel = "unique"; let referenceScannee = ""; let listeRafale = []; let html5QrcodeScanner;
         let trackedKitRefs = [];
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.2');
 
-        // 🌟 RETOUR HAPTIQUE GLOBAL (Remplace tous les bips normaux)
+        // 🌟 RETOUR HAPTIQUE GLOBAL
         window.triggerHaptic = function() {
-            if (navigator.vibrate) { navigator.vibrate(40); }
+            if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
+                navigator.vibrate(40); 
+            }
         };
 
-        // 🌟 ALERTE SONORE STRICTE POUR "DÉJÀ SORTI" UNIQUEMENT
+        // 🌟 ALERTE SONORE : ERREUR CRITIQUE (Objet sorti ou inconnu)
         function playErrorBeep() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.type = 'sawtooth';
-                osc.frequency.value = 160;
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sawtooth'; osc.frequency.value = 160;
                 gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             } catch(e) {}
         }
 
-        // Chargement des emplacements au démarrage de la page
+        // 🌟 ALERTE SONORE : AVERTISSEMENT (Doublon)
+        function playWarningBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'square'; osc.frequency.value = 300;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start(); 
+                setTimeout(() => { osc.frequency.value = 250; }, 100);
+                osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        // Chargement des emplacements au démarrage
         window.addEventListener('DOMContentLoaded', () => {
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_emplacements", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(r => r.json()).then(d => {
@@ -331,6 +345,7 @@
         btnModeRafale.addEventListener('click', () => { modeActuel = "rafale"; btnModeUnique.classList.remove('active'); btnModeRafale.classList.add('active'); searchBoxText.style.display="none"; zoneResultats.innerHTML=""; });
 
         document.getElementById('btn-declencher-recherche').addEventListener('click', function() {
+            triggerHaptic();
             const terme = document.getElementById('saisie-recherche').value.trim(); if(!terme) return afficherAlerte("Attention", "Écrivez un nom ou un code.");
             msgRecherche.style.display = 'block'; zoneResultats.innerHTML = "";
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: terme }) })
@@ -342,7 +357,7 @@
                         row.innerHTML = `<span>${item.nom}</span><span>${item.reference} <button class="btn-copy" onclick="copierTexte('${item.reference}', event)">${SVG_COPY}</button></span>`;
                         row.addEventListener('click', () => { triggerHaptic(); ouvrirFicheObjet(item); }); zoneResultats.appendChild(row);
                     });
-                } else { zoneResultats.innerHTML = "<p style='font-size:0.85rem;color:#FCA5A5;text-align:center;'>Aucune correspondance active.</p>"; }
+                } else { playErrorBeep(); zoneResultats.innerHTML = "<p style='font-size:0.85rem;color:#FCA5A5;text-align:center;'>Aucune correspondance active.</p>"; }
             }).catch(e => { msgRecherche.style.display = 'none'; afficherAlerte("Erreur", "Impossible de joindre le serveur."); });
         });
 
@@ -411,6 +426,7 @@
         });
 
         btnDemarrerScan.addEventListener('click', function() { 
+            triggerHaptic();
             btnDemarrerScan.style.display = 'none'; modeSelector.style.display = 'none'; searchBoxText.style.display = "none"; readerContainer.style.display = 'block'; 
             if(modeActuel === "rafale") { listeRafale = []; rafaleItems.innerHTML = ""; rafaleCount.textContent = "0"; blocRafaleListe.style.display = 'flex'; document.getElementById('btn-terminer-rafale').style.display = 'block'; }
             html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: {width: 250, height: 250} }, false); html5QrcodeScanner.render(onScanSuccess, onScanFailure); 
@@ -418,33 +434,48 @@
 
         function onScanSuccess(decodedText, decodedResult) { 
             const ref = decodedText.trim().toUpperCase();
-            triggerHaptic(); // Confirmation physique (Silencieuse)
             
             if (modeActuel === "unique") {
+                triggerHaptic();
                 arreterScanner(); referenceScannee = ref; msgRecherche.style.display = 'block';
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "recherche_large", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), terme: ref }) }).then(res => res.json()).then(data => {
-                    msgRecherche.style.display = 'none'; if(data.result === "success" && data.data && data.data.length > 0) ouvrirFicheObjet(data.data[0]); else { afficherAlerte("Erreur", "Référence introuvable."); btnDemarrerScan.style.display = 'block'; modeSelector.style.display = 'flex'; }
+                    msgRecherche.style.display = 'none'; 
+                    if(data.result === "success" && data.data && data.data.length > 0) {
+                        ouvrirFicheObjet(data.data[0]); 
+                    } else { 
+                        playErrorBeep();
+                        afficherAlerte("Erreur", "Référence introuvable."); 
+                        btnDemarrerScan.style.display = 'block'; modeSelector.style.display = 'flex'; 
+                    }
                 });
             } else if (modeActuel === "rafale") {
                 if (!listeRafale.includes(ref)) {
+                    triggerHaptic();
                     listeRafale.push(ref); rafaleCount.textContent = listeRafale.length; 
                     
                     const item = document.createElement('div'); item.className = 'rafale-item'; item.id = 'rafale-item-' + ref;
                     item.innerHTML = `<span>${ref} ⏳</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`; 
                     rafaleItems.prepend(item); 
                     
-                    // Vérification asynchrone pour l'alerte sonore d'anomalie
                     fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "rechercher", reference: ref, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
                     .then(res => res.json()).then(data => {
                         const domItem = document.getElementById('rafale-item-' + ref);
-                        if(data.result === "success" && data.estSorti) {
-                            playErrorBeep(); // 🔊 SEUL BIP AUTORISÉ : ALERTE ANOMALIE
-                            if(domItem) domItem.innerHTML = `<span style="color:#FCA5A5; font-weight:bold;">⚠️ ${ref} (DÉJÀ SORTI)</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
-                            afficherAlerte("⚠️ Anomalie", `L'objet scanné (${ref}) est DÉJÀ SORTI !`);
+                        if(data.result === "success") {
+                            if(data.estSorti) {
+                                playErrorBeep(); 
+                                if(domItem) domItem.innerHTML = `<span style="color:#FCA5A5; font-weight:bold;">⚠️ ${ref} (SORTI)</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
+                            } else {
+                                if(domItem) domItem.innerHTML = `<span>${ref}</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
+                            }
                         } else {
-                            if(domItem) domItem.innerHTML = `<span>${ref}</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
+                            playErrorBeep();
+                            if(domItem) domItem.innerHTML = `<span style="color:#FCA5A5; font-weight:bold;">❌ ${ref} (INCONNU)</span> <span><button class="btn-copy" onclick="copierTexte('${ref}', event)" style="color:#60A5FA;">${SVG_COPY}</button></span>`;
                         }
                     });
+                } else {
+                    // Doublon détecté !
+                    playWarningBeep(); 
+                    triggerHaptic();
                 }
             }
         } 
@@ -491,7 +522,16 @@
         document.getElementById('btn-nouveau-scan').addEventListener('click', function() { triggerHaptic(); window.location.reload(); });
     </script>
     <script>
-        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
+        let timeoutId; document.addEventListener("visibilitychange", function() { 
+            if (document.hidden) { 
+                timeoutId = setTimeout(() => {
+                    let hapticState = localStorage.getItem('app_haptic_disabled');
+                    localStorage.clear();
+                    if(hapticState) localStorage.setItem('app_haptic_disabled', hapticState);
+                    window.location.href = "login.html";
+                }, 30000); 
+            } else { clearTimeout(timeoutId); } 
+        });
     </script>
 </body>
 </html>

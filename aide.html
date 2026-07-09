@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Centre d'Aide</title>
+    <title>Centre d'Aide Complet</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -20,6 +20,7 @@
             --accent-green: #10B981;
             --accent-orange: #F59E0B;
             --accent-purple: #8B5CF6;
+            --accent-red: #EF4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -44,11 +45,16 @@
             display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); 
         }
 
+        .section-header { font-size: 1.25rem; font-weight: 900; color: #FFFFFF; text-transform: uppercase; text-align: center; margin: 15px 0 5px 0; border-bottom: 2px solid var(--glass-border); padding-bottom: 10px; }
+
         .help-title { font-size: 1.1rem; color: #60A5FA; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; }
         .help-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
         .help-text strong { color: var(--text-main); }
+        .help-text ul { padding-left: 20px; margin-top: 5px; }
+        .help-text li { margin-bottom: 4px; }
         
         .badge-new { background: var(--accent-green); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-left: auto; }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.4); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-left: auto; }
 
         .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
     </style>
@@ -57,84 +63,121 @@
     <div class="container">
         <div class="header">
             <button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button>
-            <h1>Guide & Nouveautés</h1>
+            <h1>Manuel d'utilisation</h1>
         </div>
 
         <p style="text-align:center; font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">
-            Bienvenue sur le centre d'aide de la <strong>Version 0.2.1</strong>. Découvrez comment utiliser les nouvelles fonctionnalités de l'application.
+            Découvrez l'ensemble des fonctionnalités disponibles pour maîtriser votre inventaire.
         </p>
 
-        <!-- 1. Mode Hors-Ligne -->
+        <!-- ================= SECTION 1 : LES BASES ================= -->
+        <div class="section-header">📦 Les Fondamentaux</div>
+
         <div class="glass-card">
-            <div class="help-title">📡 Mode Hors-Ligne Intelligent <span class="badge-new">Nouveau</span></div>
+            <div class="help-title">🔍 Rechercher & Scanner</div>
+            <div class="help-text">
+                Outil principal pour interroger la base :
+                <ul>
+                    <li><strong>Scan Unique :</strong> Scannez un QR code (ou tapez un mot clé) pour ouvrir la fiche descriptive détaillée de l'objet et son historique.</li>
+                    <li><strong>Mode Rafale 🚀 :</strong> Scannez plusieurs objets à la suite très rapidement pour les déplacer ou les sortir en un seul clic.</li>
+                    <li>🔊 <em>Bip d'alerte :</em> En mode rafale, un bip saccadé vous alerte si vous scannez un doublon. Un bip long vous prévient si l'objet est déjà sorti.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="help-title">➕ Ajouter / Corriger</div>
+            <div class="help-text">
+                Permet d'indexer un nouvel objet en base :
+                <ul>
+                    <li><strong>Référence Auto :</strong> Tapez le nom de l'objet, une référence unique sera générée automatiquement (ex: VAS-1234). Vous pouvez aussi scanner un code-barres existant.</li>
+                    <li><strong>📸 Galerie Photos HD <span class="badge-new">V 0.2.2</span> :</strong> Joignez jusqu'à 3 photos pour prouver l'état de l'objet. Choisissez des images de votre galerie ou prenez un <strong>Instantané</strong> direct.</li>
+                    <li><strong>🖨️ Étiquettes :</strong> Un bouton d'impression directe du QR code apparaît après l'enregistrement.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="help-title">🔄 Déplacer & 📤 Sortir</div>
+            <div class="help-text">
+                <strong>Déplacer :</strong> Modifie la zone de stockage d'un objet. Nécessite de scanner l'objet et de choisir sa nouvelle destination.<br><br>
+                <strong>Sortir :</strong> Archive définitivement un objet du stock actif (vendu, cassé, perdu). Un motif obligatoire vous sera demandé.
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="help-title">📋 Faire un Audit (Inventaire)</div>
+            <div class="help-text">
+                L'audit permet de pointer physiquement le stock réel face à la base théorique :
+                <ul>
+                    <li><strong>Zone ou Total :</strong> Auditez une pièce spécifique ou l'entrepôt entier.</li>
+                    <li>🔊 <strong>Sons intelligents <span class="badge-new">V 0.2.2</span> :</strong> 
+                        <br>- Silencieux si l'objet est à sa place.
+                        <br>- Bip aigu si c'est un doublon.
+                        <br>- Bip grave si l'objet appartient à une autre zone.
+                    </li>
+                    <li><strong>Outils :</strong> Saisie manuelle pour étiquettes illisibles, et fonction "Fusion Collaborative" pour coller les scans du téléphone d'un collègue.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 2 : FONCTIONNALITÉS AVANCÉES ================= -->
+        <div class="section-header" style="margin-top: 25px;">⚡ Avancé & Astuces</div>
+
+        <div class="glass-card">
+            <div class="help-title">📡 Mode Hors-Ligne Intelligent <span class="badge-info">PRO</span></div>
             <div class="help-text">
                 Vous n'avez plus besoin d'une connexion internet permanente pour travailler en réserve !<br><br>
-                Si vous perdez le réseau (Wi-Fi ou 4G), un <strong>badge rouge</strong> apparaîtra en haut de l'écran. Vous pouvez continuer à <strong>déplacer</strong> et <strong>sortir</strong> des objets normalement. L'application mémorisera vos actions silencieusement et les enverra au serveur Google dès que vous retrouverez une connexion.
+                Si vous perdez le réseau (Wi-Fi/4G), un <strong>badge rouge</strong> apparaît. Vous pouvez continuer à <strong>déplacer</strong> et <strong>sortir</strong> des objets normalement. Le système stocke vos actions et les synchronise automatiquement dès le retour de la connexion.
             </div>
         </div>
 
-        <!-- 2. Lecture Rapide -->
+        <div class="glass-card" style="border-color: rgba(59, 130, 246, 0.4);">
+            <div class="help-title">📦 Créer un Lot / Kit (Bundle)</div>
+            <div class="help-text">
+                Pour associer plusieurs objets physiquement ensemble :<br>
+                1. Allez dans <strong>Scanner</strong> et visez l'objet principal (Parent).<br>
+                2. Dans sa fiche, cliquez sur <em>"🛠️ Assembler des objets dans ce Kit"</em>.<br>
+                3. Scannez les codes des objets Enfants.<br>
+                4. Validez. La composition restera attachée à l'objet Parent.
+            </div>
+        </div>
+
+        <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.4);">
+            <div class="help-title">↩️ Réintégration d'un article</div>
+            <div class="help-text">
+                Si vous scannez un objet préalablement "Sorti" ou "Archivé", le système vous affichera une alerte et vous proposera un bouton vert <strong>Réintégrer l'objet en stock</strong>. Cela ressuscitera la fiche et vous demandera où replacer physiquement l'objet.
+            </div>
+        </div>
+
         <div class="glass-card">
-            <div class="help-title">⚡ Lecture Rapide (Double-Tap) <span class="badge-new">Nouveau</span></div>
+            <div class="help-title">⚡ Lecture Rapide & Filtres</div>
             <div class="help-text">
-                Dans l'onglet <strong>Inventaire</strong>, gagnez du temps pour vérifier une référence :<br><br>
-                <strong>Touchez 2 fois très rapidement</strong> (Double-Tap) une ligne d'objet. Une fenêtre instantanée s'ouvrira avec la référence en grand format et son QR Code prêt à être scanné par un collègue. Un appui simple ouvre la fiche descriptive complète habituelle.
+                Dans l'onglet <strong>Inventaire</strong> :<br>
+                <ul>
+                    <li><strong>Double-Tap :</strong> Touchez 2 fois très rapidement une ligne d'objet pour afficher son QR code en plein écran.</li>
+                    <li><strong>Filtres Croisés :</strong> Utilisez les menus déroulants sous la barre de recherche pour cumuler les critères (ex: Catégorie + Emplacement).</li>
+                </ul>
             </div>
         </div>
 
-        <!-- 3. Galerie Photos -->
         <div class="glass-card">
-            <div class="help-title">📸 Galerie Photos HD <span class="badge-new">Nouveau</span></div>
+            <div class="help-title">📳 Paramétrage du Vibreur <span class="badge-new">V 0.2.2</span></div>
             <div class="help-text">
-                Lors de l'<strong>Ajout</strong> d'un nouvel objet, vous pouvez désormais prouver son état visuel.<br><br>
-                Touchez la zone <em>"Galerie d'État"</em> pour prendre ou sélectionner jusqu'à <strong>3 photos Haute Définition</strong> (usure, détails, boîte). Elles seront sauvegardées de façon sécurisée avec la fiche de l'objet.
+                Pour un confort total, l'application utilise des retours haptiques (vibrations) au lieu de bips intempestifs. <br><br>
+                Vous pouvez <strong>désactiver ou réactiver ces vibrations</strong> à tout moment depuis le menu <strong>Mon Profil</strong> (section Préférences). Ce choix est mémorisé sur votre appareil même après déconnexion.
             </div>
         </div>
 
-        <!-- 4. Filtres Croisés -->
         <div class="glass-card">
-            <div class="help-title">🔍 Filtres Multicritères <span class="badge-new">Nouveau</span></div>
+            <div class="help-title">🕒 Historique et Traçabilité</div>
             <div class="help-text">
-                Trouvez vos articles plus vite dans l'<strong>Inventaire</strong>.<br><br>
-                Sous la barre de recherche, utilisez les menus déroulants pour croiser vos recherches. Vous pouvez par exemple chercher <em>"Vase"</em> UNIQUEMENT dans la catégorie <em>"Céramique"</em> ET dans la zone <em>"Réserve A"</em>.
-            </div>
-        </div>
-
-        <!-- 5. Historique Personnel -->
-        <div class="glass-card">
-            <div class="help-title">🕒 Mes Actions du Jour <span class="badge-new">Nouveau</span></div>
-            <div class="help-text">
-                Un doute sur ce que vous avez fait ce matin ?<br><br>
-                Rendez-vous dans <strong>Mon Profil</strong>. Une nouvelle section affiche la liste chronologique exacte de toutes les actions (ajouts, déplacements, sorties, audits) que <strong>vous</strong> avez réalisées aujourd'hui.
-            </div>
-        </div>
-
-        <!-- 6. Retours Haptiques & Silence -->
-        <div class="glass-card">
-            <div class="help-title">📳 Retours Haptiques (Silence) <span class="badge-new">Nouveau</span></div>
-            <div class="help-text">
-                L'application a été rendue silencieuse pour un meilleur confort de travail. Les "bips" constants ont été remplacés par de <strong>légères vibrations physiques</strong> (retours haptiques) qui confirment vos actions.<br><br>
-                <strong>Seule exception :</strong> un buzzer sonore fort se déclenchera si vous scannez un objet qui est déclaré comme "SORTI" ou "ARCHIVÉ", pour vous alerter immédiatement de l'anomalie sans regarder l'écran.
-            </div>
-        </div>
-
-        <!-- Rappel : Création de Lots -->
-        <div class="glass-card" style="border-color: rgba(96, 165, 250, 0.3);">
-            <div class="help-title" style="color: var(--text-main);">📦 Rappel : Créer un Lot / Kit</div>
-            <div class="help-text">
-                Pour associer plusieurs objets ensemble (ex: un clavier avec un ordinateur) :<br>
-                1. Scannez l'objet "Parent" principal.<br>
-                2. Dans sa fiche, cliquez sur <strong>Assembler des objets</strong>.<br>
-                3. Scannez les codes-barres des objets "Enfants".<br>
-                4. Validez. La composition du lot sera enregistrée dans les notes de l'objet parent.
-            </div>
-        </div>
-
-        <!-- Rappel : Réintégration -->
-        <div class="glass-card" style="border-color: rgba(16, 185, 129, 0.3); margin-bottom: 20px;">
-            <div class="help-title" style="color: var(--text-main);">↩️ Rappel : Réintégration</div>
-            <div class="help-text">
-                Si vous scannez un objet préalablement "Sorti" ou "Archivé", le système vous proposera automatiquement un bouton vert <strong>Réintégrer l'objet en stock</strong> pour annuler sa sortie et le replacer dans une zone active.
+                L'application trace toutes les manipulations :
+                <ul>
+                    <li><strong>Historique Objet :</strong> Depuis la fiche scanner, voyez qui a déplacé ou créé l'objet.</li>
+                    <li><strong>Mes Actions :</strong> Dans votre Profil, retrouvez la liste chronologique de tout ce que vous avez effectué dans la journée.</li>
+                    <li><strong>Journal Global :</strong> Réservé aux administrateurs pour rechercher l'activité globale de l'équipe (Menu Inventaire > 🕒).</li>
+                </ul>
             </div>
         </div>
 
@@ -143,11 +186,11 @@
     <div class="app-version" id="version-display"></div>
 
     <script>
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.2');
 
         window.triggerHaptic = function() {
-            if (navigator.vibrate) {
-                navigator.vibrate(40);
+            if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
+                navigator.vibrate(40); 
             }
         };
     </script>

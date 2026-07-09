@@ -71,6 +71,8 @@
         .btn-danger { background: var(--accent-red); border: 1px solid var(--accent-red-border); color: #FCA5A5; }
         .btn-danger:active { background: rgba(239, 68, 68, 0.2); }
 
+        .btn-toggle { padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; border: none; }
+
         /* Modales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
         .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
@@ -85,7 +87,6 @@
 
         .app-version { position: absolute; bottom: 10px; left: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
         
-        /* 🌟 NOUVEAU : Historique Personnel */
         .history-list { max-height: 200px; overflow-y: auto; padding-right: 5px; }
         .hist-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 0.85rem; line-height: 1.4; }
         .hist-item:last-child { border-bottom: none; }
@@ -105,6 +106,19 @@
             <div class="profile-role" id="display-role">...</div>
         </div>
 
+        <!-- 🌟 NOUVEAU : PRÉFÉRENCES DE L'APPAREIL -->
+        <div class="glass-card">
+            <div class="section-title"><span>⚙️</span> Préférences de l'appareil</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="font-size: 0.95rem; font-weight: bold; color: var(--text-main);">Retours haptiques</span>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Vibrations lors des actions</p>
+                </div>
+                <button id="btn-toggle-haptic" class="btn-toggle" onclick="toggleHapticSetting()"></button>
+            </div>
+        </div>
+
+        <!-- HISTORIQUE PERSONNEL DU JOUR -->
         <div class="glass-card">
             <div class="section-title"><span>🕒</span> Mes Actions du Jour</div>
             <div class="history-list" id="personal-history-list">
@@ -113,12 +127,14 @@
             <button class="btn btn-primary" style="margin-top:5px; padding: 10px; font-size:0.9rem;" onclick="triggerHaptic(); chargerHistoriquePersonnel()">🔄 Rafraîchir</button>
         </div>
 
+        <!-- Installation de l'application (Masquée par défaut) -->
         <div class="glass-card" id="install-section" style="display: none; border-color: rgba(52, 211, 153, 0.4);">
             <div class="section-title" style="color: #34D399; border-color: rgba(16, 185, 129, 0.2);"><span>📱</span> Application Mobile</div>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Installez cette application sur votre écran d'accueil pour un accès rapide en un clic et un meilleur confort d'utilisation.</p>
             <button id="btn-install-app" class="btn btn-success" onclick="triggerHaptic()">⬇️ Installer sur mon appareil</button>
         </div>
 
+        <!-- Modifier le mot de passe -->
         <form id="form-mdp" class="glass-card">
             <div class="section-title"><span>🔒</span> Mot de passe</div>
             <div class="form-group">
@@ -132,6 +148,7 @@
             <button type="submit" class="btn btn-primary" style="margin-top:5px;" onclick="triggerHaptic()">💾 Enregistrer</button>
         </form>
 
+        <!-- Maintenance -->
         <div class="glass-card">
             <div class="section-title"><span>🛠️</span> Maintenance</div>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Si l'application rencontre un bug d'affichage ou des données obsolètes, forcez le nettoyage du cache.</p>
@@ -139,6 +156,7 @@
         </div>
     </div>
 
+    <!-- BOUTON D'AIDE GLOBAL -->
     <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
     <div class="modal-overlay" id="custom-alert">
@@ -150,7 +168,7 @@
         </div>
     </div>
 
-    <div class="app-version" id="version-display">Version 0.2.1</div>
+    <div class="app-version" id="version-display">Version 0.2.2</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
@@ -164,12 +182,40 @@
             document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version');
         }
 
-        // 🌟 RETOUR HAPTIQUE GLOBAL
+        // 🌟 GESTION DES VIBRATIONS (HAPTIQUE)
+        const btnToggleHaptic = document.getElementById('btn-toggle-haptic');
+        
+        function updateHapticUI() {
+            if (localStorage.getItem('app_haptic_disabled') === 'true') {
+                btnToggleHaptic.textContent = "Désactivé";
+                btnToggleHaptic.style.background = "var(--accent-red)";
+                btnToggleHaptic.style.color = "white";
+            } else {
+                btnToggleHaptic.textContent = "Activé";
+                btnToggleHaptic.style.background = "var(--accent-green)";
+                btnToggleHaptic.style.color = "white";
+            }
+        }
+        
+        updateHapticUI(); // Initialisation au chargement
+
+        function toggleHapticSetting() {
+            if (localStorage.getItem('app_haptic_disabled') === 'true') {
+                localStorage.setItem('app_haptic_disabled', 'false');
+            } else {
+                localStorage.setItem('app_haptic_disabled', 'true');
+            }
+            updateHapticUI();
+            triggerHaptic(); // Fait vibrer si on vient de l'activer
+        }
+
         window.triggerHaptic = function() {
-            if (navigator.vibrate) { navigator.vibrate(40); }
+            if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
+                navigator.vibrate(40); 
+            }
         };
 
-        // 🌟 NOUVEAU : CHARGEMENT DE L'HISTORIQUE PERSONNEL DU JOUR
+        // 🌟 CHARGEMENT DE L'HISTORIQUE PERSONNEL DU JOUR
         function chargerHistoriquePersonnel() {
             const container = document.getElementById('personal-history-list');
             container.innerHTML = "<p style='color:var(--text-muted); font-size:0.85rem; text-align:center; padding: 10px 0;'>Chargement... ⏳</p>";
@@ -180,13 +226,11 @@
                     const today = new Date().toLocaleDateString('fr-FR');
                     const currentUser = localStorage.getItem('app_login');
                     
-                    // Filtrage local : Seulement l'utilisateur en cours ET seulement aujourd'hui
                     const myActions = d.data.filter(item => {
                         const itemDate = new Date(item.date).toLocaleDateString('fr-FR');
                         return item.utilisateur === currentUser && itemDate === today;
                     });
                     
-                    // Tri du plus récent au plus ancien
                     myActions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                     if (myActions.length > 0) {
@@ -210,18 +254,15 @@
             });
         }
 
-        // Lancement au démarrage de la page
         window.addEventListener('DOMContentLoaded', chargerHistoriquePersonnel);
 
-        // 🌟 GESTION DE L'INSTALLATION (PWA Add To Home Screen)
+        // 🌟 GESTION DE L'INSTALLATION (PWA)
         let deferredPrompt;
         const installSection = document.getElementById('install-section');
         const installBtn = document.getElementById('btn-install-app');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installSection.style.display = 'flex';
+            e.preventDefault(); deferredPrompt = e; installSection.style.display = 'flex';
         });
 
         installBtn.addEventListener('click', async () => {
@@ -233,12 +274,9 @@
             }
         });
 
-        window.addEventListener('appinstalled', () => {
-            installSection.style.display = 'none';
-            deferredPrompt = null;
-        });
+        window.addEventListener('appinstalled', () => { installSection.style.display = 'none'; deferredPrompt = null; });
 
-        // 🌟 FONCTIONS DU PROFIL (Mot de passe et Cache)
+        // 🌟 FONCTIONS DU PROFIL
         function afficherAlerte(titre, message, isSuccess = true, callback = null) {
             document.getElementById('alert-icon').textContent = isSuccess ? "✅" : "⚠️";
             document.getElementById('alert-title').textContent = titre;
@@ -252,13 +290,21 @@
             };
         }
 
+        // Sauvegarde de l'état haptique lors des déconnexions
+        function performSafeLogout() {
+            let hapticState = localStorage.getItem('app_haptic_disabled');
+            localStorage.clear();
+            if(hapticState) localStorage.setItem('app_haptic_disabled', hapticState);
+            window.location.href = 'login.html';
+        }
+
         document.getElementById('form-mdp').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = this.querySelector('button'); btn.disabled = true; btn.textContent = "Mise à jour... ⏳";
             fetch(GOOGLE_SCRIPT_URL, { 
                 method: 'POST', body: JSON.stringify({ action: "changer_mdp", login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token'), ancienPassword: document.getElementById('ancien-mdp').value, nouveauPassword: document.getElementById('nouveau-mdp').value }) 
             }).then(res => res.json()).then(data => {
-                if(data.result === "success") { afficherAlerte("Succès", "Mot de passe modifié. Veuillez vous reconnecter.", true, () => { localStorage.clear(); window.location.href = 'login.html'; }); } 
+                if(data.result === "success") { afficherAlerte("Succès", "Mot de passe modifié. Veuillez vous reconnecter.", true, performSafeLogout); } 
                 else { afficherAlerte("Erreur", data.message, false); btn.disabled = false; btn.innerHTML = "💾 Enregistrer"; }
             }).catch(() => { afficherAlerte("Erreur", "Problème réseau.", false); btn.disabled = false; btn.innerHTML = "💾 Enregistrer"; });
         });
@@ -268,13 +314,31 @@
             if('caches' in window) p.push(caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))));
             if('serviceWorker' in navigator) p.push(navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister()))));
             Promise.all(p).finally(() => { 
-                localStorage.removeItem('miroir_stock'); localStorage.removeItem('app_categories'); localStorage.removeItem('app_emplacements');
+                let hapticState = localStorage.getItem('app_haptic_disabled');
+                let token = localStorage.getItem('app_token');
+                let login = localStorage.getItem('app_login');
+                let role = localStorage.getItem('app_role');
+                let version = localStorage.getItem('app_version');
+                
+                localStorage.clear();
+                
+                // Restauration des clés essentielles
+                if(hapticState) localStorage.setItem('app_haptic_disabled', hapticState);
+                if(token) localStorage.setItem('app_token', token);
+                if(login) localStorage.setItem('app_login', login);
+                if(role) localStorage.setItem('app_role', role);
+                if(version) localStorage.setItem('app_version', version);
+                
                 afficherAlerte("Cache vidé", "L'application a été nettoyée. Redémarrage requis.", true, () => { window.location.reload(); });
             });
         });
     </script>
     <script>
-        let timeoutId; document.addEventListener("visibilitychange", function() { if (document.hidden) { timeoutId = setTimeout(() => { localStorage.clear(); window.location.href = "login.html"; }, 30000); } else { clearTimeout(timeoutId); } });
+        let timeoutId; document.addEventListener("visibilitychange", function() { 
+            if (document.hidden) { 
+                timeoutId = setTimeout(performSafeLogout, 30000); 
+            } else { clearTimeout(timeoutId); } 
+        });
     </script>
 </body>
 </html>

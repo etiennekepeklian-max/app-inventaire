@@ -27,6 +27,7 @@
             --accent-blue: #3B82F6;
             --accent-blue-hover: #2563EB;
             --accent-green: #10B981;
+            --accent-red: #EF4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -84,15 +85,19 @@
         
         .btn-print { background: var(--accent-green); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); display: none; }
 
-        /* 🌟 NOUVEAU : UI GALERIE PHOTOS */
+        /* 🌟 UI GALERIE PHOTOS AVANCÉE */
         .photo-upload-zone {
             border: 2px dashed var(--glass-border); background: rgba(0,0,0,0.1);
-            padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; 
+            padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; 
             transition: background 0.3s, border-color 0.3s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .photo-upload-zone:active { background: rgba(255,255,255,0.05); border-color: var(--accent-blue); }
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        
+        .photo-wrapper { position: relative; display: inline-block; width: 100%; }
         .photo-preview { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
+        .btn-delete-photo { position: absolute; top: -6px; right: -6px; background: var(--accent-red); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.5); font-size: 0.9rem; }
 
         #scanner-box { display: none; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 16px; border: 1px solid var(--glass-border); }
         #reader { width: 100%; border-radius: 12px; overflow: hidden; }
@@ -123,17 +128,20 @@
     <div class="container">
         <div class="header"><button class="btn-retour" onclick="triggerHaptic(); history.back()">⬅</button><h1>Ajouter / Corriger</h1></div>
 
+        <!-- ZONE INTERFACE SCAN RAPIDE -->
         <div id="scanner-box">
             <div id="reader"></div>
             <button class="btn-action" onclick="fermerScannerCam()" style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(248, 113, 113, 0.4); color:#FCA5A5; margin-top:10px; padding:12px; box-shadow:none;">❌ Annuler le scan</button>
         </div>
 
         <form id="form-ajouter" class="glass-card">
+            <!-- Nom de l'objet -->
             <div class="form-group">
                 <label for="input-nom">Nom de l'objet / Article</label>
                 <input type="text" id="input-nom" placeholder="Ex: Vase en porcelaine" required>
             </div>
 
+            <!-- Référence avec Scan Commercial intégré -->
             <div class="form-group">
                 <label for="input-ref">Référence (Code Commercial ou Interne)</label>
                 <div class="row-inline">
@@ -142,6 +150,7 @@
                 </div>
             </div>
 
+            <!-- Catégorie (Déroulant dynamique) -->
             <div class="form-group">
                 <label for="select-cat">Catégorie</label>
                 <select id="select-cat" required>
@@ -149,6 +158,7 @@
                 </select>
             </div>
 
+            <!-- Emplacement initial (Déroulant dynamique) -->
             <div class="form-group">
                 <label for="select-emp">Emplacement Initial</label>
                 <select id="select-emp" required>
@@ -156,28 +166,40 @@
                 </select>
             </div>
 
+            <!-- NOUVEAU : Galerie Photos HD avec choix Galerie / Caméra -->
             <div class="form-group">
-                <label>Galerie d'État (Optionnel)</label>
-                <label class="photo-upload-zone" for="photo-input" onclick="triggerHaptic()">
-                    <div style="font-size: 1.5rem; margin-bottom: 5px;">📸</div>
-                    <span style="color: var(--text-muted); font-size: 0.85rem;">Toucher pour joindre jusqu'à 3 photos HD</span>
-                    <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="previewPhotos(this)">
-                </label>
+                <label>Galerie d'État (Max 3 photos)</label>
+                <div style="display: flex; gap: 10px;">
+                    <label class="photo-upload-zone" style="flex:1;" for="photo-input-file" onclick="triggerHaptic()">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">📁</div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Galerie</span>
+                        <input type="file" id="photo-input-file" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">
+                    </label>
+                    <label class="photo-upload-zone" style="flex:1;" for="photo-input-cam" onclick="triggerHaptic()">
+                        <div style="font-size: 1.5rem; margin-bottom: 5px;">📷</div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Instantané</span>
+                        <input type="file" id="photo-input-cam" accept="image/*" capture="environment" style="display:none" onchange="addPhotos(this)">
+                    </label>
+                </div>
                 <div class="photo-grid" id="photo-grid"></div>
             </div>
 
+            <!-- Remarques additionnelles -->
             <div class="form-group">
                 <label for="input-note">Notes / Suivi des Incidents</label>
                 <textarea id="input-note" rows="3" placeholder="Caractéristiques, état, remarques particulières..."></textarea>
             </div>
 
+            <!-- Actions -->
             <button type="submit" class="btn-action" id="btn-submit-form" onclick="triggerHaptic()">💾 Enregistrer en Base</button>
             <button type="button" class="btn-action btn-print" id="btn-imprimer-qr" onclick="triggerHaptic(); imprimerEtiquetteQR()">🖨️ Imprimer l'étiquette QR</button>
         </form>
     </div>
 
+    <!-- BOUTON D'AIDE GLOBAL -->
     <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">❓</a>
 
+    <!-- Modale de Notification Custom -->
     <div class="modal-overlay" id="custom-modal">
         <div class="modal-content">
             <div class="modal-icon" id="modal-icon">✅</div>
@@ -193,13 +215,15 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
         let html5QrcodeScanner = null;
-        let base64Photos = []; // Tableau pour stocker les photos en base64
+        let base64Photos = []; // Tableau pour stocker les photos cumulées en base64
 
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.1');
+        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.2.2');
 
-        // 🌟 RETOUR HAPTIQUE GLOBAL
+        // 🌟 RETOUR HAPTIQUE GLOBAL (Prend en compte la désactivation dans le profil)
         window.triggerHaptic = function() {
-            if (navigator.vibrate) { navigator.vibrate(40); }
+            if (navigator.vibrate && localStorage.getItem('app_haptic_disabled') !== 'true') { 
+                navigator.vibrate(40); 
+            }
         };
 
         function afficherPopup(titre, message, isSuccess = true) {
@@ -211,30 +235,51 @@
         }
         document.getElementById('btn-fermer-modal').addEventListener('click', () => { document.getElementById('custom-modal').style.display = 'none'; });
 
-        // 🌟 NOUVEAU : GESTION DE LA GALERIE PHOTOS HD
-        function previewPhotos(input) {
+        // 🌟 NOUVEAU : GESTION DE LA GALERIE PHOTOS HD (CUMULATIVE ET SUPPRIMABLE)
+        function addPhotos(input) {
             const grid = document.getElementById('photo-grid');
-            grid.innerHTML = '';
-            base64Photos = []; // Reset
-
+            
             if (input.files) {
-                // Limite stricte à 3 photos pour éviter de surcharger la BDD
-                const files = Array.from(input.files).slice(0, 3);
-                
-                files.forEach(file => {
+                Array.from(input.files).forEach(file => {
+                    if (base64Photos.length >= 3) {
+                        afficherPopup("Limite atteinte", "Vous ne pouvez joindre que 3 photos maximum par objet.", false);
+                        return; // Stoppe l'ajout si on dépasse 3
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        // Affichage de l'aperçu
+                        const imgData = e.target.result;
+                        base64Photos.push(imgData); // Ajout au tableau d'envoi
+                        
+                        // Création de la miniature avec bouton de suppression
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'photo-wrapper';
+                        
                         const img = document.createElement('img');
-                        img.src = e.target.result;
+                        img.src = imgData;
                         img.className = 'photo-preview';
-                        grid.appendChild(img);
-                        // Stockage pour l'envoi
-                        base64Photos.push(e.target.result);
+                        
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'btn-delete-photo';
+                        delBtn.innerHTML = '×';
+                        delBtn.onclick = function(ev) {
+                            ev.preventDefault();
+                            triggerHaptic();
+                            // Retirer du tableau et du DOM
+                            const idx = base64Photos.indexOf(imgData);
+                            if (idx > -1) base64Photos.splice(idx, 1);
+                            wrapper.remove();
+                        };
+                        
+                        wrapper.appendChild(img);
+                        wrapper.appendChild(delBtn);
+                        grid.appendChild(wrapper);
                     }
                     reader.readAsDataURL(file);
                 });
             }
+            // Réinitialisation de l'input pour permettre de reprendre une photo si besoin
+            input.value = "";
         }
 
         // 🌟 RECHARGE ET PEUPLEMENT DES MENUS DÉROULANTS
@@ -322,7 +367,7 @@
                 categorie: document.getElementById('select-cat').value,
                 emplacement: document.getElementById('select-emp').value,
                 note: document.getElementById('input-note').value.trim(),
-                photos: base64Photos // Les 3 photos HD compressées
+                photos: base64Photos // Tableau contenant de 0 à 3 photos
             };
 
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(item) })
