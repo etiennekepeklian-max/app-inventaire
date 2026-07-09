@@ -13,10 +13,12 @@
         body { background: linear-gradient(to top, #050A1F 0%, #1A2B56 100%); color: #FFFFFF; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; position: relative; }
         .container { width: 90%; max-width: 450px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; position: relative; }
         
-        /* Header avec retour arrière intelligent */
-        .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; }
+        /* Header avec retour arrière et raccourci historique global */
+        .header { display: flex; align-items: center; margin-bottom: 5px; position: relative; width: 100%; justify-content: center; }
         .btn-retour { color: #FFFFFF; text-decoration: none; font-size: 1.5rem; position: absolute; left: 0; background: none; border: none; cursor: pointer; transition: transform 0.2s; }
         .btn-retour:active { transform: scale(0.85); }
+        .btn-hist-global { color: #FFFFFF; text-decoration: none; font-size: 1.4rem; position: absolute; right: 0; background: none; border: none; cursor: pointer; display: none; transition: transform 0.2s; }
+        .btn-hist-global:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
         /* Barre de recherche et filtres */
@@ -26,7 +28,7 @@
         .btn-filter { flex: 1; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #60A5FA; padding: 8px 5px; font-size: 0.8rem; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-filter.active { background: #3B82F6; color: white; border-color: #60A5FA; }
 
-        /* Cartes d'objets (Liste) */
+        /* Cartes d'objets */
         .stock-list { display: flex; flex-direction: column; gap: 10px; width: 100%; max-height: 60vh; overflow-y: auto; padding-right: 2px; }
         .stock-card { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s, background 0.2s; }
         .stock-card:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
@@ -41,7 +43,7 @@
         .btn-primary { background-color: #3B82F6; border: none; padding: 14px; border-radius: 10px; color: #FFFFFF; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%; transition: transform 0.2s; }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* Modales Mobiles Unifiées */
+        /* Fiche descriptive Modale */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-content { background-color: #1A2B56; padding: 25px; border-radius: 15px; width: 92%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
         .modal-title { font-size: 1.25rem; color: #60A5FA; margin-bottom: 12px; font-weight: bold; text-align: left; }
@@ -60,7 +62,11 @@
 </head>
 <body>
     <div class="container">
-        <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Inventaire Général</h1></div>
+        <div class="header">
+            <button class="btn-retour" onclick="history.back()">⬅</button>
+            <h1>Inventaire Général</h1>
+            <a href="historique.html" class="btn-hist-global" id="btn-global-hist" title="Historique Global">🕒</a>
+        </div>
         
         <input type="text" id="input-recherche" class="search-bar" placeholder="Rechercher nom, code, lieu, catégorie...">
         
@@ -72,7 +78,6 @@
         </div>
 
         <p id="msg-chargement" style="text-align:center; font-size:0.9rem; color:#60A5FA;">Synchronisation de la base... ⏳</p>
-        
         <div class="stock-list" id="liste-stock"></div>
     </div>
 
@@ -134,13 +139,13 @@
         }
         document.getElementById('btn-alert-ok').addEventListener('click', () => { document.getElementById('custom-alert').style.display = 'none'; });
 
-        window.copierReference = function(ref, e) {
-            if(e) e.stopPropagation();
-            navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); });
-        };
+        window.copierReference = function(ref, e) { if(e) e.stopPropagation(); navigator.clipboard.writeText(ref).then(() => { afficherAlerte("Copié !", `Référence ${ref} copiée.`, true); }); };
 
-        // CHARGEMENT INITIAL DU STOCK
+        // INITIALISATION ET ACCÈS RÔLE HISTORIQUE GLOBAL
         window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('app_role') === 'admin') {
+                document.getElementById('btn-global-hist').style.display = 'block';
+            }
             if(navigator.onLine) {
                 fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "inventaire", ...payloadBase }) })
                 .then(r => r.json()).then(d => {
@@ -152,10 +157,9 @@
 
         function chargerFailsafeLocal() {
             document.getElementById('msg-chargement').style.display = 'none';
-            if(localStorage.getItem('miroir_stock')) { inventaireComplet = JSON.parse(localStorage.getItem('miroir_stock')); appliquerTriEtFiltre(); } else { document.getElementById('liste-stock').innerHTML = "<p style='text-align:center;color:#FCA5A5;'>Base locale indisponible. Connectez-vous au réseau.</p>"; }
+            if(localStorage.getItem('miroir_stock')) { inventaireComplet = JSON.parse(localStorage.getItem('miroir_stock')); appliquerTriEtFiltre(); } else { document.getElementById('liste-stock').innerHTML = "<p style='text-align:center;color:#FCA5A5;'>Base locale indisponible.</p>"; }
         }
 
-        // MOTEUR DE RECHERCHE ET CONFIG TRIS
         document.getElementById('input-recherche').addEventListener('input', appliquerTriEtFiltre);
         function changerTri(type) {
             triActuel = type; document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
@@ -169,45 +173,30 @@
         function appliquerTriEtFiltre() {
             let s = document.getElementById('input-recherche').value.trim().toLowerCase();
             let role = localStorage.getItem('app_role');
-
-            // Filtrage : Les utilisateurs standards ne voient pas les objets "Sortis"
-            let listeDeBase = inventaireComplet;
-            if(role !== 'admin') { listeDeBase = inventaireComplet.filter(x => !x.estSorti); }
+            let listeDeBase = role === 'admin' ? inventaireComplet : inventaireComplet.filter(x => !x.estSorti);
 
             if(s) {
                 inventaireFiltre = listeDeBase.filter(x => String(x.nom).toLowerCase().includes(s) || String(x.reference).toLowerCase().includes(s) || String(x.emplacement).toLowerCase().includes(s) || String(x.categorie).toLowerCase().includes(s));
             } else { inventaireFiltre = [...listeDeBase]; }
 
-            // Application du Tri sélectionné
-            if (triActuel === "recent") {
-                inventaireFiltre.sort((a, b) => new Date(b.dateAjout || 0) - new Date(a.dateAjout || 0));
-            } else if (triActuel === "nom") {
-                inventaireFiltre.sort((a, b) => String(a.nom).localeCompare(String(b.nom)));
-            } else if (triActuel === "cat") {
-                inventaireFiltre.sort((a, b) => { if(a.categorie === "Non classé") return 1; if(b.categorie === "Non classé") return -1; return String(a.categorie).localeCompare(String(b.categorie)); });
-            } else if (triActuel === "lieu") {
-                inventaireFiltre.sort((a, b) => String(a.emplacement).localeCompare(String(b.emplacement)));
-            }
+            if (triActuel === "recent") { inventaireFiltre.sort((a, b) => new Date(b.dateAjout || 0) - new Date(a.dateAjout || 0)); } 
+            else if (triActuel === "nom") { inventaireFiltre.sort((a, b) => String(a.nom).localeCompare(String(b.nom))); } 
+            else if (triActuel === "cat") { inventaireFiltre.sort((a, b) => { if(a.categorie === "Non classé") return 1; if(b.categorie === "Non classé") return -1; return String(a.categorie).localeCompare(String(b.categorie)); }); } 
+            else if (triActuel === "lieu") { inventaireFiltre.sort((a, b) => String(a.emplacement).localeCompare(String(b.emplacement))); }
             renderListe();
         }
 
         function renderListe() {
             const container = document.getElementById('liste-stock'); container.innerHTML = "";
-            if(inventaireFiltre.length === 0) { container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article trouvé.</p>"; return; }
-            
+            if(inventaireFiltre.length === 0) { container.innerHTML = "<p style='text-align:center;font-size:0.9rem;color:#9CA3AF;margin-top:20px;'>Aucun article.</p>"; return; }
             inventaireFiltre.forEach(item => {
-                const card = document.createElement('div'); card.className = 'stock-card';
-                card.onclick = () => ouvrirFiche(item);
+                const card = document.createElement('div'); card.className = 'stock-card'; card.onclick = () => ouvrirFiche(item);
                 let outText = item.estSorti ? '<span class="status-badge-out">🔴 ARCHIVÉ (SORTI)</span>' : '';
-                card.innerHTML = `
-                    <div class="card-left"><div class="card-title">${item.nom}</div><div class="card-ref">${item.reference}</div></div>
-                    <div class="card-right"><div class="card-loc">${item.emplacement || "N/A"}</div><div class="card-cat">${item.categorie}</div>${outText}</div>
-                `;
+                card.innerHTML = `<div class="card-left"><div class="card-title">${item.nom}</div><div class="card-ref">${item.reference}</div></div><div class="card-right"><div class="card-loc">${item.emplacement || "N/A"}</div><div class="card-cat">${item.categorie}</div>${outText}</div>`;
                 container.appendChild(card);
             });
         }
 
-        // 🌟 OUVERTURE DE LA FICHE DESCRIPTIVE COMMUNE AU CLIC
         function ouvrirFiche(item) {
             refActive = item.reference; trackedSubRefs = []; document.getElementById('kit-preview-list').textContent = "";
             document.getElementById('fiche-nom').textContent = item.nom; document.getElementById('fiche-notes').textContent = item.notes || "Aucune note consignée.";
@@ -221,20 +210,15 @@
                 c.innerHTML = baseRows + `<p>Date de création : <span class="valeur">${dForm}</span></p><p>Créé par : <span class="valeur">${item.utilisateur}</span></p><p>Registre Sortie : <span class="valeur">${dOutForm}</span></p><p>Motif de sortie : <span class="valeur">${item.motifSortie || "Aucun"}</span></p><p>Sorti par : <span class="valeur">${item.utilisateurSortie || "N/A"}</span></p>`;
             } else { c.innerHTML = baseRows; }
 
-            // Sécurité droits "Lecteur" : On masque l'écriture si nécessaire
             let role = localStorage.getItem('app_role');
-            if(role === 'lecteur') {
-                document.getElementById('wrapper-kit').style.display = 'none'; document.getElementById('wrapper-note').style.display = 'none';
-            } else {
-                document.getElementById('wrapper-kit').style.display = 'block'; document.getElementById('wrapper-note').style.display = 'flex';
-            }
-
+            if(role === 'lecteur') { document.getElementById('wrapper-kit').style.display = 'none'; document.getElementById('wrapper-note').style.display = 'none'; } 
+            else { document.getElementById('wrapper-kit').style.display = 'block'; document.getElementById('wrapper-note').style.display = 'flex'; }
             document.getElementById('modal-fiche').style.display = 'flex';
         }
         function fermerFiche() { document.getElementById('modal-fiche').style.display = 'none'; }
 
-        // 🌟 INTERFACE HISTORIQUE INDIVIDUEL DE L'OBJET
-        document.getElementById('btn-dash-hist' || 'btn-hist-indiv').addEventListener('click', function() {
+        // 🌟 CORRECTION CRITIQUE DE SÉLECTEUR POUR L'HISTORIQUE INDIVIDUEL DE L'OBJET
+        document.getElementById('btn-hist-indiv').addEventListener('click', function() {
             const rowBox = document.getElementById('container-rows-hist'); rowBox.textContent = "Chargement... ⏳";
             document.getElementById('modal-pop-hist').style.display = 'flex';
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "get_item_history", reference: refActive, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
@@ -248,13 +232,10 @@
             }).catch(() => { rowBox.textContent = "Erreur réseau."; });
         });
 
-        // 🌟 INTERFACE ASSEMBLAGE DE KITS / BUNDLES
+        // KITS ET BUNDLES
         document.getElementById('btn-add-sub').addEventListener('click', function() {
             let val = document.getElementById('input-sub-ref').value.trim().toUpperCase();
-            if(val && !trackedSubRefs.includes(val)) {
-                trackedSubRefs.push(val); document.getElementById('input-sub-ref').value = "";
-                document.getElementById('kit-preview-list').innerHTML = trackedSubRefs.map(r => `📦 ${r}`).join('<br>');
-            }
+            if(val && !trackedSubRefs.includes(val)) { trackedSubRefs.push(val); document.getElementById('input-sub-ref').value = ""; document.getElementById('kit-preview-list').innerHTML = trackedSubRefs.map(r => `📦 ${r}`).join('<br>'); }
         });
         document.getElementById('btn-save-kit').addEventListener('click', function() {
             if(trackedSubRefs.length === 0) return;
@@ -263,14 +244,14 @@
             .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('kit-preview-list').textContent = ""; trackedSubRefs = []; afficherAlerte("Succès", "Lot assemblé !", true); } });
         });
 
-        // RAJOUT DES REMARQUES DEPUIS LA FICHE
+        // SUIVI DES INCIDENTS (NOTES)
         document.getElementById('btn-save-fiche-note').addEventListener('click', function() {
             let txt = document.getElementById('input-fiche-note').value.trim(); if(!txt) return;
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "add_note", reference: refActive, note: txt, login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') }) })
             .then(res => res.json()).then(d => { if(d.result === "success") { document.getElementById('fiche-notes').textContent = d.notes; document.getElementById('input-fiche-note').value = ""; } });
         });
 
-        // CORRECTIF REIMPRESSION EPUREE DU QR
+        // RÉIMPRESSION STRICTE QR
         document.getElementById('btn-print-fiche-qr').addEventListener('click', function() {
             const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
             const doc = iframe.contentWindow.document;
