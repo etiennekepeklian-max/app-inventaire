@@ -7,7 +7,11 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1A2B56">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <script>if (!localStorage.getItem('app_token') || localStorage.getItem('app_role') !== 'admin') { window.location.href = 'index.html'; }</script>
+    <script>
+        if (!localStorage.getItem('app_token') || localStorage.getItem('app_role') !== 'admin') { 
+            window.location.href = 'index.html'; 
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -19,9 +23,9 @@
         .btn-retour:active { transform: scale(0.85); }
         h1 { text-align: center; font-size: 1.5rem; width: 100%; letter-spacing: 1px; }
 
-        .admin-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-        .nav-tile { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 10px 5px; text-align: center; font-size: 0.8rem; font-weight: bold; cursor: pointer; color: #FFFFFF; transition: all 0.2s; }
-        .nav-tile.active { background: #3B82F6; border-color: #60A5FA; }
+        .admin-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+        .nav-tile { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 12px 5px; text-align: center; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: #FFFFFF; transition: all 0.2s; }
+        .nav-tile.active { background: #3B82F6; border-color: #60A5FA; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
 
         .admin-section { display: none; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 15px; flex-direction: column; gap: 15px; }
         .admin-section.active { display: flex; }
@@ -30,6 +34,7 @@
         .widget { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; text-align: center; }
         .widget-num { font-size: 1.6rem; font-weight: 900; color: #FFFFFF; }
         .widget-label { font-size: 0.7rem; color: #D1D5DB; text-transform: uppercase; margin-top: 2px; }
+        .widget-meteo { font-size: 1.8rem; line-height: 1; }
 
         .list-panel { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
         .list-panel h3 { font-size: 0.9rem; color: #60A5FA; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
@@ -37,15 +42,13 @@
 
         .form-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.85rem; color: #D1D5DB; font-weight: bold; }
-        input, select { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; }
+        input, select, textarea { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 8px; padding: 12px; color: #FFFFFF; font-size: 1rem; width: 100%; outline: none; }
         
-        .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; cursor: pointer; transition: transform 0.2s; width: 100%; }
+        .btn-action { background-color: #3B82F6; border: none; padding: 14px; border-radius: 8px; color: #FFFFFF; font-weight: bold; cursor: pointer; transition: transform 0.2s; width: 100%; font-size: 1rem; }
         .btn-action:active { transform: scale(0.95); }
-        .file-upload-label { background-color: rgba(96, 165, 250, 0.05); border: 2px dashed #60A5FA; color: #60A5FA; padding: 15px; border-radius: 12px; text-align: center; display: block; cursor: pointer; }
-
-        /* Diagnostics UI */
-        .diag-item { display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
-        .diag-status { font-weight: bold; }
+        
+        /* Styles Diagnostics */
+        .diag-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.05); }
 
         .app-version { position: absolute; bottom: 10px; right: 15px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: bold; }
     </style>
@@ -55,9 +58,11 @@
         <div class="header"><button class="btn-retour" onclick="history.back()">⬅</button><h1>Administration</h1></div>
         
         <div class="admin-nav">
-            <div class="nav-tile active" onclick="switchSection('sect-dash', this)">📊 Dash</div>
-            <div class="nav-tile" onclick="switchSection('sect-struct', this)">🏷️ Data</div>
-            <div class="nav-tile" onclick="switchSection('sect-diag', this)">🩺 Diag</div>
+            <div class="nav-tile active" onclick="switchSection('sect-dash', this)">📊 Dashboard</div>
+            <div class="nav-tile" onclick="switchSection('sect-struct', this)">🏷️ Data Struct.</div>
+            <div class="nav-tile" onclick="switchSection('sect-csv', this)">📥 CSV Flux</div>
+            <div class="nav-tile" onclick="switchSection('sect-team', this)">👥 Équipe</div>
+            <div class="nav-tile" onclick="switchSection('sect-diag', this)" style="grid-column: span 2;">🩺 Diagnostics Système</div>
         </div>
 
         <div class="admin-section active" id="sect-dash">
@@ -66,34 +71,33 @@
                 <div class="widget"><div class="widget-num" id="stat-sorti">-</div><div class="widget-label">Sortis</div></div>
             </div>
             <div class="list-panel">
-                <h3>🚨 ANOMALIES & ACTIVITÉ</h3>
+                <h3>🚨 FIL D'ALERTE DES ANOMALIES</h3>
                 <div id="panel-anomalies"><p style="font-size:0.8rem;color:#9CA3AF;">Chargement...</p></div>
             </div>
         </div>
 
         <div class="admin-section" id="sect-struct">
-            <div class="form-group">
-                <label>📍 Emplacements</label>
-                <input type="text" id="new-emp" placeholder="Rayon A > Étagère 1">
-                <button class="btn-action" id="btn-add-emp" style="background:#3B82F6;">➕ Enregistrer</button>
             </div>
-            <div id="emp-list" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
-        </div>
+
+        <div class="admin-section" id="sect-csv">
+            </div>
+
+        <div class="admin-section" id="sect-team">
+            </div>
 
         <div class="admin-section" id="sect-diag">
             <h3 style="color:#60A5FA;">🩺 Diagnostic de santé</h3>
-            <div id="diag-results"></div>
-            <button class="btn-action" onclick="runDiagnostics()" style="background:#8B5CF6;">Lancer le contrôle système</button>
+            <div id="diag-results" style="margin-bottom:10px;">Cliquez pour vérifier l'état du système.</div>
+            <button class="btn-action" onclick="runDiagnostics()" style="background:#8B5CF6;">Lancer le contrôle</button>
         </div>
     </div>
 
-    <div class="app-version" id="version-display"></div>
+    <div class="app-version" id="version-display">Version 0.9</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
         const payloadBase = { login: localStorage.getItem('app_login'), token: localStorage.getItem('app_token') };
-        document.getElementById('version-display').textContent = "Version " + (localStorage.getItem('app_version') || '0.9.1');
-
+        
         function switchSection(id, tile) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-tile').forEach(t => t.classList.remove('active'));
@@ -105,31 +109,24 @@
             container.innerHTML = "Contrôle en cours... ⏳";
             let results = [];
             
-            // 1. Ping Serveur
+            // Ping Serveur
             let start = Date.now();
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {method:'POST', body: JSON.stringify({...payloadBase, action:"get_dashboard"})});
                 results.push({name: "Connexion Serveur", status: "🟢 OK ("+(Date.now()-start)+"ms)"});
             } catch(e) { results.push({name: "Connexion Serveur", status: "🔴 ÉCHEC"}); }
 
-            // 2. Permissions Caméra
+            // Caméra
             try {
                 let stream = await navigator.mediaDevices.getUserMedia({video: true});
                 stream.getTracks().forEach(track => track.stop());
                 results.push({name: "Accès Caméra", status: "🟢 OK"});
             } catch(e) { results.push({name: "Accès Caméra", status: "🔴 BLOQUÉ"}); }
 
-            // 3. LocalStorage
-            try {
-                localStorage.setItem('test', 'ok'); localStorage.removeItem('test');
-                results.push({name: "Mémoire (LocalStorage)", status: "🟢 OK"});
-            } catch(e) { results.push({name: "Mémoire (LocalStorage)", status: "🔴 PLEIN/BLOQUÉ"}); }
-
-            container.innerHTML = results.map(r => `<div class="diag-item"><span>${r.name}</span><span class="diag-status">${r.status}</span></div>`).join('');
+            container.innerHTML = results.map(r => `<div class="diag-item"><span>${r.name}</span><span style="font-weight:bold;">${r.status}</span></div>`).join('');
         }
-
-        function chargerDashboard() { /* Logique de dashboard précédente conservée */ }
-        window.addEventListener('DOMContentLoaded', () => { chargerDashboard(); });
+        
+        // ... (tes fonctions précédentes : chargerDashboard, chargerCategories, etc.) ...
     </script>
 </body>
 </html>
