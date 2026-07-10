@@ -231,7 +231,7 @@
             <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 5px 0;">
 
             <form id="form-modifier" style="display:flex; flex-direction:column; gap:12px;">
-                <h3 style="font-size: 0.95rem; color: var(--accent-orange);">✏️ Modifier ou Supprimer un compte</h3>
+                <h3 style="font-size: 0.95rem; color: var(--accent-orange);">✏️ Modifier, Débloquer ou Supprimer</h3>
                 <div class="form-group"><select id="select-user" required><option value="">Chargement de l'équipe...</option></select></div>
                 <div class="form-group">
                     <select id="modif-role">
@@ -242,8 +242,9 @@
                 </div>
                 <div class="form-group"><input type="text" id="modif-mdp" placeholder="Changer le mot de passe (optionnel)"></div>
                 
-                <div style="display: flex; gap: 10px; margin-top:5px;">
-                    <button type="submit" class="btn-action" style="background-color: var(--accent-orange); flex: 2;" onclick="triggerHaptic()">Mettre à jour</button>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top:5px;">
+                    <button type="submit" class="btn-action" style="background-color: var(--accent-orange); flex: 1 1 100%;" onclick="triggerHaptic()">Mettre à jour le profil</button>
+                    <button type="button" class="btn-action" id="btn-unlock-user" style="background-color: var(--accent-green); flex: 1; display: none;" onclick="triggerHaptic()">🔓 Débloquer</button>
                     <button type="button" class="btn-action" id="btn-delete-user" style="background-color: transparent; border: 2px solid var(--accent-red); color: #FCA5A5; flex: 1; box-shadow:none;" onclick="triggerHaptic()">🗑️ Supprimer</button>
                 </div>
             </form>
@@ -296,7 +297,7 @@
         document.getElementById('btn-confirm-cancel').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; actionConfirmationCallback = null; });
         document.getElementById('btn-confirm-ok').addEventListener('click', () => { document.getElementById('custom-confirm').style.display = 'none'; if(actionConfirmationCallback) actionConfirmationCallback(); });
 
-        // CHARGEMENT SÉQUENTIEL (Adapté pour fond sombre ChartJS)
+        // CHARGEMENT SÉQUENTIEL
         function chargerDashboard() {
             return fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "get_dashboard" }) })
             .then(res => res.json()).then(data => {
@@ -370,22 +371,53 @@
                 if(data.result === "success") {
                     data.data.sort((a,b) => a.login.localeCompare(b.login));
                     const select = document.getElementById('select-user'); select.innerHTML = '<option value="">-- Choisir un membre --</option>';
-                    data.data.forEach(user => { if(user.login !== localStorage.getItem('app_login')) { select.innerHTML += `<option value="${user.login}" data-role="${user.role}">${user.login}</option>`; } });
+                    data.data.forEach(user => { 
+                        if(user.login !== localStorage.getItem('app_login')) { 
+                            let lockedMarker = user.isLocked ? " 🔒 (Bloqué)" : "";
+                            select.innerHTML += `<option value="${user.login}" data-role="${user.role}" data-locked="${user.isLocked || false}">${user.login}${lockedMarker}</option>`; 
+                        } 
+                    });
+                    document.getElementById('btn-unlock-user').style.display = 'none';
                 }
             }).catch(e => console.error("Erreur Utilisateurs"));
         }
 
-        document.getElementById('select-user').addEventListener('change', function(e) { const sel = e.target.options[e.target.selectedIndex]; if(sel && sel.value !== "") { document.getElementById('modif-role').value = sel.getAttribute('data-role'); } });
+        document.getElementById('select-user').addEventListener('change', function(e) { 
+            const sel = e.target.options[e.target.selectedIndex]; 
+            if(sel && sel.value !== "") { 
+                document.getElementById('modif-role').value = sel.getAttribute('data-role'); 
+                const isLocked = sel.getAttribute('data-locked') === 'true';
+                document.getElementById('btn-unlock-user').style.display = isLocked ? 'block' : 'none';
+            } else {
+                document.getElementById('btn-unlock-user').style.display = 'none';
+            }
+        });
 
         document.getElementById('btn-delete-user').addEventListener('click', function() {
             const cible = document.getElementById('select-user').value; if(!cible) return afficherPopup("Attention", "Veuillez sélectionner un membre.", false);
             afficherConfirmation(`Supprimer définitivement le compte de ${cible} ?`, () => {
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "supprimer_utilisateur", targetLogin: cible }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Compte supprimé", `L'utilisateur n'a plus d'accès.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } });
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "supprimer_utilisateur", targetLogin: cible }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Compte supprimé", `L'utilisateur n'a plus d'accès.`); document.getElementById('form-modifier').reset(); document.getElementById('btn-unlock-user').style.display = 'none'; chargerUtilisateurs(); } });
+            });
+        });
+
+        document.getElementById('btn-unlock-user').addEventListener('click', function() {
+            const cible = document.getElementById('select-user').value; 
+            if(!cible) return;
+            afficherConfirmation(`Déverrouiller le compte de ${cible} ?`, () => {
+                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "deverrouiller_utilisateur", targetLogin: cible }) })
+                .then(res => res.json()).then(data => { 
+                    if(data.result === "success") { 
+                        afficherPopup("Compte déverrouillé", `Le compteur d'erreurs de ${cible} a été remis à zéro.`); 
+                        document.getElementById('form-modifier').reset(); 
+                        document.getElementById('btn-unlock-user').style.display = 'none';
+                        chargerUtilisateurs(); 
+                    } 
+                });
             });
         });
 
         document.getElementById('form-creer').addEventListener('submit', function(e) { e.preventDefault(); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "creer_utilisateur", newLogin: document.getElementById('creer-login').value.trim(), newPassword: document.getElementById('creer-mdp').value, newRole: document.getElementById('creer-role').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Compte créé !", `L'accès a bien été validé.`); document.getElementById('form-creer').reset(); chargerUtilisateurs(); } }); });
-        document.getElementById('form-modifier').addEventListener('submit', function(e) { e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "modifier_utilisateur", targetLogin: document.getElementById('select-user').value, newRole: document.getElementById('modif-role').value, newPassword: document.getElementById('modif-mdp').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Succès", `Modifications enregistrées.`); document.getElementById('form-modifier').reset(); chargerUtilisateurs(); } btn.disabled = false; }); });
+        document.getElementById('form-modifier').addEventListener('submit', function(e) { e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.disabled = true; fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...payloadBase, action: "modifier_utilisateur", targetLogin: document.getElementById('select-user').value, newRole: document.getElementById('modif-role').value, newPassword: document.getElementById('modif-mdp').value }) }).then(res => res.json()).then(data => { if(data.result === "success") { afficherPopup("Succès", `Modifications enregistrées.`); document.getElementById('form-modifier').reset(); document.getElementById('btn-unlock-user').style.display = 'none'; chargerUtilisateurs(); } btn.disabled = false; }); });
 
         document.getElementById('csv-file').addEventListener('change', function(e) {
             triggerHaptic();

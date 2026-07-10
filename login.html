@@ -3,188 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Connexion</title>
+    <title>Connexion - Stock Manager</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0F172A">
     <link rel="apple-touch-icon" href="icon-192.png">
     <style>
-        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM SYNCHRONISÉES */
+        /* 🎨 PALETTE "SLATE" ET VARIABLES GLASSMORPHISM */
         :root {
-            --bg-dark: #0F172A; /* Slate 900 */
+            --bg-dark: #0F172A; 
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --glass-highlight: rgba(255, 255, 255, 0.15);
-            --text-main: #F8FAFC; /* Slate 50 */
-            --text-muted: #94A3B8; /* Slate 400 */
+            --text-main: #F8FAFC; 
+            --text-muted: #94A3B8; 
             --accent-blue: #3B82F6;
             --accent-blue-hover: #2563EB;
-            --accent-red-bg: rgba(239, 68, 68, 0.1);
-            --accent-red-border: rgba(248, 113, 113, 0.4);
+            --accent-red: #EF4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            background: var(--bg-dark); 
-            color: var(--text-main); 
+            background: var(--bg-dark); color: var(--text-main); 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; padding: 20px;
+            position: relative; overflow: hidden;
         }
 
-        /* Panneau principal en Glassmorphism */
-        .login-box { 
-            width: 100%; max-width: 400px; 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(16px); 
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border); 
-            border-radius: 20px; 
-            padding: 35px 25px; 
-            display: flex; flex-direction: column; align-items: center; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
-        }
+        /* Cercles décoratifs en arrière-plan */
+        .bg-circle-1 { position: absolute; top: -10%; left: -20%; width: 300px; height: 300px; background: rgba(59, 130, 246, 0.2); border-radius: 50%; filter: blur(80px); z-index: 0; }
+        .bg-circle-2 { position: absolute; bottom: -10%; right: -10%; width: 250px; height: 250px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; filter: blur(80px); z-index: 0; }
 
-        .app-logo { width: 100px; height: 100px; border-radius: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); margin-bottom: 20px; }
-        h1 { font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 1px; font-weight: 800; text-transform: uppercase; }
+        .login-container { 
+            width: 90%; max-width: 380px; z-index: 10;
+            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border); border-radius: 24px; padding: 35px 25px; 
+            display: flex; flex-direction: column; gap: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+            text-align: center;
+        }
         
-        .form-group { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; text-align: left; }
-        label { font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .logo-box { width: 80px; height: 80px; background: var(--accent-blue); border-radius: 20px; margin: 0 auto; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4); margin-bottom: 10px; }
+        
+        h1 { font-size: 1.6rem; letter-spacing: 1px; font-weight: 800; margin-bottom: 5px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+        label { font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 5px; }
         
         input { 
-            background-color: rgba(0, 0, 0, 0.2); 
-            border: 1px solid var(--glass-border); 
-            border-radius: 10px; padding: 14px; 
-            color: var(--text-main); font-size: 1rem; outline: none; 
-            transition: border-color 0.2s, background-color 0.2s; 
+            background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); 
+            border-radius: 12px; padding: 15px; color: var(--text-main); font-size: 1rem; width: 100%; 
+            outline: none; transition: border-color 0.2s, background-color 0.2s; 
         }
         input:focus { border-color: #60A5FA; background-color: rgba(0, 0, 0, 0.3); }
-        
+
         .btn-login { 
-            background-color: var(--accent-blue); border: none; padding: 16px; border-radius: 12px; 
+            background-color: var(--accent-blue); border: none; padding: 16px; border-radius: 14px; 
             color: #FFFFFF; font-weight: bold; font-size: 1.1rem; cursor: pointer; width: 100%; 
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
+            margin-top: 10px; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
-        .btn-login:active { transform: scale(0.94); background-color: var(--accent-blue-hover); }
-        .btn-login:disabled { background-color: #64748B; transform: scale(1); box-shadow: none; cursor: not-allowed; }
+        .btn-login:active { transform: scale(0.96); background-color: var(--accent-blue-hover); }
+        .btn-login:disabled { background-color: #64748B; cursor: not-allowed; box-shadow: none; transform: scale(1); }
 
-        .error-message { color: #FCA5A5; font-size: 0.9rem; margin-top: 15px; display: none; text-align: center; background: var(--accent-red-bg); border: 1px solid var(--accent-red-border); padding: 12px; border-radius: 10px; width: 100%; }
-        
-        /* Bouton d'Aide Global Flottant */
-        .btn-global-help {
-            position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px;
-            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border); border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 1.6rem; text-decoration: none; color: var(--text-main);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 1000;
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s;
-        }
-        .btn-global-help:active { transform: scale(0.85); background-color: var(--glass-highlight); }
+        /* Modale d'alerte */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+        .modal-content { background: var(--bg-dark); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .modal-icon { font-size: 3.5rem; margin-bottom: 10px; }
+        .modal-title { font-size: 1.2rem; color: white; margin-bottom: 10px; font-weight: 800; }
+        .modal-message { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+        .btn-modal-ok { background: var(--accent-blue); border: none; color: #FFFFFF; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: transform 0.2s; font-size: 1.05rem; }
+        .btn-modal-ok:active { transform: scale(0.95); }
 
-        .app-version { position: absolute; bottom: 15px; left: 20px; font-size: 0.8rem; color: var(--text-muted); font-weight: bold; }
+        .app-version { position: absolute; bottom: 15px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; z-index: 10;}
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <img src="icon-192.png" alt="Logo" class="app-logo">
-        <h1>Authentification</h1>
-        
-        <div id="login-form-container" style="width: 100%;">
+    <div class="bg-circle-1"></div>
+    <div class="bg-circle-2"></div>
+
+    <div class="login-container">
+        <div>
+            <div class="logo-box">📦</div>
+            <h1>Stock Manager</h1>
+            <p class="subtitle">Veuillez vous identifier</p>
+        </div>
+
+        <form id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
             <div class="form-group">
-                <label>Identifiant</label>
-                <input type="text" id="login" autocomplete="off" spellcheck="false" data-lpignore="true">
+                <label for="input-login">Identifiant</label>
+                <input type="text" id="input-login" placeholder="Ex: Jean.Dupont" required autocomplete="username">
             </div>
+            
             <div class="form-group">
-                <label>Mot de passe</label>
-                <input type="password" id="password" autocomplete="new-password" spellcheck="false" data-lpignore="true">
+                <label for="input-password">Mot de passe</label>
+                <input type="password" id="input-password" placeholder="••••••••" required autocomplete="current-password">
             </div>
-            <button type="button" class="btn-login" id="btn-submit" onclick="triggerHaptic()">Se connecter</button>
-            <div class="error-message" id="error-msg"></div>
+
+            <button type="submit" class="btn-login" id="btn-submit">Se connecter</button>
+        </form>
+    </div>
+
+    <!-- Modale de Notification (Erreurs & Verrouillage) -->
+    <div class="modal-overlay" id="custom-alert">
+        <div class="modal-content">
+            <div class="modal-icon" id="alert-icon">⚠️</div>
+            <h3 class="modal-title" id="alert-title">Erreur</h3>
+            <p class="modal-message" id="alert-message">Message d'erreur.</p>
+            <button class="btn-modal-ok" id="btn-alert-ok" onclick="fermerAlerte()">Compris</button>
         </div>
     </div>
-    
-    <a href="aide.html" class="btn-global-help" title="Centre d'aide" onclick="triggerHaptic()">?)</a>
 
-    <div class="app-version" id="version-display">Version 0.2.1</div>
+    <div class="app-version">Version 0.2.1</div>
 
     <script>
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYal6V4YSCqCMy7iuHOaeXz0vg09nsMAj-lcqnMI7ORUytTC8-Ti1amhsBsaYunkZm/exec";
-        
-        if (localStorage.getItem('app_version')) { 
-            document.getElementById('version-display').textContent = "Version " + localStorage.getItem('app_version'); 
-        }
-        if (localStorage.getItem('app_token')) { 
-            window.location.href = 'index.html'; 
+
+        function triggerHaptic() {
+            if (navigator.vibrate) navigator.vibrate(40);
         }
 
-        // 🌟 RETOUR HAPTIQUE
-        window.triggerHaptic = function() {
-            if (navigator.vibrate) {
-                navigator.vibrate(40);
-            }
-        };
+        function afficherAlerte(titre, message, isLocked = false) {
+            triggerHaptic();
+            document.getElementById('alert-icon').textContent = isLocked ? "🔒" : "⚠️";
+            document.getElementById('alert-title').textContent = titre;
+            document.getElementById('alert-title').style.color = isLocked ? "#FCA5A5" : "white";
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('custom-alert').style.display = 'flex';
+        }
 
-        function executerConnexion() {
-            const loginInput = document.getElementById('login').value.trim();
-            const passwordInput = document.getElementById('password').value;
-            const errorBox = document.getElementById('error-msg');
+        function fermerAlerte() {
+            triggerHaptic();
+            document.getElementById('custom-alert').style.display = 'none';
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            triggerHaptic();
+            
             const btn = document.getElementById('btn-submit');
+            const login = document.getElementById('input-login').value.trim();
+            const password = document.getElementById('input-password').value;
 
-            if (!loginInput || !passwordInput) {
-                errorBox.textContent = "Veuillez remplir tous les champs.";
-                errorBox.style.display = 'block';
-                return;
-            }
+            btn.disabled = true;
+            btn.textContent = "Vérification... ⏳";
 
-            btn.disabled = true; btn.textContent = "Connexion... ⏳"; errorBox.style.display = 'none';
-
-            fetch(GOOGLE_SCRIPT_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ 
-                    action: "login", 
-                    login: loginInput, 
-                    password: passwordInput 
-                }) 
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "login", login: login, password: password })
             })
-            .then(res => res.json()).then(data => {
+            .then(res => res.json())
+            .then(data => {
                 if (data.result === "success") {
-                    // Purge immédiate de la mémoire volatile des champs de saisie
-                    document.getElementById('login').value = "";
-                    document.getElementById('password').value = "";
-                    
-                    localStorage.setItem('app_token', data.token); 
-                    localStorage.setItem('app_login', data.login); 
+                    localStorage.setItem('app_token', data.token);
+                    localStorage.setItem('app_login', data.login);
                     localStorage.setItem('app_role', data.role);
+                    localStorage.setItem('app_version', '0.2.1');
                     window.location.href = 'index.html';
-                } else { 
-                    errorBox.textContent = data.message; 
-                    errorBox.style.display = 'block'; 
-                    btn.disabled = false; 
-                    btn.textContent = "Se connecter"; 
+                } else if (data.result === "locked" || data.isLocked === true) {
+                    // INTERCEPTION SPÉCIFIQUE DU VERROUILLAGE
+                    afficherAlerte(
+                        "Compte verrouillé", 
+                        "Accès restreint : votre compte est temporairement verrouillé pour des raisons de sécurité. Veuillez contacter un administrateur pour déverrouiller votre session.",
+                        true
+                    );
+                    btn.disabled = false;
+                    btn.textContent = "Se connecter";
+                } else {
+                    afficherAlerte("Échec", data.message || "Identifiant ou mot de passe incorrect.");
+                    btn.disabled = false;
+                    btn.textContent = "Se connecter";
                 }
-            }).catch(() => { 
-                errorBox.textContent = "Problème réseau. Vérifiez votre connexion."; 
-                errorBox.style.display = 'block'; 
-                btn.disabled = false; 
-                btn.textContent = "Se connecter"; 
+            })
+            .catch(err => {
+                afficherAlerte("Erreur réseau", "Impossible de joindre le serveur. Vérifiez votre connexion.");
+                btn.disabled = false;
+                btn.textContent = "Se connecter";
             });
-        }
-
-        document.getElementById('btn-submit').addEventListener('click', executerConnexion);
-
-        // Routage et gestion clavier ergonomique pour écrans tactiles
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { triggerHaptic(); executerConnexion(); }
-        });
-        document.getElementById('login').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('password').focus();
         });
 
-        if ('serviceWorker' in navigator) { 
-            window.addEventListener('load', () => { 
-                navigator.serviceWorker.register('./sw.js').catch(() => {}); 
-            }); 
+        // Empêcher l'utilisateur de revenir en arrière après s'être déconnecté
+        window.onload = function() {
+            if (localStorage.getItem('app_token')) {
+                window.location.href = 'index.html';
+            }
         }
     </script>
 </body>
